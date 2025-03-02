@@ -16,7 +16,8 @@ public class UserController {
     private final UserService userService;
 
     // Lấy danh sách tất cả người dùng
-    @GetMapping
+    // Change from @GetMapping to @GetMapping("/all")
+    @GetMapping("/all")
     public ResponseEntity<List<UserDTO>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
