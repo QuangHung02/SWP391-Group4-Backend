@@ -17,7 +17,7 @@ public class MotherRecordService {
     @Autowired
     private StandardService standardService;
 
-    public MotherRecord createRecord(MotherRecord record) {
+    public MotherRecord createRecord(Long pregnancyId, MotherRecord record) {
         if (record.getMotherHeight() != null && record.getMotherHeight() > 0) {
             double heightInMeters = record.getMotherHeight() / 100.0;
             double bmi = record.getMotherWeight() / (heightInMeters * heightInMeters);

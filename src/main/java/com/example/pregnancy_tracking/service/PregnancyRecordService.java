@@ -44,7 +44,7 @@ public List<PregnancyRecord> getRecordsByFetusId(Long fetusId) {
         }
     }
 
-public PregnancyRecord createRecord(PregnancyRecord record) {
+public PregnancyRecord createRecord(Long fetusId, PregnancyRecord record) {
     if (record == null || record.getFetus() == null) {
         throw new IllegalArgumentException("Pregnancy record and fetus must not be null.");
     }
