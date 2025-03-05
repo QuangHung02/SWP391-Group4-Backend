@@ -33,12 +33,11 @@ public class UserService {
             throw new RuntimeException("Email already taken");
         }
 
-        // Create new user
         User user = new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(Role.GUEST);
+        user.setRole(Role.MEMBER);
 
         userRepository.save(user);
         return "User registered successfully!";
@@ -69,12 +68,10 @@ public class UserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Kiểm tra mật khẩu cũ
         if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
             throw new RuntimeException("Old password is incorrect");
         }
 
-        // Cập nhật mật khẩu mới
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
     }
@@ -103,13 +100,11 @@ public class UserService {
             user.setUserProfile(userProfile);
         }
 
-        // Cập nhật thông tin cơ bản
         if (userDTO.getUsername() != null)
             user.setUsername(userDTO.getUsername());
         if (userDTO.getEmail() != null)
             user.setEmail(userDTO.getEmail());
 
-        // Cập nhật thông tin profile
         if (userDTO.getFullName() != null)
             userProfile.setFullName(userDTO.getFullName());
         if (userDTO.getPhoneNumber() != null)

@@ -1,5 +1,8 @@
 package com.example.pregnancy_tracking.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.boot.web.servlet.error.ErrorController;
@@ -15,6 +18,13 @@ import java.util.Map;
 @RequestMapping("/error")
 public class CustomErrorController implements ErrorController {
 
+    @Operation(summary = "Handle API errors", description = "Returns detailed error messages for different HTTP status codes")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "404", description = "Resource not found"),
+            @ApiResponse(responseCode = "403", description = "Access forbidden"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized access"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @RequestMapping
     public ResponseEntity<Map<String, Object>> handleError(HttpServletRequest request) {
         Map<String, Object> errorDetails = new HashMap<>();

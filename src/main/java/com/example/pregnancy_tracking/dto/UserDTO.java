@@ -5,8 +5,8 @@ import com.example.pregnancy_tracking.entity.UserProfile;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data               // Tự động tạo getters, setters, toString, equals, hashCode
-@NoArgsConstructor  // Tạo constructor không tham số
+@Data
+@NoArgsConstructor
 public class UserDTO {
     private Long id;
     private String username;
