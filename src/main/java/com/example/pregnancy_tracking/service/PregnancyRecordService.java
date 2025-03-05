@@ -22,6 +22,10 @@ public class PregnancyRecordService {
         return pregnancyRecordRepository.findByFetusFetusId(fetusId);
     }
 
+    public List<PregnancyRecord> getRecordsByPregnancyId(Long pregnancyId) {
+        return pregnancyRecordRepository.findByPregnancyPregnancyId(pregnancyId);
+    }
+
     public PregnancyRecord saveRecord(PregnancyRecord record) {
         return pregnancyRecordRepository.save(record);
     }
