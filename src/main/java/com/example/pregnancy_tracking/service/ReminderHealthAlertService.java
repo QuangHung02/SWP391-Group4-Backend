@@ -14,9 +14,9 @@ public class ReminderHealthAlertService {
 
     // This service will handle health alert reminders for pregnancies
 
-    public void sendHealthAlert(Long userId) {
+    public void sendHealthAlert(Long id) {
         // Logic to send health alerts based on pregnancy data
-        List<Reminder> reminders = reminderRepository.findByUserUserId(userId);
+        List<Reminder> reminders = reminderRepository.findByUserId(id);
         
         for (Reminder reminder : reminders) {
             if (reminder.getStatus() == ReminderStatus.NOT_YET) {
