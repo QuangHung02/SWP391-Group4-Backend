@@ -18,7 +18,11 @@ public class PregnancyRecordService {
     @Autowired
     private StandardService standardService;
 
-    public List<PregnancyRecord> getRecordsByFetusId(Long fetusId) {
+public List<PregnancyRecord> getRecordsByFetusId(Long fetusId) {
+    if (fetusId == null || fetusId <= 0) {
+        throw new IllegalArgumentException("Fetus ID must be a positive number.");
+    }
+
         return pregnancyRecordRepository.findByFetusFetusId(fetusId);
     }
 
@@ -40,7 +44,11 @@ public class PregnancyRecordService {
         }
     }
 
-    public PregnancyRecord createRecord(PregnancyRecord record) {
+public PregnancyRecord createRecord(PregnancyRecord record) {
+    if (record == null || record.getFetus() == null) {
+        throw new IllegalArgumentException("Pregnancy record and fetus must not be null.");
+    }
+
         return pregnancyRecordRepository.save(record);
     }
 

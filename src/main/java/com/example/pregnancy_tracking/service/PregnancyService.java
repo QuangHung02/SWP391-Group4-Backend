@@ -23,7 +23,11 @@ public class PregnancyService {
     @Autowired
     private PregnancyRecordService pregnancyRecordService;
 
-    public Pregnancy createPregnancy(PregnancyDTO pregnancyDTO) {
+public Pregnancy createPregnancy(PregnancyDTO pregnancyDTO) {
+    if (pregnancyDTO.getGestationalWeeks() < 0 || pregnancyDTO.getGestationalDays() < 0) {
+        throw new IllegalArgumentException("Gestational weeks and days must be non-negative.");
+    }
+
         User user = userRepository.findById(pregnancyDTO.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -54,7 +58,12 @@ public class PregnancyService {
         return pregnancyRepository.findById(pregnancyId)
                 .orElseThrow(() -> new RuntimeException("Pregnancy not found"));
     }
-    public Pregnancy updatePregnancy(Long pregnancyId, PregnancyDTO pregnancyDTO) {
+public Pregnancy updatePregnancy(Long pregnancyId, PregnancyDTO pregnancyDTO) {
+    // Validate the input data
+    if (pregnancyDTO.getGestationalWeeks() < 0 || pregnancyDTO.getGestationalDays() < 0) {
+        throw new IllegalArgumentException("Gestational weeks and days must be non-negative.");
+    }
+
         Pregnancy pregnancy = pregnancyRepository.findById(pregnancyId)
                 .orElseThrow(() -> new RuntimeException("Pregnancy not found"));
 

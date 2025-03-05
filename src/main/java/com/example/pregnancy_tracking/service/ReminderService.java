@@ -17,7 +17,11 @@ public class ReminderService {
     @Autowired
     private ReminderHealthAlertRepository reminderHealthAlertRepository;
 
-    public Reminder createReminder(Reminder reminder) {
+public Reminder createReminder(Reminder reminder) {
+    if (reminder == null || reminder.getUser() == null) {
+        throw new IllegalArgumentException("Reminder and user must not be null.");
+    }
+
         return reminderRepository.save(reminder);
     }
 
@@ -25,7 +29,12 @@ public class ReminderService {
         return reminderRepository.findByUserUserId(userId);
     }
 
-    public ReminderHealthAlert createHealthAlert(ReminderHealthAlert alert) {
+public ReminderHealthAlert createHealthAlert(ReminderHealthAlert alert) {
+    if (alert == null || alert.getReminder() == null) {
+        throw new IllegalArgumentException("Health alert and reminder must not be null.");
+    }
+
+
         return reminderHealthAlertRepository.save(alert);
     }
 }
