@@ -1,4 +1,5 @@
 package com.example.pregnancy_tracking.entity;
 
-public class PregnancyStatus {
+public enum PregnancyStatus {
+    ONGOING, COMPLETED, MISCARRIAGE
 }

@@ -30,7 +30,10 @@ public class User implements UserDetails {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Role role = Role.GUEST;
+    private Role role = Role.MEMBER;
+
+    @Column(name = "total_pregnancies", nullable = false)
+    private int totalPregnancies = 0;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -55,7 +58,7 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return email; // Nếu bạn muốn đăng nhập bằng username, đổi thành `return username;`
+        return email;
     }
 
     @Override

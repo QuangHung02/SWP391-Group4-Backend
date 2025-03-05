@@ -2,6 +2,7 @@ package com.example.pregnancy_tracking.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import java.security.Key;
 import java.util.Base64;
@@ -9,7 +10,7 @@ import java.util.Date;
 
 @Component
 public class JwtUtil {
-    private final String SECRET_KEY = "aGhpZGphZGthZG1rYWRmMTIzMTIzMTIzMTIzMTIzMTIzMTIzMTIzMTIz"; 
+    private final String SECRET_KEY = "aGhpZGphZGthZG1rYWRmMTIzMTIzMTIzMTIzMTIzMTIzMTIzMTIzMTIz";
     private final long EXPIRATION_TIME = 86400000; // 1 ngày
 
     private Key getSigningKey() {
