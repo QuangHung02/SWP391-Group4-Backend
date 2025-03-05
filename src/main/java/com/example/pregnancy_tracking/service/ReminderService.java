@@ -25,8 +25,8 @@ public Reminder createReminder(Reminder reminder) {
         return reminderRepository.save(reminder);
     }
 
-    public List<Reminder> getRemindersByUser(Long userId) {
-        return reminderRepository.findByUserUserId(userId);
+    public List<Reminder> getRemindersByUser(Long id) {
+        return reminderRepository.findByUserId(id);
     }
 
 public ReminderHealthAlert createHealthAlert(ReminderHealthAlert alert) {
