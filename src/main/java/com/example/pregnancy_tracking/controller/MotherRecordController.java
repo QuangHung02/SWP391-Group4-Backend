@@ -5,6 +5,7 @@ import com.example.pregnancy_tracking.service.MotherRecordService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,7 +13,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/mother-records") // Nhóm API về hồ sơ mẹ
+@RequestMapping("/api/mother-records")
+@SecurityRequirement(name = "Bearer Authentication")
 public class MotherRecordController {
 
     @Autowired

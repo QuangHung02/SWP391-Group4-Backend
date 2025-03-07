@@ -5,6 +5,7 @@ import com.example.pregnancy_tracking.service.ReminderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -13,7 +14,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/reminders") // Nhóm API về nhắc nhở
+@RequestMapping("/api/reminders")
+@SecurityRequirement(name = "Bearer Authentication")
 public class ReminderController {
 
     @Autowired
