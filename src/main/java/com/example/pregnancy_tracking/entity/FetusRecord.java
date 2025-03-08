@@ -22,7 +22,6 @@ public class FetusRecord {
     @JoinColumn(name = "pregnancy_id", nullable = false)
     private Pregnancy pregnancy;
 
-
     private Integer week;
     private Double fetalWeight;
     private Double crownHeelLength;

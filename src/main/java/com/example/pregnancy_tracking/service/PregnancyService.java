@@ -1,14 +1,22 @@
 package com.example.pregnancy_tracking.service;
 
-import com.example.pregnancy_tracking.dto.PregnancyDTO;
-import com.example.pregnancy_tracking.entity.*;
-import com.example.pregnancy_tracking.repository.FetusRepository;
+import com.example.pregnancy_tracking.entity.Fetus;
+import com.example.pregnancy_tracking.entity.FetusRecord;
+import com.example.pregnancy_tracking.entity.FetusRecordStatus;
+import com.example.pregnancy_tracking.entity.Pregnancy;
+import com.example.pregnancy_tracking.entity.PregnancyStatus;
+import com.example.pregnancy_tracking.entity.User;
 import com.example.pregnancy_tracking.repository.FetusRecordRepository;
+import com.example.pregnancy_tracking.repository.FetusRepository;
+<<<<<<< HEAD
+import com.example.pregnancy_tracking.repository.FetusRecordRepository;
+=======
+>>>>>>> swagger
 import com.example.pregnancy_tracking.repository.PregnancyRepository;
 import com.example.pregnancy_tracking.repository.UserRepository;
+import com.example.pregnancy_tracking.dto.PregnancyDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,28 +28,41 @@ public class PregnancyService {
 
     @Autowired
     private UserRepository userRepository;
+<<<<<<< HEAD
     @Autowired
     private FetusRecordService pregnancyRecordService;
+=======
+>>>>>>> swagger
 
-public Pregnancy createPregnancy(PregnancyDTO pregnancyDTO) {
-    if (pregnancyDTO.getGestationalWeeks() < 0 || pregnancyDTO.getGestationalDays() < 0) {
-        throw new IllegalArgumentException("Gestational weeks and days must be non-negative.");
-    }
+    @Autowired
+    private FetusRecordService fetusRecordService;
+
+    @Autowired
+    private FetusRecordRepository fetusRecordRepository;
+
+    @Autowired
+    private FetusRepository fetusRepository;
+
+    public Pregnancy createPregnancy(PregnancyDTO pregnancyDTO) {
+        if (pregnancyDTO.getGestationalWeeks() < 0 || pregnancyDTO.getGestationalDays() < 0) {
+            throw new IllegalArgumentException("Gestational weeks and days must be non-negative.");
+        }
 
         User user = userRepository.findById(pregnancyDTO.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         LocalDate examDate = pregnancyDTO.getExamDate();
         int totalDays = (pregnancyDTO.getGestationalWeeks() * 7) + pregnancyDTO.getGestationalDays();
-
         LocalDate startDate = examDate.minusDays(totalDays);
         LocalDate dueDate = startDate.plusDays(280);
 
+        // Cập nhật tổng số thai kỳ của user
         user.setTotalPregnancies(user.getTotalPregnancies() + 1);
         userRepository.save(user);
 
         Pregnancy pregnancy = new Pregnancy();
         pregnancy.setUser(user);
+        pregnancy.setExamDate(examDate);
         pregnancy.setStartDate(startDate);
         pregnancy.setDueDate(dueDate);
         pregnancy.setGestationalWeeks(pregnancyDTO.getGestationalWeeks());
@@ -54,22 +75,22 @@ public Pregnancy createPregnancy(PregnancyDTO pregnancyDTO) {
 
         return pregnancyRepository.save(pregnancy);
     }
+
     public Pregnancy getPregnancyById(Long pregnancyId) {
         return pregnancyRepository.findById(pregnancyId)
                 .orElseThrow(() -> new RuntimeException("Pregnancy not found"));
     }
-public Pregnancy updatePregnancy(Long pregnancyId, PregnancyDTO pregnancyDTO) {
-    // Validate the input data
-    if (pregnancyDTO.getGestationalWeeks() < 0 || pregnancyDTO.getGestationalDays() < 0) {
-        throw new IllegalArgumentException("Gestational weeks and days must be non-negative.");
-    }
+
+    public Pregnancy updatePregnancy(Long pregnancyId, PregnancyDTO pregnancyDTO) {
+        if (pregnancyDTO.getGestationalWeeks() < 0 || pregnancyDTO.getGestationalDays() < 0) {
+            throw new IllegalArgumentException("Gestational weeks and days must be non-negative.");
+        }
 
         Pregnancy pregnancy = pregnancyRepository.findById(pregnancyId)
                 .orElseThrow(() -> new RuntimeException("Pregnancy not found"));
 
         LocalDate examDate = pregnancyDTO.getExamDate();
         int totalDays = (pregnancyDTO.getGestationalWeeks() * 7) + pregnancyDTO.getGestationalDays();
-
         LocalDate startDate = examDate.minusDays(totalDays);
         LocalDate dueDate = startDate.plusDays(280);
 
@@ -81,17 +102,19 @@ public Pregnancy updatePregnancy(Long pregnancyId, PregnancyDTO pregnancyDTO) {
         pregnancy.setLastUpdatedAt(LocalDateTime.now());
 
         pregnancyRepository.save(pregnancy);
-
-        pregnancyRecordService.updateRecordsForPregnancy(pregnancyId, pregnancy.getGestationalWeeks());
+        fetusRecordService.updateRecordsForPregnancy(pregnancyId, pregnancy.getGestationalWeeks());
 
         return pregnancy;
     }
 
+<<<<<<< HEAD
     @Autowired
     private FetusRecordRepository pregnancyRecordRepository;
     @Autowired
     private FetusRepository fetusRepository;
 
+=======
+>>>>>>> swagger
     public Pregnancy updatePregnancyStatus(Long pregnancyId, PregnancyStatus newStatus) {
         Pregnancy pregnancy = pregnancyRepository.findById(pregnancyId)
                 .orElseThrow(() -> new RuntimeException("Pregnancy not found"));
@@ -102,11 +125,19 @@ public Pregnancy updatePregnancy(Long pregnancyId, PregnancyDTO pregnancyDTO) {
         if (newStatus == PregnancyStatus.COMPLETED) {
             List<Fetus> fetuses = fetusRepository.findByPregnancyPregnancyId(pregnancyId);
             for (Fetus fetus : fetuses) {
+<<<<<<< HEAD
                 List<FetusRecord> records = pregnancyRecordRepository.findByFetusFetusId(fetus.getFetusId());
                 for (FetusRecord record : records) {
                     if (record.getStatus() == FetusRecordStatus.ACTIVE) {
                         record.setStatus(FetusRecordStatus.COMPLETED);
                         pregnancyRecordRepository.save(record);
+=======
+                List<FetusRecord> records = fetusRecordRepository.findByFetusFetusId(fetus.getFetusId());
+                for (FetusRecord record : records) {
+                    if (record.getStatus() == FetusRecordStatus.ACTIVE) {
+                        record.setStatus(FetusRecordStatus.COMPLETED);
+                        fetusRecordRepository.save(record);
+>>>>>>> swagger
                     }
                 }
             }

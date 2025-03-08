@@ -11,6 +11,7 @@ public class FetusRecordDTO {
     private Double headCircumference;
     private String status;
 
+
     private Double minWeight;
     private Double maxWeight;
     private Double minLength;

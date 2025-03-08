@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "Fetuses")  // Đảm bảo khớp với tên bảng trong database
+@Table(name = "Fetuses")
 @Getter
 @Setter
 public class Fetus {
@@ -17,5 +17,5 @@ public class Fetus {
     @JoinColumn(name = "pregnancy_id", nullable = false)
     private Pregnancy pregnancy;
 
-    private Integer fetusIndex; // 1 = Bé đầu tiên, 2 = Bé thứ hai, ...
+    private Integer fetusIndex;
 }

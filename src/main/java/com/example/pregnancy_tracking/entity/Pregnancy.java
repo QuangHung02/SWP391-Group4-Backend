@@ -21,12 +21,11 @@ public class Pregnancy {
     private Integer gestationalDays;
 
     @Enumerated(EnumType.STRING)
-    private PregnancyStatus status;
+    private PregnancyStatus status; // Sẽ chỉ cho phép 'ONGOING' và 'COMPLETED'
 
     private LocalDateTime lastUpdatedAt;
     private LocalDateTime createdAt;
     private LocalDate examDate;
-
 
     @PrePersist
     protected void onCreate() {
@@ -69,6 +68,4 @@ public class Pregnancy {
 
     public LocalDate getExamDate() { return examDate; }
     public void setExamDate(LocalDate examDate) { this.examDate = examDate; }
-
-
 }

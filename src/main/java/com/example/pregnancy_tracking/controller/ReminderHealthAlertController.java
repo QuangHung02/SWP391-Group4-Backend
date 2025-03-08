@@ -4,6 +4,7 @@ import com.example.pregnancy_tracking.service.ReminderHealthAlertService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,7 +13,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/health-alerts") // Nhóm API về nhắc nhở sức khỏe
+@RequestMapping("/api/health-alerts")
+@SecurityRequirement(name = "Bearer Authentication")
 public class ReminderHealthAlertController {
 
     @Autowired

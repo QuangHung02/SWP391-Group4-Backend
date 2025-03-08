@@ -7,6 +7,7 @@ import com.example.pregnancy_tracking.service.PregnancyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +15,8 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/pregnancies")
-@CrossOrigin(origins = "*")  // Cho phép frontend truy cập API
+@CrossOrigin(origins = "*")
+@SecurityRequirement(name = "Bearer Authentication")
 public class PregnancyController {
     @Autowired
     private PregnancyService pregnancyService;
