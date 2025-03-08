@@ -1,3 +1,21 @@
-2025-03-07 00:47:48 [SpringApplicationShutdownHook] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
-2025-03-07 00:47:48 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
-2025-03-07 00:47:48 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+2025-03-08 10:45:12 [main] INFO  c.e.p.PregnancyTrackingApplicationTests - Starting PregnancyTrackingApplicationTests using Java 21.0.5 with PID 26932 (started by Admin in C:\Users\Admin\Downloads\pregnancy-tracking\pregnancy-tracking)
+2025-03-08 10:45:12 [main] INFO  c.e.p.PregnancyTrackingApplicationTests - No active profile set, falling back to 1 default profile: "default"
+2025-03-08 10:45:13 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-03-08 10:45:13 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 60 ms. Found 10 JPA repository interfaces.
+2025-03-08 10:45:14 [main] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-03-08 10:45:14 [main] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.4.4.Final
+2025-03-08 10:45:14 [main] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2025-03-08 10:45:15 [main] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-03-08 10:45:15 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2025-03-08 10:45:15 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection ConnectionID:1 ClientConnectionId: 98deaedc-cbf4-452f-b2d4-020267a77d65
+2025-03-08 10:45:15 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2025-03-08 10:45:15 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: SQLServer2012Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-03-08 10:45:15 [main] WARN  org.hibernate.orm.deprecation - HHH90000026: SQLServer2012Dialect has been deprecated; use org.hibernate.dialect.SQLServerDialect instead
+2025-03-08 10:45:17 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-03-08 10:45:17 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-03-08 10:45:17 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-03-08 10:45:18 [main] INFO  o.s.s.web.DefaultSecurityFilterChain - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@6dd50380, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@215efb16, org.springframework.security.web.context.SecurityContextHolderFilter@6e200307, org.springframework.security.web.header.HeaderWriterFilter@3b863b4, org.springframework.web.filter.CorsFilter@173da924, org.springframework.security.web.authentication.logout.LogoutFilter@65011123, com.example.pregnancy_tracking.config.JwtAuthenticationFilter@1f3f0d25, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@6db59e26, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@32aa27a7, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@1a9e2c3b, org.springframework.security.web.session.SessionManagementFilter@34d6e9a4, org.springframework.security.web.access.ExceptionTranslationFilter@62d72091, org.springframework.security.web.access.intercept.AuthorizationFilter@5653429e]
+2025-03-08 10:45:18 [main] INFO  c.e.p.PregnancyTrackingApplicationTests - Started PregnancyTrackingApplicationTests in 5.833 seconds (process running for 6.771)
+2025-03-08 10:45:19 [SpringApplicationShutdownHook] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-03-08 10:45:19 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2025-03-08 10:45:19 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
