@@ -8,10 +8,6 @@ import com.example.pregnancy_tracking.entity.PregnancyStatus;
 import com.example.pregnancy_tracking.entity.User;
 import com.example.pregnancy_tracking.repository.FetusRecordRepository;
 import com.example.pregnancy_tracking.repository.FetusRepository;
-<<<<<<< HEAD
-import com.example.pregnancy_tracking.repository.FetusRecordRepository;
-=======
->>>>>>> swagger
 import com.example.pregnancy_tracking.repository.PregnancyRepository;
 import com.example.pregnancy_tracking.repository.UserRepository;
 import com.example.pregnancy_tracking.dto.PregnancyDTO;
@@ -28,11 +24,6 @@ public class PregnancyService {
 
     @Autowired
     private UserRepository userRepository;
-<<<<<<< HEAD
-    @Autowired
-    private FetusRecordService pregnancyRecordService;
-=======
->>>>>>> swagger
 
     @Autowired
     private FetusRecordService fetusRecordService;
@@ -107,14 +98,6 @@ public class PregnancyService {
         return pregnancy;
     }
 
-<<<<<<< HEAD
-    @Autowired
-    private FetusRecordRepository pregnancyRecordRepository;
-    @Autowired
-    private FetusRepository fetusRepository;
-
-=======
->>>>>>> swagger
     public Pregnancy updatePregnancyStatus(Long pregnancyId, PregnancyStatus newStatus) {
         Pregnancy pregnancy = pregnancyRepository.findById(pregnancyId)
                 .orElseThrow(() -> new RuntimeException("Pregnancy not found"));
@@ -125,19 +108,11 @@ public class PregnancyService {
         if (newStatus == PregnancyStatus.COMPLETED) {
             List<Fetus> fetuses = fetusRepository.findByPregnancyPregnancyId(pregnancyId);
             for (Fetus fetus : fetuses) {
-<<<<<<< HEAD
-                List<FetusRecord> records = pregnancyRecordRepository.findByFetusFetusId(fetus.getFetusId());
-                for (FetusRecord record : records) {
-                    if (record.getStatus() == FetusRecordStatus.ACTIVE) {
-                        record.setStatus(FetusRecordStatus.COMPLETED);
-                        pregnancyRecordRepository.save(record);
-=======
                 List<FetusRecord> records = fetusRecordRepository.findByFetusFetusId(fetus.getFetusId());
                 for (FetusRecord record : records) {
                     if (record.getStatus() == FetusRecordStatus.ACTIVE) {
                         record.setStatus(FetusRecordStatus.COMPLETED);
                         fetusRecordRepository.save(record);
->>>>>>> swagger
                     }
                 }
             }
