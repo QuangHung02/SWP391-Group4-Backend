@@ -1,0 +1,39 @@
+package com.example.pregnancy_tracking.controller;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.HashMap;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api") // Nhóm API dưới /api để tránh xung đột với Swagger
+public class HomeController {
+
+    @Operation(summary = "Get API Home", description = "Returns the status and basic information about the Pregnancy Tracking API.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "API is running"),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error")
+    })
+    @GetMapping("/")
+    public ResponseEntity<Map<String, Object>> home() {
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "running");
+        response.put("service", "Pregnancy Tracking API");
+        response.put("version", "1.0");
+        response.put("endpoints", new String[]{
+                "/api/user/register",
+                "/api/user/login",
+                "/api/user/all",
+                "/api/user/{id}",
+                "/api/user/change-password"
+        });
+
+        return ResponseEntity.ok(response);
+    }
+}
