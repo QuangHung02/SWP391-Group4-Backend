@@ -50,7 +50,6 @@ public class FetusRecordService {
         }
     }
 
-    // Cập nhật các record liên quan khi thai kỳ cập nhật tuần thai mới
     public void updateRecordsForPregnancy(Long pregnancyId, int newWeeks) {
         List<FetusRecord> records = fetusRecordRepository.findByPregnancyPregnancyId(pregnancyId);
         for (FetusRecord record : records) {
@@ -60,13 +59,11 @@ public class FetusRecordService {
         }
     }
 
-    // Kiểm tra tăng trưởng của một record (có thể bổ sung logic so sánh với tiêu chuẩn)
     public void checkFetusGrowth(FetusRecord record) {
         Integer fetusIndex = record.getFetus().getFetusIndex();
         Optional<PregnancyStandard> standardOpt =
                 standardService.getPregnancyStandard(record.getWeek(), fetusIndex);
         standardOpt.ifPresent(standard -> {
-            // Ví dụ: nếu cân nặng của bé không nằm trong khoảng tiêu chuẩn, có thể đánh dấu record thành ISSUE
             if (record.getFetalWeight() != null &&
                     (record.getFetalWeight() < standard.getMinWeight() || record.getFetalWeight() > standard.getMaxWeight())) {
                 record.setStatus(FetusRecordStatus.ISSUE);
