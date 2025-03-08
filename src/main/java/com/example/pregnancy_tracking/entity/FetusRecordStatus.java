@@ -1,7 +1,8 @@
 package com.example.pregnancy_tracking.entity;
 
-public enum PregnancyRecordStatus {
+public enum FetusRecordStatus {
     ACTIVE,
     ISSUE,
-    COMPLETED
+    COMPLETED,
+    CANCEL
 }

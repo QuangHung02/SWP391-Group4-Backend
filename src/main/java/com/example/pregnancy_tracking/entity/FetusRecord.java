@@ -6,10 +6,10 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "PregnancyRecords")
+@Table(name = "FetusRecords")
 @Getter
 @Setter
-public class PregnancyRecord {
+public class FetusRecord {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long recordId;
@@ -22,14 +22,13 @@ public class PregnancyRecord {
     @JoinColumn(name = "pregnancy_id", nullable = false)
     private Pregnancy pregnancy;
 
-
     private Integer week;
     private Double fetalWeight;
     private Double crownHeelLength;
     private Double headCircumference;
 
     @Enumerated(EnumType.STRING)
-    private PregnancyRecordStatus status;
+    private FetusRecordStatus status;
 
     private LocalDateTime createdAt;
 

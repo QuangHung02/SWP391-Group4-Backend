@@ -28,7 +28,6 @@ public class UserService {
     }
 
     public String register(RegisterRequest request) {
-        // Check if email exists
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("Email already taken");
         }
