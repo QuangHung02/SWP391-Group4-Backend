@@ -7,8 +7,7 @@ import java.util.List;
 
 @Repository
 public interface FetusRecordRepository extends JpaRepository<FetusRecord, Long> {
+    List<FetusRecord> findByFetusFetusIdOrderByWeekAsc(Long fetusId);
     List<FetusRecord> findByFetusPregnancyPregnancyId(Long pregnancyId);
     boolean existsByFetusFetusIdAndWeek(Long fetusId, int week);
-    List<FetusRecord> findByFetusFetusIdOrderByWeekAsc(Long fetusId);
-
 }

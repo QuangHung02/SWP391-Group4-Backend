@@ -41,25 +41,34 @@ public class FetusRecordController {
         return ResponseEntity.ok(createdRecord);
     }
 
-    @Operation(summary = "Get All Fetus Records by Fetus ID", description = "Retrieves all fetus records sorted by gestational week for a specific fetus.")
+    @Operation(summary = "Get Fetus Records by Fetus ID", description = "Retrieves all fetus records for a specific fetus.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Records retrieved successfully"),
             @ApiResponse(responseCode = "404", description = "No records found"),
             @ApiResponse(responseCode = "500", description = "Server error")
     })
-    @GetMapping("/{fetusId}/all")
-    public ResponseEntity<List<FetusRecordDTO>> getAllRecordsByFetusId(@PathVariable Long fetusId) {
-        List<FetusRecordDTO> response = fetusRecordService.getAllRecordsByFetusId(fetusId);
+    @GetMapping("/{fetusId}")
+    public ResponseEntity<List<FetusRecordDTO>> getRecordsByFetusId(@PathVariable Long fetusId) {
+        List<FetusRecordDTO> response = fetusRecordService.getRecordsByFetusId(fetusId);
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Get Pregnancy Standards by Fetus Number", description = "Retrieves standard values for pregnancies with the given fetus number (e.g., singleton, twin).")
-    @GetMapping("/standards/fetus/{fetusNumber}")
-    public ResponseEntity<List<PregnancyStandardDTO>> getPregnancyStandardsByFetusNumber(@PathVariable Integer fetusNumber) {
-        List<PregnancyStandardDTO> response = standardService.getPregnancyStandardsByFetusNumber(fetusNumber);
+    @Operation(summary = "Get Pregnancy Standards", description = "Retrieves standard values for a specific gestational week and fetus index.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Standards retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "No standards found"),
+            @ApiResponse(responseCode = "500", description = "Server error")
+    })
+    @GetMapping("/standards/{gestationalWeek}/{fetusNumber}")
+    public ResponseEntity<PregnancyStandardDTO> getPregnancyStandard(@PathVariable Integer gestationalWeek,
+                                                                     @PathVariable Integer fetusNumber) {
+        Optional<PregnancyStandard> standardOpt = standardService.getPregnancyStandard(gestationalWeek, fetusNumber);
+
+        if (standardOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        PregnancyStandardDTO response = new PregnancyStandardDTO(standardOpt.get());
         return ResponseEntity.ok(response);
     }
-
-
 }
 

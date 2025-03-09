@@ -32,6 +32,11 @@ public class FetusRecordService {
     @Autowired
     private ReminderHealthAlertRepository reminderHealthAlertRepository;
 
+    public List<FetusRecordDTO> getRecordsByFetusId(Long fetusId) {
+        List<FetusRecord> records = fetusRecordRepository.findByFetusFetusIdOrderByWeekAsc(fetusId);
+        return records.stream().map(FetusRecordDTO::new).collect(Collectors.toList());
+    }
+
     @Transactional
     public FetusRecord createRecord(Long fetusId, FetusRecordDTO recordDTO) {
         Fetus fetus = fetusRepository.findById(fetusId)
@@ -124,9 +129,5 @@ public class FetusRecordService {
             return SeverityLevel.MEDIUM;
         }
         return currentSeverity;
-    }
-    public List<FetusRecordDTO> getAllRecordsByFetusId(Long fetusId) {
-        List<FetusRecord> records = fetusRecordRepository.findByFetusFetusIdOrderByWeekAsc(fetusId);
-        return records.stream().map(FetusRecordDTO::new).collect(Collectors.toList());
     }
 }
