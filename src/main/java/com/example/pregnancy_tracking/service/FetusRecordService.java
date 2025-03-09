@@ -3,10 +3,13 @@ package com.example.pregnancy_tracking.service;
 import com.example.pregnancy_tracking.dto.FetusRecordDTO;
 import com.example.pregnancy_tracking.entity.*;
 import com.example.pregnancy_tracking.repository.*;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.util.Optional;
+
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,18 +32,19 @@ public class FetusRecordService {
     @Autowired
     private ReminderHealthAlertRepository reminderHealthAlertRepository;
 
-
     public List<FetusRecordDTO> getRecordsByFetusId(Long fetusId) {
         List<FetusRecord> records = fetusRecordRepository.findByFetusFetusIdOrderByWeekAsc(fetusId);
         return records.stream().map(FetusRecordDTO::new).collect(Collectors.toList());
     }
 
+    @Transactional
     public FetusRecord createRecord(Long fetusId, FetusRecordDTO recordDTO) {
         Fetus fetus = fetusRepository.findById(fetusId)
                 .orElseThrow(() -> new RuntimeException("Fetus not found"));
 
         Pregnancy pregnancy = fetus.getPregnancy();
         int week = pregnancy.getGestationalWeeks();
+        System.out.println("Pregnancy gestational weeks: " + week);
 
         boolean exists = fetusRecordRepository.existsByFetusFetusIdAndWeek(fetusId, week);
         if (exists) {
@@ -50,12 +54,15 @@ public class FetusRecordService {
         FetusRecord record = new FetusRecord();
         record.setFetus(fetus);
         record.setWeek(week);
-        record.setFetalWeight(recordDTO.getFetalWeight());
-        record.setCrownHeelLength(recordDTO.getCrownHeelLength());
-        record.setHeadCircumference(recordDTO.getHeadCircumference());
+        record.setFetalWeight(recordDTO.getFetalWeight() != null ? recordDTO.getFetalWeight() : BigDecimal.ZERO);
+        record.setCrownHeelLength(recordDTO.getCrownHeelLength() != null ? recordDTO.getCrownHeelLength() : BigDecimal.ZERO);
+        record.setHeadCircumference(recordDTO.getHeadCircumference() != null ? recordDTO.getHeadCircumference() : BigDecimal.ZERO);
+        record.setStatus(FetusRecordStatus.ACTIVE); // Mặc định là ACTIVE khi tạo mới
 
         return fetusRecordRepository.save(record);
     }
+
+    @Transactional
     public void updateRecordsForPregnancy(Long pregnancyId, Integer newWeeks) {
         Pregnancy pregnancy = pregnancyRepository.findById(pregnancyId)
                 .orElseThrow(() -> new RuntimeException("Pregnancy not found"));
@@ -68,6 +75,8 @@ public class FetusRecordService {
             fetusRecordRepository.save(record);
         }
     }
+
+    @Transactional
     public void checkFetusGrowth(FetusRecord record) {
         Integer fetusIndex = record.getFetus().getFetusIndex();
         Optional<PregnancyStandard> standardOpt =
@@ -80,10 +89,12 @@ public class FetusRecordService {
             if (record.getFetalWeight() != null) {
                 double minThreshold = standard.getMinWeight() * 1.1;
                 double maxThreshold = standard.getMaxWeight() * 0.9;
-                if (record.getFetalWeight() <= minThreshold || record.getFetalWeight() >= maxThreshold) {
+                if (record.getFetalWeight().compareTo(BigDecimal.valueOf(minThreshold)) <= 0 ||
+                        record.getFetalWeight().compareTo(BigDecimal.valueOf(maxThreshold)) >= 0) {
                     severity = SeverityLevel.LOW;
                 }
-                if (record.getFetalWeight() <= standard.getMinWeight() || record.getFetalWeight() >= standard.getMaxWeight()) {
+                if (record.getFetalWeight().compareTo(BigDecimal.valueOf(standard.getMinWeight())) <= 0 ||
+                        record.getFetalWeight().compareTo(BigDecimal.valueOf(standard.getMaxWeight())) >= 0) {
                     severity = SeverityLevel.MEDIUM;
                 }
             }
@@ -91,10 +102,12 @@ public class FetusRecordService {
             if (record.getCrownHeelLength() != null) {
                 double minThreshold = standard.getMinLength() * 1.1;
                 double maxThreshold = standard.getMaxLength() * 0.9;
-                if (record.getCrownHeelLength() <= minThreshold || record.getCrownHeelLength() >= maxThreshold) {
+                if (record.getCrownHeelLength().compareTo(BigDecimal.valueOf(minThreshold)) <= 0 ||
+                        record.getCrownHeelLength().compareTo(BigDecimal.valueOf(maxThreshold)) >= 0) {
                     severity = SeverityLevel.LOW;
                 }
-                if (record.getCrownHeelLength() <= standard.getMinLength() || record.getCrownHeelLength() >= standard.getMaxLength()) {
+                if (record.getCrownHeelLength().compareTo(BigDecimal.valueOf(standard.getMinLength())) <= 0 ||
+                        record.getCrownHeelLength().compareTo(BigDecimal.valueOf(standard.getMaxLength())) >= 0) {
                     severity = SeverityLevel.MEDIUM;
                 }
             }
@@ -102,15 +115,16 @@ public class FetusRecordService {
             if (record.getHeadCircumference() != null) {
                 double minThreshold = standard.getMinHeadCircumference() * 1.1;
                 double maxThreshold = standard.getMaxHeadCircumference() * 0.9;
-                if (record.getHeadCircumference() <= minThreshold || record.getHeadCircumference() >= maxThreshold) {
+                if (record.getHeadCircumference().compareTo(BigDecimal.valueOf(minThreshold)) <= 0 ||
+                        record.getHeadCircumference().compareTo(BigDecimal.valueOf(maxThreshold)) >= 0) {
                     severity = SeverityLevel.LOW;
                 }
-                if (record.getHeadCircumference() <= standard.getMinHeadCircumference() || record.getHeadCircumference() >= standard.getMaxHeadCircumference()) {
+                if (record.getHeadCircumference().compareTo(BigDecimal.valueOf(standard.getMinHeadCircumference())) <= 0 ||
+                        record.getHeadCircumference().compareTo(BigDecimal.valueOf(standard.getMaxHeadCircumference())) >= 0) {
                     severity = SeverityLevel.MEDIUM;
                 }
             }
 
-            // Nếu có cảnh báo, tạo ReminderHealthAlert
             if (severity != null) {
                 Reminder reminder = reminderRepository.findByPregnancyPregnancyId(record.getFetus().getPregnancy().getPregnancyId())
                         .stream().findFirst().orElseThrow(() -> new RuntimeException("No Reminder found"));
@@ -128,5 +142,4 @@ public class FetusRecordService {
             }
         }
     }
-
 }

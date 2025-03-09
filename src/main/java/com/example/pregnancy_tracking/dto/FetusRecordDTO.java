@@ -2,14 +2,17 @@ package com.example.pregnancy_tracking.dto;
 
 import com.example.pregnancy_tracking.entity.FetusRecord;
 import lombok.Data;
+import java.math.BigDecimal;
 
 @Data
 public class FetusRecordDTO {
     private Long recordId;
     private Integer week;
-    private Double fetalWeight;
-    private Double crownHeelLength;
-    private Double headCircumference;
+    private BigDecimal fetalWeight;
+    private BigDecimal crownHeelLength;
+    private BigDecimal headCircumference;
+
+    public FetusRecordDTO() {}
 
     public FetusRecordDTO(FetusRecord record) {
         this.recordId = record.getRecordId();
