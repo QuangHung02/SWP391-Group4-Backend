@@ -1,5 +1,6 @@
 package com.example.pregnancy_tracking.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
 @Entity
@@ -12,6 +13,7 @@ public class UserProfile {
 
     @OneToOne
     @JoinColumn(name = "user_id", nullable = false, unique = true)
+    @JsonBackReference
     private User user;
 
     @Column(name = "full_name", nullable = false, length = 100)
@@ -32,7 +34,6 @@ public class UserProfile {
         this.avatar = avatar;
     }
 
-    // Getter & Setter
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

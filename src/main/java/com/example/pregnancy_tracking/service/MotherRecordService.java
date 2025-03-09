@@ -12,8 +12,6 @@ import com.example.pregnancy_tracking.entity.AlertSource;
 import com.example.pregnancy_tracking.repository.MotherRecordRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.example.pregnancy_tracking.service.StandardService;
-import com.example.pregnancy_tracking.service.ReminderService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -65,7 +63,7 @@ public class MotherRecordService {
                 } else {
                     alert.setHealthType(HealthType.HIGH_BMI);
                 }
-                alert.setSeverity(SeverityLevel.MODERATE);
+                alert.setSeverity(SeverityLevel.MEDIUM);
                 alert.setSource(AlertSource.MOTHER_RECORDS);
                 alert.setNotes("Chỉ số BMI của mẹ vượt mức tiêu chuẩn.");
                 reminderService.createHealthAlert(alert);

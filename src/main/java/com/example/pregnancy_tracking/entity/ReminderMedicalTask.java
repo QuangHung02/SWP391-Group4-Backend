@@ -20,7 +20,7 @@ public class ReminderMedicalTask {
     private Integer week;
 
     @Enumerated(EnumType.STRING)
-    private TaskType taskType; // CHECK_UP, VACCINATION, TEST
+    private TaskType taskType;
 
     private String taskName;
     private String notes;
