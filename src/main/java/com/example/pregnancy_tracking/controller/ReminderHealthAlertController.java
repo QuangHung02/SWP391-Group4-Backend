@@ -1,6 +1,7 @@
 package com.example.pregnancy_tracking.controller;
 
-import com.example.pregnancy_tracking.service.ReminderHealthAlertService;
+import com.example.pregnancy_tracking.entity.ReminderHealthAlert;
+import com.example.pregnancy_tracking.repository.ReminderHealthAlertRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -9,8 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/health-alerts")
@@ -18,22 +18,17 @@ import java.util.Map;
 public class ReminderHealthAlertController {
 
     @Autowired
-    private ReminderHealthAlertService reminderHealthAlertService;
+    private ReminderHealthAlertRepository reminderHealthAlertRepository;
 
-    @Operation(summary = "Send Health Alert", description = "Triggers a health alert for a specific pregnancy ID.")
+    @Operation(summary = "Get all health alerts", description = "Retrieves all health alerts related to the user's pregnancy.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Health alert sent successfully"),
-            @ApiResponse(responseCode = "404", description = "Pregnancy not found"),
+            @ApiResponse(responseCode = "200", description = "Health alerts retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "No alerts found"),
             @ApiResponse(responseCode = "500", description = "Server error")
     })
-    @PostMapping("/{pregnancyId}")
-    public ResponseEntity<Map<String, String>> sendHealthAlert(@PathVariable Long pregnancyId) {
-        reminderHealthAlertService.sendHealthAlert(pregnancyId);
-
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Health alert sent successfully.");
-        response.put("pregnancyId", pregnancyId.toString());
-
-        return ResponseEntity.ok(response);
+    @GetMapping("/{userId}")
+    public ResponseEntity<List<ReminderHealthAlert>> getHealthAlertsByUser(@PathVariable Long userId) {
+        List<ReminderHealthAlert> alerts = reminderHealthAlertRepository.findByReminderUserId(userId);
+        return ResponseEntity.ok(alerts);
     }
 }

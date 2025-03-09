@@ -50,20 +50,16 @@ public class SubscriptionService {
         if (activeSubscription.isPresent()) {
             Subscription currentSub = activeSubscription.get();
             
-            // Nếu đăng ký cùng loại gói, gia hạn thêm thời gian
             if (currentSub.getMembershipPackage().getId().equals(packageId)) {
                 currentSub.setEndDate(currentSub.getEndDate().plusDays(newPackage.getDuration()));
                 return convertToDTO(subscriptionRepository.save(currentSub));
             }
             
-            // Nếu đăng ký gói cao cấp hơn
             if (newPackage.getPrice().compareTo(currentSub.getMembershipPackage().getPrice()) > 0) {
-                // Cập nhật trạng thái gói cũ thành Expired
                 currentSub.setStatus("Expired");
                 currentSub.setEndDate(LocalDate.now());
                 subscriptionRepository.save(currentSub);
                 
-                // Tạo gói mới với thời gian bắt đầu từ hiện tại
                 Subscription newSubscription = new Subscription();
                 newSubscription.setUser(user);
                 newSubscription.setMembershipPackage(newPackage);
@@ -75,7 +71,6 @@ public class SubscriptionService {
             }
         }
 
-        // Tạo subscription mới cho trường hợp chưa có gói active
         Subscription subscription = new Subscription();
         subscription.setUser(user);
         subscription.setMembershipPackage(newPackage);

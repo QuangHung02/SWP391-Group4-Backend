@@ -59,7 +59,7 @@ public class PregnancyController {
         return ResponseEntity.ok(updatedPregnancy);
     }
 
-    @Operation(summary = "Update pregnancy status", description = "Updates the status of a pregnancy (ONGOING, COMPLETED, MISCARRIAGE).")
+    @Operation(summary = "Update pregnancy status", description = "Updates the status of a pregnancy (ONGOING, COMPLETED).")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Pregnancy status updated successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid status value"),

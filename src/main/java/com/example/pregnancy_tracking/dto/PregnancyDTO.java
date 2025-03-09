@@ -9,4 +9,6 @@ public class PregnancyDTO {
     private LocalDate examDate;
     private Integer gestationalWeeks;
     private Integer gestationalDays;
+    private Integer totalFetuses;
 }
+

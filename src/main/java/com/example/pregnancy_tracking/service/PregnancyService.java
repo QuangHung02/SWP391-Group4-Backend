@@ -42,12 +42,16 @@ public class PregnancyService {
         User user = userRepository.findById(pregnancyDTO.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        boolean hasOngoingPregnancy = pregnancyRepository.existsByUserIdAndStatus(user.getId(), PregnancyStatus.ONGOING);
+        if (hasOngoingPregnancy) {
+            throw new IllegalStateException("User already has an ongoing pregnancy.");
+        }
+
         LocalDate examDate = pregnancyDTO.getExamDate();
         int totalDays = (pregnancyDTO.getGestationalWeeks() * 7) + pregnancyDTO.getGestationalDays();
         LocalDate startDate = examDate.minusDays(totalDays);
         LocalDate dueDate = startDate.plusDays(280);
 
-        // Cập nhật tổng số thai kỳ của user
         user.setTotalPregnancies(user.getTotalPregnancies() + 1);
         userRepository.save(user);
 
@@ -59,13 +63,30 @@ public class PregnancyService {
         pregnancy.setGestationalWeeks(pregnancyDTO.getGestationalWeeks());
         pregnancy.setGestationalDays(pregnancyDTO.getGestationalDays());
         pregnancy.setStatus(PregnancyStatus.ONGOING);
+        pregnancy.setTotalFetuses(pregnancyDTO.getTotalFetuses());
 
         LocalDateTime now = LocalDateTime.now();
         pregnancy.setCreatedAt(now);
         pregnancy.setLastUpdatedAt(now);
 
-        return pregnancyRepository.save(pregnancy);
+        Pregnancy savedPregnancy = pregnancyRepository.save(pregnancy);
+
+        for (int i = 1; i <= pregnancyDTO.getTotalFetuses(); i++) {
+            Fetus fetus = new Fetus();
+            fetus.setPregnancy(savedPregnancy);
+            fetus.setFetusIndex(i);
+            fetusRepository.save(fetus);
+        }
+
+        List<Fetus> fetuses = fetusRepository.findByPregnancyPregnancyId(savedPregnancy.getPregnancyId());
+        if (fetuses.size() != pregnancyDTO.getTotalFetuses()) {
+            throw new IllegalStateException("Mismatch: Expected " + pregnancyDTO.getTotalFetuses() +
+                    " fetuses but found " + fetuses.size());
+        }
+
+        return savedPregnancy;
     }
+
 
     public Pregnancy getPregnancyById(Long pregnancyId) {
         return pregnancyRepository.findById(pregnancyId)
@@ -108,7 +129,7 @@ public class PregnancyService {
         if (newStatus == PregnancyStatus.COMPLETED) {
             List<Fetus> fetuses = fetusRepository.findByPregnancyPregnancyId(pregnancyId);
             for (Fetus fetus : fetuses) {
-                List<FetusRecord> records = fetusRecordRepository.findByFetusFetusId(fetus.getFetusId());
+                List<FetusRecord> records = fetusRecordRepository.findByFetusFetusIdOrderByWeekAsc(fetus.getFetusId());
                 for (FetusRecord record : records) {
                     if (record.getStatus() == FetusRecordStatus.ACTIVE) {
                         record.setStatus(FetusRecordStatus.COMPLETED);
@@ -120,4 +141,5 @@ public class PregnancyService {
 
         return pregnancyRepository.save(pregnancy);
     }
+
 }

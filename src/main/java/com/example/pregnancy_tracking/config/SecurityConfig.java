@@ -38,7 +38,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("*")); // Chấp nhận mọi domain (có thể thay thế bằng FE domain cụ thể)
+        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
         configuration.setExposedHeaders(Arrays.asList("Authorization"));
@@ -56,7 +56,7 @@ public class SecurityConfig {
             AuthenticationProvider authenticationProvider) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // 🔥 Đảm bảo CORS được kích hoạt
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/user/register",
@@ -64,8 +64,8 @@ public class SecurityConfig {
                                 "/health/**",
                                 "/",
                                 "/error",
-                                "/swagger-ui/**",    // Added these two lines for Swagger support
-                                "/v3/api-docs/**"    // from the first version
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**"
                         ).permitAll()
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll())
@@ -76,8 +76,6 @@ public class SecurityConfig {
 
         return http.build();
     }
-
-
 
     @Bean
     public AuthenticationProvider authenticationProvider(UserDetailsService userDetailsService) {
@@ -94,7 +92,6 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        // Using the simple password encoder from the second version
         return new PasswordEncoder() {
             @Override
             public String encode(CharSequence rawPassword) {
