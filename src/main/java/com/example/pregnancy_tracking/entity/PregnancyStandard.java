@@ -1,10 +1,15 @@
 package com.example.pregnancy_tracking.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.math.BigDecimal;
 
 @Entity
 @Table(name = "PregnancyStandard")
+@Getter
+@Setter
 public class PregnancyStandard {
 
     @EmbeddedId
@@ -30,48 +35,4 @@ public class PregnancyStandard {
 
     @Column(name = "avg_weight")
     private BigDecimal avgWeight;
-
-    public PregnancyStandardId getId() {
-        return id;
-    }
-
-    public void setId(PregnancyStandardId id) {
-        this.id = id;
-    }
-
-    public Integer getWeek() {
-        return id.getWeek();
-    }
-
-    public Integer getFetusNumber() {
-        return id.getFetusNumber();
-    }
-
-    public BigDecimal getMinWeight() {
-        return minWeight;
-    }
-
-    public BigDecimal getMaxWeight() {
-        return maxWeight;
-    }
-
-    public BigDecimal getMinLength() {
-        return minLength;
-    }
-
-    public BigDecimal getMaxLength() {
-        return maxLength;
-    }
-
-    public BigDecimal getMinHeadCircumference() {
-        return minHeadCircumference;
-    }
-
-    public BigDecimal getMaxHeadCircumference() {
-        return maxHeadCircumference;
-    }
-
-    public BigDecimal getAvgWeight() {
-        return avgWeight;
-    }
 }

@@ -59,16 +59,9 @@ public class FetusRecordController {
             @ApiResponse(responseCode = "404", description = "No standards found"),
             @ApiResponse(responseCode = "500", description = "Server error")
     })
-    @GetMapping("/standards/{gestationalWeek}/{fetusNumber}")
-    public ResponseEntity<PregnancyStandardDTO> getPregnancyStandard(@PathVariable Integer gestationalWeek,
-                                                                     @PathVariable Integer fetusNumber) {
-        Optional<PregnancyStandard> standardOpt = standardService.getPregnancyStandard(gestationalWeek, fetusNumber);
-
-        if (standardOpt.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        PregnancyStandardDTO response = new PregnancyStandardDTO(standardOpt.get());
-        return ResponseEntity.ok(response);
+    @GetMapping("/standards/all")
+    public ResponseEntity<List<PregnancyStandardDTO>> getAllPregnancyStandards() {
+        return ResponseEntity.ok(standardService.getAllPregnancyStandards());
     }
 }
 

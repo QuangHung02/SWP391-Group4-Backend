@@ -23,4 +23,3 @@ public class Fetus {
     @Column(name = "fetus_index")
     private Integer fetusIndex;
 }
-

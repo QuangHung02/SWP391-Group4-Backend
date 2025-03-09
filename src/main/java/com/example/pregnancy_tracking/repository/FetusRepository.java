@@ -9,7 +9,4 @@ import java.util.List;
 @Repository
 public interface FetusRepository extends JpaRepository<Fetus, Long> {
     List<Fetus> findByPregnancyPregnancyId(Long pregnancyId);
-    long countByPregnancyPregnancyId(Long pregnancyId);
 }
-
-

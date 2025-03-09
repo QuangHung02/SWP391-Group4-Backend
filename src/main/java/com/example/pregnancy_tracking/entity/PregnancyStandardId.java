@@ -1,38 +1,23 @@
 package com.example.pregnancy_tracking.entity;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.io.Serializable;
 import java.util.Objects;
 
 @Embeddable
+@Getter
+@Setter
 public class PregnancyStandardId implements Serializable {
-    @Column(name = "week")
     private Integer week;
-
-    @Column(name = "fetus_number")
     private Integer fetusNumber;
 
     public PregnancyStandardId() {}
 
     public PregnancyStandardId(Integer week, Integer fetusNumber) {
         this.week = week;
-        this.fetusNumber = fetusNumber;
-    }
-
-    public Integer getWeek() {
-        return week;
-    }
-
-    public void setWeek(Integer week) {
-        this.week = week;
-    }
-
-    public Integer getFetusNumber() {
-        return fetusNumber;
-    }
-
-    public void setFetusNumber(Integer fetusNumber) {
         this.fetusNumber = fetusNumber;
     }
 

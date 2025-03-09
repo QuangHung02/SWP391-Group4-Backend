@@ -12,8 +12,6 @@ public class FetusRecordDTO {
     private BigDecimal crownHeelLength;
     private BigDecimal headCircumference;
 
-    public FetusRecordDTO() {}
-
     public FetusRecordDTO(FetusRecord record) {
         this.recordId = record.getRecordId();
         this.week = record.getWeek();

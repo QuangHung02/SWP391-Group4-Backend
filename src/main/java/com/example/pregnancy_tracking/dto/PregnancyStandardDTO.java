@@ -1,13 +1,11 @@
 package com.example.pregnancy_tracking.dto;
 
 import com.example.pregnancy_tracking.entity.PregnancyStandard;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import java.math.BigDecimal;
 
-@Getter
-@Setter
+@Data
 public class PregnancyStandardDTO {
     private Integer week;
     private Integer fetusNumber;
@@ -20,8 +18,8 @@ public class PregnancyStandardDTO {
     private BigDecimal avgWeight;
 
     public PregnancyStandardDTO(PregnancyStandard standard) {
-        this.week = standard.getWeek();
-        this.fetusNumber = standard.getFetusNumber();
+        this.week = standard.getId().getWeek();
+        this.fetusNumber = standard.getId().getFetusNumber();
         this.minWeight = standard.getMinWeight();
         this.maxWeight = standard.getMaxWeight();
         this.minLength = standard.getMinLength();
