@@ -138,4 +138,16 @@ public class UserService {
         User savedUser = userRepository.save(user);
         return new UserDTO(savedUser, savedUser.getUserProfile());
     }
+
+    public void deleteUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        // Check if trying to delete an admin
+        if (user.getRole() == Role.ADMIN) {
+            throw new RuntimeException("Cannot delete admin accounts");
+        }
+        
+        userRepository.delete(user);
+    }
 }

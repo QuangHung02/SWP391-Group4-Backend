@@ -1,6 +1,7 @@
 package com.example.pregnancy_tracking.entity;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity
 @Table(name = "UserProfiles", schema = "dbo")
@@ -11,7 +12,8 @@ public class UserProfile {
     private Long id;
 
     @OneToOne
-    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    @JoinColumn(name = "user_id")
+    @JsonBackReference
     private User user;
 
     @Column(name = "full_name", nullable = false, length = 100)
