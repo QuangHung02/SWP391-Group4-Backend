@@ -56,7 +56,6 @@ public class FetusRecordService {
         record.setFetalWeight(recordDTO.getFetalWeight() != null ? recordDTO.getFetalWeight() : BigDecimal.ZERO);
         record.setCrownHeelLength(recordDTO.getCrownHeelLength() != null ? recordDTO.getCrownHeelLength() : BigDecimal.ZERO);
         record.setHeadCircumference(recordDTO.getHeadCircumference() != null ? recordDTO.getHeadCircumference() : BigDecimal.ZERO);
-        record.setStatus(FetusRecordStatus.ACTIVE);
 
         return fetusRecordRepository.save(record);
     }
@@ -111,7 +110,8 @@ public class FetusRecordService {
             alert.setNotes("Fetus growth measurement out of normal range.");
             reminderHealthAlertRepository.save(alert);
 
-            record.setStatus(FetusRecordStatus.ISSUE);
+            Fetus fetus = record.getFetus();
+            fetus.setStatus(FetusStatus.ISSUE);
             fetusRecordRepository.save(record);
         }
     }

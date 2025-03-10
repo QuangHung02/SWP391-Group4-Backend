@@ -1,7 +1,9 @@
 package com.example.pregnancy_tracking.controller;
 
 import com.example.pregnancy_tracking.dto.PregnancyDTO;
+import com.example.pregnancy_tracking.dto.PregnancyResponseDTO;
 import com.example.pregnancy_tracking.dto.PregnancyStatusDTO;
+import com.example.pregnancy_tracking.entity.FetusStatus;
 import com.example.pregnancy_tracking.entity.Pregnancy;
 import com.example.pregnancy_tracking.service.PregnancyService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -61,7 +63,7 @@ public class PregnancyController {
         return ResponseEntity.ok(updatedPregnancy);
     }
 
-    @Operation(summary = "Update pregnancy status", description = "Updates the status of a pregnancy (ONGOING, COMPLETED).")
+    @Operation(summary = "Update pregnancy status", description = "Updates the status of a pregnancy and its fetuses.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Pregnancy status updated successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid status value"),
@@ -69,10 +71,10 @@ public class PregnancyController {
             @ApiResponse(responseCode = "500", description = "Server error")
     })
     @PatchMapping("/{id}/status")
-    public ResponseEntity<Pregnancy> updatePregnancyStatus(@PathVariable Long id,
-                                                           @Valid @RequestBody PregnancyStatusDTO statusDTO) {
-        Pregnancy updatedPregnancy = pregnancyService.updatePregnancyStatus(id, statusDTO.getStatus());
-        return ResponseEntity.ok(updatedPregnancy);
+    public ResponseEntity<Void> updatePregnancyStatus(@PathVariable Long id,
+                                                      @Valid @RequestBody PregnancyStatusDTO statusDTO) {
+        pregnancyService.updatePregnancyStatus(id, statusDTO.getStatus());
+        return ResponseEntity.ok().build();
     }
     @Operation(summary = "Get pregnancies by User ID", description = "Retrieves all pregnancies of a specific user.")
     @ApiResponses(value = {
@@ -93,9 +95,22 @@ public class PregnancyController {
             @ApiResponse(responseCode = "500", description = "Server error")
     })
     @GetMapping("/ongoing/{userId}")
-    public ResponseEntity<Pregnancy> getOngoingPregnancyByUserId(@PathVariable Long userId) {
-        Pregnancy pregnancy = pregnancyService.getOngoingPregnancyByUserId(userId);
+    public ResponseEntity<PregnancyResponseDTO> getOngoingPregnancyByUserId(@PathVariable Long userId) {
+        PregnancyResponseDTO pregnancy = pregnancyService.getOngoingPregnancyByUserId(userId);
         return ResponseEntity.ok(pregnancy);
+    }
+
+    @Operation(summary = "Update Fetus Status", description = "Updates the status of a specific fetus.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Fetus status updated successfully"),
+            @ApiResponse(responseCode = "404", description = "Fetus not found"),
+            @ApiResponse(responseCode = "500", description = "Server error")
+    })
+    @PatchMapping("/fetus/{fetusId}/status")
+    public ResponseEntity<Void> updateFetusStatus(@PathVariable Long fetusId,
+                                                  @RequestParam FetusStatus status) {
+        pregnancyService.updateFetusStatus(fetusId, status);
+        return ResponseEntity.ok().build();
     }
 
 }

@@ -1,11 +1,7 @@
 package com.example.pregnancy_tracking.service;
 
-import com.example.pregnancy_tracking.entity.Fetus;
-import com.example.pregnancy_tracking.entity.FetusRecord;
-import com.example.pregnancy_tracking.entity.FetusRecordStatus;
-import com.example.pregnancy_tracking.entity.Pregnancy;
-import com.example.pregnancy_tracking.entity.PregnancyStatus;
-import com.example.pregnancy_tracking.entity.User;
+import com.example.pregnancy_tracking.dto.PregnancyResponseDTO;
+import com.example.pregnancy_tracking.entity.*;
 import com.example.pregnancy_tracking.repository.FetusRecordRepository;
 import com.example.pregnancy_tracking.repository.FetusRepository;
 import com.example.pregnancy_tracking.repository.PregnancyRepository;
@@ -119,34 +115,51 @@ public class PregnancyService {
         return pregnancy;
     }
 
-    public Pregnancy updatePregnancyStatus(Long pregnancyId, PregnancyStatus newStatus) {
+    public void updatePregnancyStatus(Long pregnancyId, PregnancyStatus newStatus) {
         Pregnancy pregnancy = pregnancyRepository.findById(pregnancyId)
                 .orElseThrow(() -> new RuntimeException("Pregnancy not found"));
 
         pregnancy.setStatus(newStatus);
-        pregnancy.setLastUpdatedAt(LocalDateTime.now());
 
-        if (newStatus == PregnancyStatus.COMPLETED) {
-            List<Fetus> fetuses = fetusRepository.findByPregnancyPregnancyId(pregnancyId);
-            for (Fetus fetus : fetuses) {
-                List<FetusRecord> records = fetusRecordRepository.findByFetusFetusIdOrderByWeekAsc(fetus.getFetusId());
-                for (FetusRecord record : records) {
-                    if (record.getStatus() == FetusRecordStatus.ACTIVE) {
-                        record.setStatus(FetusRecordStatus.COMPLETED);
-                        fetusRecordRepository.save(record);
-                    }
-                }
+        List<Fetus> fetuses = fetusRepository.findByPregnancyPregnancyId(pregnancyId);
+        for (Fetus fetus : fetuses) {
+            if (newStatus == PregnancyStatus.COMPLETED) {
+                fetus.setStatus(FetusStatus.COMPLETED);
+            } else if (newStatus == PregnancyStatus.ONGOING) {
+                fetus.setStatus(FetusStatus.ACTIVE);
             }
+            fetusRepository.save(fetus);
         }
 
-        return pregnancyRepository.save(pregnancy);
+        pregnancyRepository.save(pregnancy);
     }
     public List<Pregnancy> getPregnanciesByUserId(Long userId) {
         return pregnancyRepository.findByUserId(userId);
     }
-    public Pregnancy getOngoingPregnancyByUserId(Long userId) {
-        return pregnancyRepository.findByUserIdAndStatus(userId, PregnancyStatus.ONGOING)
+    public PregnancyResponseDTO getOngoingPregnancyByUserId(Long userId) {
+        Pregnancy pregnancy = pregnancyRepository.findByUserIdAndStatus(userId, PregnancyStatus.ONGOING)
                 .orElseThrow(() -> new RuntimeException("No ongoing pregnancy found for user ID: " + userId));
+
+        return convertToDTO(pregnancy);
+    }
+    public void updateFetusStatus(Long fetusId, FetusStatus newStatus) {
+        Fetus fetus = fetusRepository.findById(fetusId)
+                .orElseThrow(() -> new RuntimeException("Fetus not found"));
+        fetus.setStatus(newStatus);
+        fetusRepository.save(fetus);
+    }
+    private PregnancyResponseDTO convertToDTO(Pregnancy pregnancy) {
+        PregnancyResponseDTO dto = new PregnancyResponseDTO();
+        dto.setPregnancyId(pregnancy.getPregnancyId());
+        dto.setUserId(pregnancy.getUser().getId());
+        dto.setStartDate(pregnancy.getStartDate());
+        dto.setDueDate(pregnancy.getDueDate());
+        dto.setExamDate(pregnancy.getExamDate());
+        dto.setGestationalWeeks(pregnancy.getGestationalWeeks());
+        dto.setGestationalDays(pregnancy.getGestationalDays());
+        dto.setStatus(pregnancy.getStatus());
+        dto.setFetuses(pregnancy.getFetuses());
+        return dto;
     }
 
 

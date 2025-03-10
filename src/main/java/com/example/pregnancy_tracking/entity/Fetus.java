@@ -22,4 +22,8 @@ public class Fetus {
 
     @Column(name = "fetus_index")
     private Integer fetusIndex;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 20, nullable = false)
+    private FetusStatus status;
 }
