@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/pregnancies")
 @CrossOrigin(origins = "*")
@@ -72,4 +74,28 @@ public class PregnancyController {
         Pregnancy updatedPregnancy = pregnancyService.updatePregnancyStatus(id, statusDTO.getStatus());
         return ResponseEntity.ok(updatedPregnancy);
     }
+    @Operation(summary = "Get pregnancies by User ID", description = "Retrieves all pregnancies of a specific user.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Pregnancies retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "User not found"),
+            @ApiResponse(responseCode = "500", description = "Server error")
+    })
+    @GetMapping("/{userId}")
+    public ResponseEntity<List<Pregnancy>> getPregnanciesByUserId(@PathVariable Long userId) {
+        List<Pregnancy> pregnancies = pregnancyService.getPregnanciesByUserId(userId);
+        return ResponseEntity.ok(pregnancies);
+    }
+    @Operation(summary = "Get ongoing pregnancy by User ID",
+            description = "Retrieves the full details of the ongoing pregnancy for a specific user, including fetus data.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Ongoing pregnancy retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "No ongoing pregnancy found"),
+            @ApiResponse(responseCode = "500", description = "Server error")
+    })
+    @GetMapping("/ongoing/{userId}")
+    public ResponseEntity<Pregnancy> getOngoingPregnancyByUserId(@PathVariable Long userId) {
+        Pregnancy pregnancy = pregnancyService.getOngoingPregnancyByUserId(userId);
+        return ResponseEntity.ok(pregnancy);
+    }
+
 }

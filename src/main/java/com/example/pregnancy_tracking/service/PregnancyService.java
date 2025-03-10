@@ -141,5 +141,13 @@ public class PregnancyService {
 
         return pregnancyRepository.save(pregnancy);
     }
+    public List<Pregnancy> getPregnanciesByUserId(Long userId) {
+        return pregnancyRepository.findByUserId(userId);
+    }
+    public Pregnancy getOngoingPregnancyByUserId(Long userId) {
+        return pregnancyRepository.findByUserIdAndStatus(userId, PregnancyStatus.ONGOING)
+                .orElseThrow(() -> new RuntimeException("No ongoing pregnancy found for user ID: " + userId));
+    }
+
 
 }

@@ -8,9 +8,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PregnancyRepository extends JpaRepository<Pregnancy, Long> {
     List<Pregnancy> findByUser(User user);
     boolean existsByUserIdAndStatus(Long userId, PregnancyStatus status);
+    List<Pregnancy> findByUserId(Long userId);
+    Optional<Pregnancy> findByUserIdAndStatus(Long userId, PregnancyStatus status);
+
 }
