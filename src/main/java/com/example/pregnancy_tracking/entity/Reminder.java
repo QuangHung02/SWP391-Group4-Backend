@@ -1,5 +1,6 @@
 package com.example.pregnancy_tracking.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,10 +17,12 @@ public class Reminder {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore
     private User user;
 
     @ManyToOne
     @JoinColumn(name = "pregnancy_id", nullable = false)
+    @JsonIgnore
     private Pregnancy pregnancy;
 
     @Enumerated(EnumType.STRING)
