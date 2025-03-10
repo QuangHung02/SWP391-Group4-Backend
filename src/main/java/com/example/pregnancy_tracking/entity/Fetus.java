@@ -27,3 +27,4 @@ public class Fetus {
     @Column(name = "status", length = 20, nullable = false)
     private FetusStatus status;
 }
+
