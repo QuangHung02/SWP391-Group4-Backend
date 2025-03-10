@@ -46,7 +46,8 @@ public class FetusRecordService {
         int week = pregnancy.getGestationalWeeks();
         System.out.println("Pregnancy gestational weeks: " + week);
 
-        if (fetusRecordRepository.existsByFetusFetusIdAndWeek(fetusId, week)) {
+        boolean exists = fetusRecordRepository.existsByFetusFetusIdAndWeek(fetusId, week);
+        if (exists) {
             throw new IllegalArgumentException("FetusRecord for this week already exists.");
         }
 
@@ -56,6 +57,7 @@ public class FetusRecordService {
         record.setFetalWeight(recordDTO.getFetalWeight() != null ? recordDTO.getFetalWeight() : BigDecimal.ZERO);
         record.setCrownHeelLength(recordDTO.getCrownHeelLength() != null ? recordDTO.getCrownHeelLength() : BigDecimal.ZERO);
         record.setHeadCircumference(recordDTO.getHeadCircumference() != null ? recordDTO.getHeadCircumference() : BigDecimal.ZERO);
+        record.setStatus(FetusRecordStatus.ACTIVE); // Mặc định là ACTIVE khi tạo mới
 
         return fetusRecordRepository.save(record);
     }
@@ -116,19 +118,71 @@ public class FetusRecordService {
         }
     }
 
-    private SeverityLevel checkThreshold(BigDecimal value, BigDecimal min, BigDecimal max, SeverityLevel currentSeverity) {
-        if (min == null || max == null) return currentSeverity;
+    @Transactional
+    public void checkFetusGrowth(FetusRecord record) {
+        Integer fetusIndex = record.getFetus().getFetusIndex();
+        Optional<PregnancyStandard> standardOpt =
+                pregnancyStandardRepository.findByWeekAndFetusNumber(record.getWeek(), fetusIndex);
 
-        BigDecimal minThreshold = min.multiply(BigDecimal.valueOf(1.1));
-        BigDecimal maxThreshold = max.multiply(BigDecimal.valueOf(0.9));
+        if (standardOpt.isPresent()) {
+            PregnancyStandard standard = standardOpt.get();
+            SeverityLevel severity = null;
 
-        if (value.compareTo(minThreshold) <= 0 || value.compareTo(maxThreshold) >= 0) {
-            return SeverityLevel.LOW;
+            if (record.getFetalWeight() != null) {
+                double minThreshold = standard.getMinWeight() * 1.1;
+                double maxThreshold = standard.getMaxWeight() * 0.9;
+                if (record.getFetalWeight().compareTo(BigDecimal.valueOf(minThreshold)) <= 0 ||
+                        record.getFetalWeight().compareTo(BigDecimal.valueOf(maxThreshold)) >= 0) {
+                    severity = SeverityLevel.LOW;
+                }
+                if (record.getFetalWeight().compareTo(BigDecimal.valueOf(standard.getMinWeight())) <= 0 ||
+                        record.getFetalWeight().compareTo(BigDecimal.valueOf(standard.getMaxWeight())) >= 0) {
+                    severity = SeverityLevel.MEDIUM;
+                }
+            }
+
+            if (record.getCrownHeelLength() != null) {
+                double minThreshold = standard.getMinLength() * 1.1;
+                double maxThreshold = standard.getMaxLength() * 0.9;
+                if (record.getCrownHeelLength().compareTo(BigDecimal.valueOf(minThreshold)) <= 0 ||
+                        record.getCrownHeelLength().compareTo(BigDecimal.valueOf(maxThreshold)) >= 0) {
+                    severity = SeverityLevel.LOW;
+                }
+                if (record.getCrownHeelLength().compareTo(BigDecimal.valueOf(standard.getMinLength())) <= 0 ||
+                        record.getCrownHeelLength().compareTo(BigDecimal.valueOf(standard.getMaxLength())) >= 0) {
+                    severity = SeverityLevel.MEDIUM;
+                }
+            }
+
+            if (record.getHeadCircumference() != null) {
+                double minThreshold = standard.getMinHeadCircumference() * 1.1;
+                double maxThreshold = standard.getMaxHeadCircumference() * 0.9;
+                if (record.getHeadCircumference().compareTo(BigDecimal.valueOf(minThreshold)) <= 0 ||
+                        record.getHeadCircumference().compareTo(BigDecimal.valueOf(maxThreshold)) >= 0) {
+                    severity = SeverityLevel.LOW;
+                }
+                if (record.getHeadCircumference().compareTo(BigDecimal.valueOf(standard.getMinHeadCircumference())) <= 0 ||
+                        record.getHeadCircumference().compareTo(BigDecimal.valueOf(standard.getMaxHeadCircumference())) >= 0) {
+                    severity = SeverityLevel.MEDIUM;
+                }
+            }
+
+            if (severity != null) {
+                Reminder reminder = reminderRepository.findByPregnancyPregnancyId(record.getFetus().getPregnancy().getPregnancyId())
+                        .stream().findFirst().orElseThrow(() -> new RuntimeException("No Reminder found"));
+
+                ReminderHealthAlert alert = new ReminderHealthAlert();
+                alert.setReminder(reminder);
+                alert.setHealthType(HealthType.FETUS_GROWTH);
+                alert.setSeverity(severity);
+                alert.setSource(AlertSource.SYSTEM);
+                alert.setNotes("Fetus growth measurement out of normal range.");
+                reminderHealthAlertRepository.save(alert);
+
+                record.setStatus(FetusRecordStatus.ISSUE);
+                fetusRecordRepository.save(record);
+            }
         }
-        if (value.compareTo(min) <= 0 || value.compareTo(max) >= 0) {
-            return SeverityLevel.MEDIUM;
-        }
-        return currentSeverity;
     }
 
 }

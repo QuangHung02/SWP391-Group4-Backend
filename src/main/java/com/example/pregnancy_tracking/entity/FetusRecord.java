@@ -33,7 +33,11 @@ public class FetusRecord {
 
     @Column(name = "head_circumference", precision = 5, scale = 2)
     private BigDecimal headCircumference;
-    
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 20)
+    private FetusRecordStatus status;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

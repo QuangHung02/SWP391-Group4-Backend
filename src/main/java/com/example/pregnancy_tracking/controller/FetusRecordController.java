@@ -15,7 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -50,6 +49,22 @@ public class FetusRecordController {
     @GetMapping("/{fetusId}")
     public ResponseEntity<List<FetusRecordDTO>> getRecordsByFetusId(@PathVariable Long fetusId) {
         List<FetusRecordDTO> response = fetusRecordService.getRecordsByFetusId(fetusId);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "Get Pregnancy Standards", description = "Retrieves standard values for a specific gestational week and fetus index.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Standards retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "No standards found"),
+            @ApiResponse(responseCode = "500", description = "Server error")
+    })
+    @GetMapping("/standards/{gestationalWeek}/{fetusIndex}")
+    public ResponseEntity<PregnancyStandardDTO> getPregnancyStandard(@PathVariable Integer gestationalWeek,
+                                                                     @PathVariable Integer fetusIndex) {
+        PregnancyStandard standard = standardService.getPregnancyStandard(gestationalWeek, fetusIndex)
+                .orElseThrow(() -> new RuntimeException("Standard data not found"));
+
+        PregnancyStandardDTO response = new PregnancyStandardDTO(standard);
         return ResponseEntity.ok(response);
     }
 

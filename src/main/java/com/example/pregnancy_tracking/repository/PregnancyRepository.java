@@ -14,7 +14,4 @@ import java.util.Optional;
 public interface PregnancyRepository extends JpaRepository<Pregnancy, Long> {
     List<Pregnancy> findByUser(User user);
     boolean existsByUserIdAndStatus(Long userId, PregnancyStatus status);
-    List<Pregnancy> findByUserId(Long userId);
-    Optional<Pregnancy> findByUserIdAndStatus(Long userId, PregnancyStatus status);
-
 }

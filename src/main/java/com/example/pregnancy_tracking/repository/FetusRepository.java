@@ -9,5 +9,7 @@ import java.util.List;
 @Repository
 public interface FetusRepository extends JpaRepository<Fetus, Long> {
     List<Fetus> findByPregnancyPregnancyId(Long pregnancyId);
-    List<Fetus> findByPregnancyPregnancyIdAndStatus(Long pregnancyId, FetusStatus status);
+    long countByPregnancyPregnancyId(Long pregnancyId);
 }
+
+
