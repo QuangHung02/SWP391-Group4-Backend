@@ -1,0 +1,46 @@
+[33m7b3fe54[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Merge pull request #7 from QuangHung02/HUNG
+[33m5004ab0[m[33m ([m[1;31morigin/HUNG[m[33m)[m Merge branch 'main' into HUNG
+[33m6727097[m[33m ([m[1;32mHUNG[m[33m)[m Lưu thay đổi trước khi merge
+[33mbc02a8c[m RESOLVE Status issue relate to fetus and fetus record
+[33m6c94df6[m Apply stashed changes after pull
+[33m4356330[m Ignore log files
+[33m0215f7d[m Ignore log files
+[33m1bdb311[m update method
+[33mfea9ed5[m Ignore log files
+[33mff78538[m Save local changes before rebase
+[33mf1a6f01[m Save local changes before rebase
+[33mfb4c00e[m Update method
+[33m0377c2a[m Ignore logs directory
+[33maea1c82[m Fix bug match fe
+[33m60508f8[m  Update Function
+[33m585c22f[m Merge branch 'main' of https://github.com/QuangHung02/SWP391-Group4-Backend
+[33mac8807e[m Update PregnancyService.java
+[33m4fe9b88[m  fix mirror bug
+[33m4cc2350[m Update FetusRecordController.java
+[33mcbc8e65[m Resolve merge conflicts between swagger and main
+[33m3700a0b[m[33m ([m[1;31morigin/swagger[m[33m, [m[1;32mswagger[m[33m)[m Fixing
+[33m21f037f[m Rename class, fixing logic
+[33m5482e48[m merge khoa and swagger
+[33m35ec118[m merge khoa and swagger
+[33m54cb10c[m  Delete all Test Cases relate
+[33m2c82fae[m Update Security CORs
+[33m2154011[m update Swagger
+[33m7d202d6[m Merge pull request #4 from QuangHung02/swagger
+[33mf84a16f[m Downgrade spring boot
+[33m2d317e8[m Merge pull request #3 from QuangHung02/swagger
+[33mc6ef57d[m fix syntax error
+[33m7d4dc38[m Merge pull request #2 from QuangHung02/swagger
+[33m98f1dba[m Add Swagger integration
+[33m8f28811[m[33m ([m[1;31morigin/feature/pregnancies-api[m[33m, [m[1;32mfeature/pregnancies-api[m[33m)[m Update Pregnancies
+[33m8d0c773[m Update PregnancyRecord/Standard
+[33m277957d[m Cleanup: Removed unused classes, kept ReminderHealthAlertController & Service
+[33m8c313ed[m Restore pregnancies files after stash
+[33mc75a7b6[m update controller
+[33mea590a2[m merge Khoa and Main
+[33m20eb88a[m Merge pull request #1 from QuangHung02/feature/user-api
+[33madfc4f0[m[33m ([m[1;31morigin/feature/user-api[m[33m, [m[1;32mfeature/user-api[m[33m)[m Fix UserAPI, add UserProfile
+[33m8f5fb46[m Update,get,show all
+[33m03a2491[m Code User Entity
+[33mc07904a[m Initialize User API structure
+[33m1b7500c[m[33m ([m[1;31morigin/setup/backend-structure[m[33m, [m[1;32msetup/backend-structure[m[33m)[m backend setup
+[33md207f69[m Initial commit

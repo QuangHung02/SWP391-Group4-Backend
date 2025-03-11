@@ -82,11 +82,12 @@ public class PregnancyController {
             @ApiResponse(responseCode = "404", description = "User not found"),
             @ApiResponse(responseCode = "500", description = "Server error")
     })
-    @GetMapping("/{userId}")
+    @GetMapping("/user/{userId}")
     public ResponseEntity<List<Pregnancy>> getPregnanciesByUserId(@PathVariable Long userId) {
         List<Pregnancy> pregnancies = pregnancyService.getPregnanciesByUserId(userId);
         return ResponseEntity.ok(pregnancies);
     }
+
     @Operation(summary = "Get ongoing pregnancy by User ID",
             description = "Retrieves the full details of the ongoing pregnancy for a specific user, including fetus data.")
     @ApiResponses(value = {
