@@ -10,8 +10,10 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CommentRequest {
-    @NotBlank(message = "Content is required")
+    @NotBlank
     private String content;
-
-    private List<String> mediaUrls; // Optional media URLs
+    
+    private List<String> mediaUrls;
+    
+    private Boolean isAnonymous = false; 
 }

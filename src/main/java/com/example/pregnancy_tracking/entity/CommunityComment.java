@@ -22,16 +22,19 @@ public class CommunityComment {
     private Long commentId;
 
     @ManyToOne
-    @JoinColumn(name = "post_id")
+    @JoinColumn(name = "post_id", nullable = false)
     @JsonBackReference("post-comments")
     private CommunityPost post;
 
     @ManyToOne
-    @JoinColumn(name = "author_id")
+    @JoinColumn(name = "author_id", nullable = false)
     private User author;
 
-    @Column(name = "content", nullable = false)
+    @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     private String content;
+
+    @Column(name = "isAnonymous")
+    private Boolean isAnonymous = false;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

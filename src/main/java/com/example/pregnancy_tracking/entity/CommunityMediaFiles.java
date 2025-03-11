@@ -4,11 +4,15 @@ import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor; 
 
 @Entity
-@Table(name = "MediaFiles")
+@Table(name = "CommunityMediaFiles")
 @Data
-public class MediaFile {
+@NoArgsConstructor
+@AllArgsConstructor
+public class CommunityMediaFiles {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "media_id")
@@ -24,7 +28,7 @@ public class MediaFile {
     @JsonBackReference("comment-media")
     private CommunityComment comment;
 
-    @Column(name = "media_url")
+    @Column(name = "media_url", nullable = false)
     private String mediaUrl;
 
     @Column(name = "uploaded_at")

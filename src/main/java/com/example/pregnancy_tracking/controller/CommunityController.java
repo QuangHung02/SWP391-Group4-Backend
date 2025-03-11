@@ -74,6 +74,11 @@ public class CommunityController {
         return ResponseEntity.ok(communityService.getAllPosts());
     }
 
+    @GetMapping("/posts/{postId}")
+    public ResponseEntity<CommunityPost> getPostById(@PathVariable Long postId) {
+        return ResponseEntity.ok(communityService.getPostById(postId));
+    }
+
     @GetMapping("/posts/{postId}/comments")
     public ResponseEntity<List<CommunityComment>> getPostComments(@PathVariable Long postId) {
         return ResponseEntity.ok(communityService.getCommentsByPostId(postId));

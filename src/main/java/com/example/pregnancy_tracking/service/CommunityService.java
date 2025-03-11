@@ -28,11 +28,11 @@ public class CommunityService {
         post.setTitle(request.getTitle());
         post.setContent(request.getContent());
         post.setAuthor(author);
+        post.setIsAnonymous(request.getIsAnonymous());
         post.setCreatedAt(LocalDateTime.now());
         
         post = postRepository.save(post);
 
-        // Save media files if any
         if (request.getMediaUrls() != null && !request.getMediaUrls().isEmpty()) {
             for (String mediaUrl : request.getMediaUrls()) {
                 MediaFile mediaFile = new MediaFile();
@@ -57,11 +57,11 @@ public class CommunityService {
         comment.setPost(post);
         comment.setAuthor(author);
         comment.setContent(request.getContent());
+        comment.setIsAnonymous(request.getIsAnonymous());
         comment.setCreatedAt(LocalDateTime.now());
         
         comment = commentRepository.save(comment);
 
-        // Save media files if any
         if (request.getMediaUrls() != null && !request.getMediaUrls().isEmpty()) {
             for (String mediaUrl : request.getMediaUrls()) {
                 MediaFile mediaFile = new MediaFile();
@@ -105,5 +105,10 @@ public class CommunityService {
         CommunityPost post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
         return post.getComments();
+    }
+
+    public CommunityPost getPostById(Long postId) {
+        return postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
     }
 }

@@ -22,12 +22,15 @@ public class CommunityPost {
     @Column(name = "title", nullable = false)
     private String title;
 
-    @Column(name = "content", nullable = false)
+    @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     private String content;
 
     @ManyToOne
     @JoinColumn(name = "author_id", nullable = false)
     private User author;
+
+    @Column(name = "isAnonymous")
+    private Boolean isAnonymous = false;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
