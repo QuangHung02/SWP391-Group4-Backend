@@ -37,7 +37,7 @@ public class CommunityPost {
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference("post-media")
-    private List<MediaFile> mediaFiles;
+    private List<CommunityMediaFiles> mediaFiles;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference("post-comments")
