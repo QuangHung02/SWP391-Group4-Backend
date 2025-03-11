@@ -1,7 +1,7 @@
 package com.example.pregnancy_tracking.entity;
 
-import jakarta.persistence.*;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "UserProfiles", schema = "dbo")
@@ -34,7 +34,6 @@ public class UserProfile {
         this.avatar = avatar;
     }
 
-    // Getter & Setter
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

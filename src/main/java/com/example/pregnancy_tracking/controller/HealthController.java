@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/health") // Nhóm API kiểm tra hệ thống
+@RequestMapping("/health")
 public class HealthController {
 
     @Autowired

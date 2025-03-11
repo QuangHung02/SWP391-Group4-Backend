@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 public class MomStandard {
     @Id
-    private Integer week;  // Tuần thai là khóa chính
+    private Integer week;
 
     private Double minWeight;
     private Double maxWeight;
