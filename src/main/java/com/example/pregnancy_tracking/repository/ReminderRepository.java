@@ -8,6 +8,6 @@ import java.util.List;
 
 @Repository
 public interface ReminderRepository extends JpaRepository<Reminder, Long> {
-    List<Reminder> findByUserId(Long id);
+    List<Reminder> findByUserId(Long userId);
     List<Reminder> findByPregnancyPregnancyId(Long pregnancyId);
 }
