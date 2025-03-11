@@ -28,11 +28,14 @@ public class HomeController {
         response.put("service", "Pregnancy Tracking API");
         response.put("version", "1.0");
         response.put("endpoints", new String[]{
-                "/api/user/register",
-                "/api/user/login",
-                "/api/user/all",
-                "/api/user/{id}",
-                "/api/user/change-password"
+                "/api/auth/register",
+                "/api/auth/login",
+                "/api/users",
+                "/api/users/{id}",
+                "/api/users/profile",
+                "/api/users/change-password",
+                "/api/membership/packages",
+                "/api/membership/upgrade"
         });
 
         return ResponseEntity.ok(response);

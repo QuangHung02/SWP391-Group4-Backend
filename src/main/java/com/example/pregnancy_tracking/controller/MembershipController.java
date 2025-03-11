@@ -1,5 +1,9 @@
 package com.example.pregnancy_tracking.controller;
 
+// Thêm import
+import jakarta.validation.Valid;
+import com.example.pregnancy_tracking.dto.UpdatePackagePriceDTO;
+
 import com.example.pregnancy_tracking.dto.MembershipPackageDTO;
 import com.example.pregnancy_tracking.dto.SubscriptionDTO;
 import com.example.pregnancy_tracking.service.MembershipService;
@@ -44,5 +48,21 @@ public class MembershipController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<SubscriptionDTO>> getAllSubscriptions() {
         return ResponseEntity.ok(subscriptionService.getAllSubscriptions());
+    }
+
+    @PutMapping("/packages/{packageId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<MembershipPackageDTO> updatePackage(
+            @PathVariable Long packageId,
+            @Valid @RequestBody MembershipPackageDTO packageDTO) {
+        return ResponseEntity.ok(membershipService.updatePackage(packageId, packageDTO));
+    }
+
+    @PutMapping("/packages/{packageId}/price")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<MembershipPackageDTO> updatePackagePrice(
+            @PathVariable Long packageId,
+            @Valid @RequestBody UpdatePackagePriceDTO priceDTO) {
+        return ResponseEntity.ok(membershipService.updatePackagePrice(packageId, priceDTO));
     }
 }

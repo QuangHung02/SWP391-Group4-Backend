@@ -63,4 +63,18 @@ public class UserController {
         userService.changePassword(email, request);
         return ResponseEntity.ok("Password changed successfully!");
     }
+
+    @Operation(summary = "Delete user", description = "Deletes a user account from the system (Admin only).")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User deleted successfully"),
+            @ApiResponse(responseCode = "403", description = "Access denied - Admin only"),
+            @ApiResponse(responseCode = "404", description = "User not found"),
+            @ApiResponse(responseCode = "500", description = "Server error")
+    })
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
+        return ResponseEntity.ok("User deleted successfully");
+    }
 }
