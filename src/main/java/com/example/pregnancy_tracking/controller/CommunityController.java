@@ -14,10 +14,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
+import java.util.List;  
 
 @RestController
 @RequestMapping("/api/community")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*", allowedHeaders = "*")  
 public class CommunityController {
     private final CommunityService communityService;
 
@@ -64,5 +66,16 @@ public class CommunityController {
     public ResponseEntity<String> deleteComment(@PathVariable Long commentId) {
         communityService.deleteComment(commentId);
         return ResponseEntity.ok("Comment deleted successfully");
+    }
+
+    @GetMapping("/posts")
+    @CrossOrigin(origins = "*")  // Có thể thêm cho từng method
+    public ResponseEntity<List<CommunityPost>> getAllPosts() {
+        return ResponseEntity.ok(communityService.getAllPosts());
+    }
+
+    @GetMapping("/posts/{postId}/comments")
+    public ResponseEntity<List<CommunityComment>> getPostComments(@PathVariable Long postId) {
+        return ResponseEntity.ok(communityService.getCommentsByPostId(postId));
     }
 }

@@ -10,6 +10,7 @@ import com.example.pregnancy_tracking.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -94,5 +95,15 @@ public class CommunityService {
         
         // Delete the comment
         commentRepository.delete(comment);
+    }
+
+    public List<CommunityPost> getAllPosts() {
+        return postRepository.findAll();
+    }
+
+    public List<CommunityComment> getCommentsByPostId(Long postId) {
+        CommunityPost post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+        return post.getComments();
     }
 }
