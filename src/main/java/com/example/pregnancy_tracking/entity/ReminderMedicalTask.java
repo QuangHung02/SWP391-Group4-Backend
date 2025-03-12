@@ -7,27 +7,24 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "ReminderHealthAlerts")
+@Table(name = "ReminderMedicalTasks")
 @Getter
 @Setter
-public class ReminderHealthAlert {
+public class ReminderMedicalTask {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long healthAlertId;
+    private Long taskId;
 
     @ManyToOne
     @JoinColumn(name = "reminder_id", nullable = false)
     @JsonIgnore
     private Reminder reminder;
 
-    @Enumerated(EnumType.STRING)
-    private HealthType healthType;
-
-    @Enumerated(EnumType.STRING)
-    private SeverityLevel severity;
-
-    @Enumerated(EnumType.STRING)
-    private AlertSource source;
-
+    private Integer week;
+    private String taskType;
+    private String taskName;
     private String notes;
+
+    @Enumerated(EnumType.STRING)
+    private ReminderStatus status;
 }

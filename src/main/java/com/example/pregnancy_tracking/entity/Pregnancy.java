@@ -1,74 +1,56 @@
 package com.example.pregnancy_tracking.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "Pregnancies")
+@Getter
+@Setter
 public class Pregnancy {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "pregnancy_id")
     private Long pregnancyId;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonBackReference
     private User user;
 
+    @Column(name = "start_date", nullable = false)
     private LocalDate startDate;
+
+    @Column(name = "due_date", nullable = false)
     private LocalDate dueDate;
+
+    @Column(name = "exam_date", nullable = false)
+    private LocalDate examDate;
+
+    @Column(name = "gestational_weeks", nullable = false)
     private Integer gestationalWeeks;
+
+    @Column(name = "gestational_days", nullable = false)
     private Integer gestationalDays;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
     private PregnancyStatus status;
 
+    @Column(name = "last_updated_at")
     private LocalDateTime lastUpdatedAt;
+
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
-    private LocalDate examDate;
 
+    @Column(name = "total_fetuses", nullable = false)
+    private Integer totalFetuses;
 
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.lastUpdatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.lastUpdatedAt = LocalDateTime.now();
-    }
-
-    // Getters and Setters
-    public Long getPregnancyId() { return pregnancyId; }
-    public void setPregnancyId(Long pregnancyId) { this.pregnancyId = pregnancyId; }
-
-    public User getUser() { return user; }
-    public void setUser(User user) { this.user = user; }
-
-    public LocalDate getStartDate() { return startDate; }
-    public void setStartDate(LocalDate startDate) { this.startDate = startDate; }
-
-    public LocalDate getDueDate() { return dueDate; }
-    public void setDueDate(LocalDate dueDate) { this.dueDate = dueDate; }
-
-    public Integer getGestationalWeeks() { return gestationalWeeks; }
-    public void setGestationalWeeks(Integer gestationalWeeks) { this.gestationalWeeks = gestationalWeeks; }
-
-    public Integer getGestationalDays() { return gestationalDays; }
-    public void setGestationalDays(Integer gestationalDays) { this.gestationalDays = gestationalDays; }
-
-    public PregnancyStatus getStatus() { return status; }
-    public void setStatus(PregnancyStatus status) { this.status = status; }
-
-    public LocalDateTime getLastUpdatedAt() { return lastUpdatedAt; }
-    public void setLastUpdatedAt(LocalDateTime lastUpdatedAt) { this.lastUpdatedAt = lastUpdatedAt; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-
-    public LocalDate getExamDate() { return examDate; }
-    public void setExamDate(LocalDate examDate) { this.examDate = examDate; }
-
-
+    @OneToMany(mappedBy = "pregnancy", cascade = CascadeType.ALL)
+    private List<Fetus> fetuses;
 }
