@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class ReminderMedicalTaskDTO {
     private Long taskId;
-    private Long reminderId;
+    private Long reminderId; // Có thể null
     private Integer week;
     private String taskType;
     private String taskName;

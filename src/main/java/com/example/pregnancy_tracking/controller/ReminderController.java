@@ -22,7 +22,7 @@ public class ReminderController {
         this.reminderService = reminderService;
     }
 
-    @Operation(summary = "Get all reminders")
+    @Operation(summary = "Get all reminders including medical tasks")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Reminders retrieved successfully"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
@@ -32,7 +32,7 @@ public class ReminderController {
         return ResponseEntity.ok(reminderService.getAllReminders());
     }
 
-    @Operation(summary = "Get a reminder by ID")
+    @Operation(summary = "Get a reminder by ID including medical tasks")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Reminder found"),
             @ApiResponse(responseCode = "404", description = "Reminder not found"),
@@ -85,9 +85,7 @@ public class ReminderController {
         }
     }
 
-
-
-    @Operation(summary = "Delete a reminder")
+    @Operation(summary = "Delete a reminder including all related medical tasks")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Reminder deleted successfully"),
             @ApiResponse(responseCode = "404", description = "Reminder not found"),

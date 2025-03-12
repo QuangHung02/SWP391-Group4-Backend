@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 public class Reminder {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "reminder_id") // Đúng với tên cột trong DB
+    @Column(name = "reminder_id")
     private Long reminderId;
 
     @ManyToOne
@@ -24,7 +24,7 @@ public class Reminder {
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "pregnancy_id", nullable = false) // Đảm bảo không bị null
+    @JoinColumn(name = "pregnancy_id", nullable = false)
     @JsonIgnore
     private Pregnancy pregnancy;
 

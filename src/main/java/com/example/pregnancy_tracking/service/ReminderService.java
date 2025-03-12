@@ -1,13 +1,13 @@
-
 package com.example.pregnancy_tracking.service;
 
 import com.example.pregnancy_tracking.dto.ReminderDTO;
+import com.example.pregnancy_tracking.dto.ReminderMedicalTaskDTO;
 import com.example.pregnancy_tracking.entity.*;
 import com.example.pregnancy_tracking.repository.PregnancyRepository;
+import com.example.pregnancy_tracking.repository.ReminderMedicalTaskRepository;
 import com.example.pregnancy_tracking.repository.ReminderRepository;
 import com.example.pregnancy_tracking.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 @Service
 public class ReminderService {
     private final ReminderRepository reminderRepository;
+    private final ReminderMedicalTaskRepository taskRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -24,8 +25,9 @@ public class ReminderService {
     @Autowired
     private PregnancyRepository pregnancyRepository;
 
-    public ReminderService(ReminderRepository reminderRepository) {
+    public ReminderService(ReminderRepository reminderRepository, ReminderMedicalTaskRepository taskRepository) {
         this.reminderRepository = reminderRepository;
+        this.taskRepository = taskRepository;
     }
 
     public List<ReminderDTO> getAllReminders() {
@@ -60,7 +62,6 @@ public class ReminderService {
         return convertToDTO(savedReminder);
     }
 
-
     @Transactional
     public ReminderDTO updateReminder(Long id, ReminderDTO reminderDTO) {
         Reminder reminder = reminderRepository.findById(id)
@@ -84,13 +85,30 @@ public class ReminderService {
         return convertToDTO(updatedReminder);
     }
 
-
     @Transactional
     public void deleteReminder(Long id) {
-        reminderRepository.deleteById(id);
+        Reminder reminder = reminderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Reminder not found"));
+
+        taskRepository.deleteAll(taskRepository.findByReminderReminderId(id));
+
+        reminderRepository.delete(reminder);
     }
 
     private ReminderDTO convertToDTO(Reminder reminder) {
+        List<ReminderMedicalTaskDTO> tasks = taskRepository.findByReminderReminderId(reminder.getReminderId())
+                .stream()
+                .map(task -> new ReminderMedicalTaskDTO(
+                        task.getTaskId(),
+                        task.getReminder().getReminderId(),
+                        task.getWeek(),
+                        task.getTaskType(),
+                        task.getTaskName(),
+                        task.getNotes(),
+                        task.getStatus().name()
+                ))
+                .collect(Collectors.toList());
+
         return new ReminderDTO(
                 reminder.getReminderId(),
                 reminder.getUser().getId(),
@@ -98,7 +116,8 @@ public class ReminderService {
                 reminder.getType().name(),
                 reminder.getReminderDate(),
                 reminder.getStatus().name(),
-                reminder.getCreatedAt()
+                reminder.getCreatedAt(),
+                tasks
         );
     }
 }

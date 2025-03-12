@@ -15,7 +15,7 @@ public class ReminderMedicalTask {
     private Long taskId;
 
     @ManyToOne
-    @JoinColumn(name = "reminder_id", nullable = false)
+    @JoinColumn(name = "reminder_id", nullable = true)
     @JsonIgnore
     private Reminder reminder;
 
@@ -34,4 +34,9 @@ public class ReminderMedicalTask {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private ReminderStatus status;
+
+    // Method để cập nhật Reminder sau khi đã tạo
+    public void assignReminder(Reminder reminder) {
+        this.reminder = reminder;
+    }
 }
