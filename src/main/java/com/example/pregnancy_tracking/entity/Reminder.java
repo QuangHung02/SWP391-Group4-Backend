@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -13,6 +15,7 @@ import java.time.LocalDateTime;
 public class Reminder {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "reminder_id") // Đúng với tên cột trong DB
     private Long reminderId;
 
     @ManyToOne
@@ -21,18 +24,22 @@ public class Reminder {
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "pregnancy_id", nullable = false)
+    @JoinColumn(name = "pregnancy_id", nullable = false) // Đảm bảo không bị null
     @JsonIgnore
     private Pregnancy pregnancy;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "type", nullable = false, length = 20)
     private ReminderType type;
 
-    private LocalDateTime reminderDate;
+    @Column(name = "reminder_date", nullable = false)
+    private LocalDate reminderDate;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 20)
     private ReminderStatus status;
 
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
     @PrePersist

@@ -2,9 +2,9 @@ package com.example.pregnancy_tracking.controller;
 
 import com.example.pregnancy_tracking.dto.PregnancyDTO;
 import com.example.pregnancy_tracking.dto.PregnancyResponseDTO;
-import com.example.pregnancy_tracking.dto.PregnancyStatusDTO;
 import com.example.pregnancy_tracking.entity.FetusStatus;
 import com.example.pregnancy_tracking.entity.Pregnancy;
+import com.example.pregnancy_tracking.entity.PregnancyStatus;
 import com.example.pregnancy_tracking.service.PregnancyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -63,7 +63,7 @@ public class PregnancyController {
         return ResponseEntity.ok(updatedPregnancy);
     }
 
-    @Operation(summary = "Update pregnancy status", description = "Updates the status of a pregnancy and its fetuses.")
+    @Operation(summary = "Update pregnancy status", description = "Updates the status of a pregnancy.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Pregnancy status updated successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid status value"),
@@ -71,11 +71,14 @@ public class PregnancyController {
             @ApiResponse(responseCode = "500", description = "Server error")
     })
     @PatchMapping("/{id}/status")
-    public ResponseEntity<Void> updatePregnancyStatus(@PathVariable Long id,
-                                                      @Valid @RequestBody PregnancyStatusDTO statusDTO) {
-        pregnancyService.updatePregnancyStatus(id, statusDTO.getStatus());
+    public ResponseEntity<Void> updatePregnancyStatus(
+            @PathVariable Long id,
+            @RequestParam PregnancyStatus status) {
+
+        pregnancyService.updatePregnancyStatus(id, status);
         return ResponseEntity.ok().build();
     }
+
     @Operation(summary = "Get pregnancies by User ID", description = "Retrieves all pregnancies of a specific user.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Pregnancies retrieved successfully"),

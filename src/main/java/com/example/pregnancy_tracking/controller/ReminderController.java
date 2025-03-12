@@ -1,6 +1,7 @@
 package com.example.pregnancy_tracking.controller;
 
 import com.example.pregnancy_tracking.dto.ReminderDTO;
+import com.example.pregnancy_tracking.entity.ReminderStatus;
 import com.example.pregnancy_tracking.service.ReminderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -72,9 +73,13 @@ public class ReminderController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PatchMapping("/{id}/status")
-    public ResponseEntity<ReminderDTO> updateReminderStatus(@PathVariable Long id, @RequestParam String status) {
+    public ResponseEntity<ReminderDTO> updateReminderStatus(
+            @PathVariable Long id,
+            @RequestParam ReminderStatus status) {
+
         return ResponseEntity.ok(reminderService.updateReminderStatus(id, status));
     }
+
 
     @Operation(summary = "Delete a reminder")
     @ApiResponses(value = {

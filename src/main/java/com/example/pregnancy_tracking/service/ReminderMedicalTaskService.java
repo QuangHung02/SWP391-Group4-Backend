@@ -46,7 +46,7 @@ public class ReminderMedicalTaskService {
         task.setTaskType(dto.getTaskType());
         task.setTaskName(dto.getTaskName());
         task.setNotes(dto.getNotes());
-        task.setStatus(ReminderStatus.valueOf(dto.getStatus())); // Fix Enum mapping
+        task.setStatus(ReminderStatus.valueOf(dto.getStatus()));
 
         ReminderMedicalTask savedTask = repository.save(task);
         return convertToDTO(savedTask);
