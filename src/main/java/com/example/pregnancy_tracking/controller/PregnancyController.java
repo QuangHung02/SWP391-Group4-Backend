@@ -63,20 +63,18 @@ public class PregnancyController {
         return ResponseEntity.ok(updatedPregnancy);
     }
 
-    @Operation(summary = "Update pregnancy status", description = "Updates the status of a pregnancy.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Pregnancy status updated successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid status value"),
-            @ApiResponse(responseCode = "404", description = "Pregnancy not found"),
-            @ApiResponse(responseCode = "500", description = "Server error")
-    })
     @PatchMapping("/{id}/status")
     public ResponseEntity<Void> updatePregnancyStatus(
             @PathVariable Long id,
-            @RequestParam PregnancyStatus status) {
+            @RequestParam String status) {
 
-        pregnancyService.updatePregnancyStatus(id, status);
-        return ResponseEntity.ok().build();
+        try {
+            PregnancyStatus pregnancyStatus = PregnancyStatus.valueOf(status.toUpperCase());
+            pregnancyService.updatePregnancyStatus(id, pregnancyStatus);
+            return ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @Operation(summary = "Get pregnancies by User ID", description = "Retrieves all pregnancies of a specific user.")
@@ -104,17 +102,17 @@ public class PregnancyController {
         return ResponseEntity.ok(pregnancy);
     }
 
-    @Operation(summary = "Update Fetus Status", description = "Updates the status of a specific fetus.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Fetus status updated successfully"),
-            @ApiResponse(responseCode = "404", description = "Fetus not found"),
-            @ApiResponse(responseCode = "500", description = "Server error")
-    })
     @PatchMapping("/fetus/{fetusId}/status")
     public ResponseEntity<Void> updateFetusStatus(@PathVariable Long fetusId,
-                                                  @RequestParam FetusStatus status) {
-        pregnancyService.updateFetusStatus(fetusId, status);
-        return ResponseEntity.ok().build();
+                                                  @RequestParam String status) {
+        try {
+            FetusStatus fetusStatus = FetusStatus.valueOf(status.toUpperCase());
+            pregnancyService.updateFetusStatus(fetusId, fetusStatus);
+            return ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
+
 
 }

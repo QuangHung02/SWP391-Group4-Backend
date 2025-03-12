@@ -75,10 +75,16 @@ public class ReminderController {
     @PatchMapping("/{id}/status")
     public ResponseEntity<ReminderDTO> updateReminderStatus(
             @PathVariable Long id,
-            @RequestParam ReminderStatus status) {
+            @RequestParam String status) {
 
-        return ResponseEntity.ok(reminderService.updateReminderStatus(id, status));
+        try {
+            ReminderStatus reminderStatus = ReminderStatus.valueOf(status.toUpperCase());
+            return ResponseEntity.ok(reminderService.updateReminderStatus(id, reminderStatus));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
+
 
 
     @Operation(summary = "Delete a reminder")
