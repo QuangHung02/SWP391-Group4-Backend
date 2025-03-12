@@ -42,5 +42,5 @@ public class CommunityComment {
     @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL)
     @JsonManagedReference("comment-media")
     @ToString.Exclude
-    private List<MediaFile> mediaFiles;
+    private List<CommunityMediaFiles> mediaFiles;
 }

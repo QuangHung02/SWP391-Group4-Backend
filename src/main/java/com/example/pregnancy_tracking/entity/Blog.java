@@ -5,19 +5,19 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
-import java.util.List;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import java.util.List;  
+import com.fasterxml.jackson.annotation.JsonManagedReference;  
 
 @Entity
-@Table(name = "CommunityPosts")
+@Table(name = "Blogs")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CommunityPost {
+public class Blog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "post_id")
-    private Long postId;
+    @Column(name = "blog_id")
+    private Long blogId;
 
     @Column(name = "title", nullable = false)
     private String title;
@@ -29,17 +29,10 @@ public class CommunityPost {
     @JoinColumn(name = "author_id", nullable = false)
     private User author;
 
-    @Column(name = "isAnonymous")
-    private Boolean isAnonymous = false;
-
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference("post-media")
-    private List<CommunityMediaFiles> mediaFiles;
-
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference("post-comments")
-    private List<CommunityComment> comments;
+    @OneToMany(mappedBy = "blog", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<BlogImage> images;
 }

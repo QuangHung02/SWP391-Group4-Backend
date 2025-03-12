@@ -5,7 +5,7 @@ import com.example.pregnancy_tracking.dto.PostRequest;
 import com.example.pregnancy_tracking.entity.*;
 import com.example.pregnancy_tracking.repository.CommunityCommentRepository;
 import com.example.pregnancy_tracking.repository.CommunityPostRepository;
-import com.example.pregnancy_tracking.repository.MediaFileRepository;
+import com.example.pregnancy_tracking.repository.CommunityMediaFileRepository;
 import com.example.pregnancy_tracking.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,7 +18,7 @@ public class CommunityService {
     private final UserRepository userRepository;
     private final CommunityPostRepository postRepository;
     private final CommunityCommentRepository commentRepository;
-    private final MediaFileRepository mediaFileRepository;
+    private final CommunityMediaFileRepository mediaFileRepository;
 
     public CommunityPost createPost(PostRequest request, String userEmail) {
         User author = userRepository.findByEmail(userEmail)
@@ -35,7 +35,7 @@ public class CommunityService {
 
         if (request.getMediaUrls() != null && !request.getMediaUrls().isEmpty()) {
             for (String mediaUrl : request.getMediaUrls()) {
-                MediaFile mediaFile = new MediaFile();
+                CommunityMediaFiles mediaFile = new CommunityMediaFiles();
                 mediaFile.setPost(post);
                 mediaFile.setMediaUrl(mediaUrl);
                 mediaFile.setUploadedAt(LocalDateTime.now());
@@ -64,7 +64,7 @@ public class CommunityService {
 
         if (request.getMediaUrls() != null && !request.getMediaUrls().isEmpty()) {
             for (String mediaUrl : request.getMediaUrls()) {
-                MediaFile mediaFile = new MediaFile();
+                CommunityMediaFiles mediaFile = new CommunityMediaFiles();
                 mediaFile.setComment(comment);
                 mediaFile.setMediaUrl(mediaUrl);
                 mediaFile.setUploadedAt(LocalDateTime.now());
