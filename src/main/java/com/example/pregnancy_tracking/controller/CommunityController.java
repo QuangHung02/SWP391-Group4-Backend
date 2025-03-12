@@ -69,7 +69,7 @@ public class CommunityController {
     }
 
     @GetMapping("/posts")
-    @CrossOrigin(origins = "*")  // Có thể thêm cho từng method
+    @CrossOrigin(origins = "*")  
     public ResponseEntity<List<CommunityPost>> getAllPosts() {
         return ResponseEntity.ok(communityService.getAllPosts());
     }
