@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class ReminderDTO {
@@ -20,7 +21,9 @@ public class ReminderDTO {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
 
-    public ReminderDTO(Long reminderId, Long userId, Long pregnancyId, String type, LocalDate reminderDate, String status, LocalDateTime createdAt) {
+    private List<ReminderMedicalTaskDTO> tasks;
+
+    public ReminderDTO(Long reminderId, Long userId, Long pregnancyId, String type, LocalDate reminderDate, String status, LocalDateTime createdAt, List<ReminderMedicalTaskDTO> tasks) {
         this.reminderId = reminderId;
         this.userId = userId;
         this.pregnancyId = pregnancyId;
@@ -28,5 +31,6 @@ public class ReminderDTO {
         this.reminderDate = reminderDate;
         this.status = status;
         this.createdAt = createdAt;
+        this.tasks = tasks;
     }
 }
