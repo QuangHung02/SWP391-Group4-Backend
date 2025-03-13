@@ -2,15 +2,16 @@ package com.example.pregnancy_tracking.service;
 
 import com.example.pregnancy_tracking.dto.BlogRequest;
 import com.example.pregnancy_tracking.entity.Blog;
-import com.example.pregnancy_tracking.entity.BlogImage;  
+import com.example.pregnancy_tracking.entity.BlogImage;
 import com.example.pregnancy_tracking.entity.User;
 import com.example.pregnancy_tracking.repository.BlogRepository;
-import com.example.pregnancy_tracking.repository.BlogImageRepository;  
+import com.example.pregnancy_tracking.repository.BlogImageRepository;
 import com.example.pregnancy_tracking.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.ArrayList;
 
 @Service
 @RequiredArgsConstructor
@@ -28,31 +29,10 @@ public class BlogService {
         blog.setContent(request.getContent());
         blog.setAuthor(author);
         blog.setCreatedAt(LocalDateTime.now());
-        
-        blog = blogRepository.save(blog);
 
-        if (request.getImageUrls() != null && !request.getImageUrls().isEmpty()) {
-            for (String imageUrl : request.getImageUrls()) {
-                BlogImage image = new BlogImage();
-                image.setBlog(blog);
-                image.setImageUrl(imageUrl);
-                image.setCreatedAt(LocalDateTime.now());
-                blogImageRepository.save(image);
-            }
-        }
+        // Initialize the images list
+        blog.setImages(new ArrayList<>());
 
-        return blog;
-    }
-
-    public Blog updateBlog(Long blogId, BlogRequest request) {
-        Blog blog = blogRepository.findById(blogId)
-                .orElseThrow(() -> new RuntimeException("Blog not found"));
-        
-        blog.setTitle(request.getTitle());
-        blog.setContent(request.getContent());
-        
-        // Update images
-        blog.getImages().clear();
         if (request.getImageUrls() != null && !request.getImageUrls().isEmpty()) {
             for (String imageUrl : request.getImageUrls()) {
                 BlogImage image = new BlogImage();
@@ -62,7 +42,28 @@ public class BlogService {
                 blog.getImages().add(image);
             }
         }
-        
+
+        return blogRepository.save(blog);
+    }
+    public Blog updateBlog(Long blogId, BlogRequest request) {
+        Blog blog = blogRepository.findById(blogId)
+                .orElseThrow(() -> new RuntimeException("Blog not found"));
+
+        blog.setTitle(request.getTitle());
+        blog.setContent(request.getContent());
+
+        if (request.getImageUrls() != null && !request.getImageUrls().isEmpty()) {
+            blogImageRepository.deleteAll(blog.getImages());
+            blog.getImages().clear();
+
+            for (String imageUrl : request.getImageUrls()) {
+                BlogImage image = new BlogImage();
+                image.setBlog(blog);
+                image.setImageUrl(imageUrl);
+                image.setCreatedAt(LocalDateTime.now());
+                blog.getImages().add(image);
+            }
+        }
         return blogRepository.save(blog);
     }
 
@@ -71,7 +72,6 @@ public class BlogService {
                 .orElseThrow(() -> new RuntimeException("Blog not found"));
         blogRepository.delete(blog);
     }
-
     public List<Blog> getAllBlogs() {
         return blogRepository.findAll();
     }
