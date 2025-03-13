@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "Reminders")
@@ -46,4 +47,7 @@ public class Reminder {
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
     }
+
+    @OneToMany(mappedBy = "reminder", cascade = CascadeType.ALL)
+    private List<ReminderMedicalTask> medicalTasks;
 }

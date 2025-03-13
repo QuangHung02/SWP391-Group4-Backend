@@ -9,7 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.http.HttpStatus;
 import java.util.List;
 
 @RestController
@@ -51,7 +51,20 @@ public class ReminderController {
     })
     @PostMapping
     public ResponseEntity<ReminderDTO> createReminder(@RequestBody ReminderDTO reminderDTO) {
-        return ResponseEntity.ok(reminderService.createReminder(reminderDTO));
+        ReminderDTO created = reminderService.createReminder(reminderDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+    @Operation(summary = "Create a reminder with medical tasks")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Reminder and tasks created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request data"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @PostMapping("/with-tasks")
+    public ResponseEntity<ReminderDTO> createReminderWithTasks(@RequestBody ReminderDTO reminderDTO) {
+        ReminderDTO created = reminderService.createReminderWithTasks(reminderDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @Operation(summary = "Update a reminder")

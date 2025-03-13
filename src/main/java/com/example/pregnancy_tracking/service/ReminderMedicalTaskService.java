@@ -31,7 +31,7 @@ public class ReminderMedicalTaskService {
                         task.getTaskType(),
                         task.getTaskName(),
                         task.getNotes(),
-                        task.getStatus().name()
+                        task.getReminder().getStatus().name()  // Use parent reminder's status
                 ))
                 .collect(Collectors.toList());
     }
@@ -45,19 +45,17 @@ public class ReminderMedicalTaskService {
                         task.getTaskType(),
                         task.getTaskName(),
                         task.getNotes(),
-                        task.getStatus().name()
+                        task.getReminder().getStatus().name()  // Use parent reminder's status
                 ))
                 .collect(Collectors.toList());
     }
 
-    // Tạo Task không cần Reminder
     public ReminderMedicalTaskDTO createTask(ReminderMedicalTaskDTO dto) {
         ReminderMedicalTask task = new ReminderMedicalTask();
         task.setWeek(dto.getWeek());
         task.setTaskType(dto.getTaskType());
         task.setTaskName(dto.getTaskName());
         task.setNotes(dto.getNotes());
-        task.setStatus(ReminderStatus.valueOf(dto.getStatus().toUpperCase()));
 
         if (dto.getReminderId() != null) {
             Optional<Reminder> reminderOpt = reminderRepository.findById(dto.getReminderId());
@@ -65,7 +63,6 @@ public class ReminderMedicalTaskService {
         }
 
         task = taskRepository.save(task);
-
         return new ReminderMedicalTaskDTO(
                 task.getTaskId(),
                 task.getReminder() != null ? task.getReminder().getReminderId() : null,
@@ -73,24 +70,36 @@ public class ReminderMedicalTaskService {
                 task.getTaskType(),
                 task.getTaskName(),
                 task.getNotes(),
-                task.getStatus().name()
+                task.getReminder().getStatus().name()  // Use parent reminder's status
         );
     }
 
     public ReminderMedicalTaskDTO updateTaskStatus(Long taskId, String status) {
         ReminderMedicalTask task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
-        task.setStatus(ReminderStatus.valueOf(status.toUpperCase()));
-        taskRepository.save(task);
-        return new ReminderMedicalTaskDTO(
-                task.getTaskId(),
-                task.getReminder() != null ? task.getReminder().getReminderId() : null,
-                task.getWeek(),
-                task.getTaskType(),
-                task.getTaskName(),
-                task.getNotes(),
-                task.getStatus().name()
-        );
+        
+        Reminder reminder = task.getReminder();
+        if (reminder == null) {
+            throw new RuntimeException("Task has no associated reminder");
+        }
+
+        try {
+            ReminderStatus newStatus = ReminderStatus.valueOf(status.toUpperCase());
+            reminder.setStatus(newStatus);
+            reminderRepository.save(reminder);
+            
+            return new ReminderMedicalTaskDTO(
+                    task.getTaskId(),
+                    reminder.getReminderId(),
+                    task.getWeek(),
+                    task.getTaskType(),
+                    task.getTaskName(),
+                    task.getNotes(),
+                    reminder.getStatus().name()
+            );
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid status value: " + status);
+        }
     }
 
     public void deleteTask(Long taskId) {

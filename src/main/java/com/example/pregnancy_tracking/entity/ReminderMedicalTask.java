@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-
 @Entity
 @Table(name = "ReminderMedicalTasks")
 @Getter
@@ -12,31 +11,25 @@ import lombok.Setter;
 public class ReminderMedicalTask {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "task_id")
     private Long taskId;
 
     @ManyToOne
-    @JoinColumn(name = "reminder_id", nullable = true)
-    @JsonIgnore
+    @JoinColumn(name = "reminder_id", nullable = false)
     private Reminder reminder;
 
-    @Column(nullable = false)
-    private Integer week;
-
-    @Column(nullable = false, length = 20)
-    private String taskType;
-
-    @Column(length = 255)
+    @Column(name = "task_name", nullable = false)
     private String taskName;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "task_type")
+    private String taskType;
+
+    @Column(name = "week")
+    private Integer week;
+
+    @Column(name = "notes")
     private String notes;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private ReminderStatus status;
 
-    // Method để cập nhật Reminder sau khi đã tạo
-    public void assignReminder(Reminder reminder) {
-        this.reminder = reminder;
-    }
+
 }

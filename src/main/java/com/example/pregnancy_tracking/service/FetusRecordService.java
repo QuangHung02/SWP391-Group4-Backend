@@ -43,8 +43,14 @@ public class FetusRecordService {
                 .orElseThrow(() -> new RuntimeException("Fetus not found"));
 
         Pregnancy pregnancy = fetus.getPregnancy();
+        if (pregnancy == null) {
+            throw new RuntimeException("Fetus has no associated pregnancy");
+        }
+
         int week = pregnancy.getGestationalWeeks();
-        System.out.println("Pregnancy gestational weeks: " + week);
+        if (week <= 0) {
+            throw new RuntimeException("Invalid gestational week");
+        }
 
         if (fetusRecordRepository.existsByFetusFetusIdAndWeek(fetusId, week)) {
             throw new IllegalArgumentException("FetusRecord for this week already exists.");
@@ -53,11 +59,36 @@ public class FetusRecordService {
         FetusRecord record = new FetusRecord();
         record.setFetus(fetus);
         record.setWeek(week);
+        
+        if (recordDTO.getFetalWeight() != null && recordDTO.getFetalWeight().compareTo(new BigDecimal("10000")) > 0) {
+            throw new IllegalArgumentException("Fetal weight cannot be more than 10000g (10kg)");
+        }
+        if (recordDTO.getCrownHeelLength() != null && recordDTO.getCrownHeelLength().compareTo(new BigDecimal("100")) > 0) {
+            throw new IllegalArgumentException("Crown heel length cannot be more than 100cm");
+        }
+        if (recordDTO.getHeadCircumference() != null && recordDTO.getHeadCircumference().compareTo(new BigDecimal("100")) > 0) {
+            throw new IllegalArgumentException("Head circumference cannot be more than 100cm");
+        }
+
+        if (recordDTO.getFetalWeight() != null && recordDTO.getFetalWeight().compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Fetal weight cannot be negative");
+        }
+        if (recordDTO.getCrownHeelLength() != null && recordDTO.getCrownHeelLength().compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Crown heel length cannot be negative");
+        }
+        if (recordDTO.getHeadCircumference() != null && recordDTO.getHeadCircumference().compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Head circumference cannot be negative");
+        }
+
         record.setFetalWeight(recordDTO.getFetalWeight() != null ? recordDTO.getFetalWeight() : BigDecimal.ZERO);
         record.setCrownHeelLength(recordDTO.getCrownHeelLength() != null ? recordDTO.getCrownHeelLength() : BigDecimal.ZERO);
         record.setHeadCircumference(recordDTO.getHeadCircumference() != null ? recordDTO.getHeadCircumference() : BigDecimal.ZERO);
 
-        return fetusRecordRepository.save(record);
+        FetusRecord savedRecord = fetusRecordRepository.save(record);
+        
+        checkFetusGrowth(savedRecord);
+        
+        return savedRecord;
     }
 
     @Transactional
@@ -99,8 +130,11 @@ public class FetusRecordService {
         }
 
         if (severity != null) {
-            Reminder reminder = reminderRepository.findByPregnancyPregnancyId(record.getFetus().getPregnancy().getPregnancyId())
-                    .stream().findFirst().orElseThrow(() -> new RuntimeException("No Reminder found"));
+            Reminder reminder = reminderRepository.findByPregnancy_PregnancyId(
+                    record.getFetus().getPregnancy().getPregnancyId())
+                    .stream()
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("No Reminder found"));
 
             ReminderHealthAlert alert = new ReminderHealthAlert();
             alert.setReminder(reminder);

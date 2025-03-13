@@ -44,11 +44,13 @@ public class ReminderService {
 
     @Transactional
     public ReminderDTO createReminder(ReminderDTO reminderDTO) {
-        Reminder reminder = new Reminder();
+        if (reminderDTO.getTasks() != null && !reminderDTO.getTasks().isEmpty()) {
+            return createReminderWithTasks(reminderDTO);
+        }
 
+        Reminder reminder = new Reminder();
         User user = userRepository.findById(reminderDTO.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
-
         Pregnancy pregnancy = pregnancyRepository.findById(reminderDTO.getPregnancyId())
                 .orElseThrow(() -> new RuntimeException("Pregnancy not found"));
 
@@ -59,6 +61,38 @@ public class ReminderService {
         reminder.setStatus(ReminderStatus.NOT_YET);
 
         Reminder savedReminder = reminderRepository.save(reminder);
+        return convertToDTO(savedReminder);
+    }
+
+    @Transactional
+    public ReminderDTO createReminderWithTasks(ReminderDTO reminderDTO) {
+        Reminder reminder = new Reminder();
+        User user = userRepository.findById(reminderDTO.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Pregnancy pregnancy = pregnancyRepository.findById(reminderDTO.getPregnancyId())
+                .orElseThrow(() -> new RuntimeException("Pregnancy not found"));
+    
+        reminder.setUser(user);
+        reminder.setPregnancy(pregnancy);
+        reminder.setType(ReminderType.valueOf(reminderDTO.getType().toUpperCase()));
+        reminder.setReminderDate(reminderDTO.getReminderDate());
+        reminder.setStatus(ReminderStatus.NOT_YET);
+        
+        Reminder savedReminder = reminderRepository.save(reminder);
+    
+        if (reminderDTO.getTasks() != null && !reminderDTO.getTasks().isEmpty()) {
+            for (ReminderMedicalTaskDTO taskDTO : reminderDTO.getTasks()) {
+                ReminderMedicalTask task = new ReminderMedicalTask();
+                task.setReminder(savedReminder);
+                task.setWeek(taskDTO.getWeek());
+                task.setTaskType(taskDTO.getTaskType() != null ? taskDTO.getTaskType() : "");
+                task.setTaskName(taskDTO.getTaskName());
+                task.setNotes(taskDTO.getNotes() != null ? taskDTO.getNotes() : "");
+                // Remove status setting
+                taskRepository.save(task);
+            }
+        }
+    
         return convertToDTO(savedReminder);
     }
 
@@ -105,7 +139,7 @@ public class ReminderService {
                         task.getTaskType(),
                         task.getTaskName(),
                         task.getNotes(),
-                        task.getStatus().name()
+                        reminder.getStatus().name()  // Use parent reminder's status
                 ))
                 .collect(Collectors.toList());
 
@@ -119,5 +153,9 @@ public class ReminderService {
                 reminder.getCreatedAt(),
                 tasks
         );
+    }
+
+    public boolean existsByUserIdAndPregnancyIdAndWeek(Long userId, Long pregnancyId, Integer week) {
+        return reminderRepository.existsByUserIdAndPregnancyIdAndWeek(userId, pregnancyId, week);
     }
 }
