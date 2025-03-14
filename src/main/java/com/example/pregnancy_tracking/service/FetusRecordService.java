@@ -37,6 +37,14 @@ public class FetusRecordService {
         return records.stream().map(FetusRecordDTO::new).collect(Collectors.toList());
     }
 
+    public List<Integer> getWeeksByFetusId(Long fetusId) {
+        return fetusRecordRepository.findByFetusFetusIdOrderByWeekAsc(fetusId)
+            .stream()
+            .map(FetusRecord::getWeek)
+            .distinct()
+            .collect(Collectors.toList());
+    }
+
     @Transactional
     public FetusRecord createRecord(Long fetusId, FetusRecordDTO recordDTO) {
         Fetus fetus = fetusRepository.findById(fetusId)
@@ -44,7 +52,7 @@ public class FetusRecordService {
 
         if (fetus.getStatus() == FetusStatus.COMPLETED || 
             fetus.getStatus() == FetusStatus.CANCEL) {
-            throw new IllegalStateException("Không thể thêm record cho thai nhi đã kết thúc");
+            throw new IllegalStateException("Cannot add record for completed or cancelled fetus");
         }
 
         Pregnancy pregnancy = fetus.getPregnancy();
@@ -54,28 +62,33 @@ public class FetusRecordService {
 
         if (pregnancy.getStatus() == PregnancyStatus.COMPLETED || 
             pregnancy.getStatus() == PregnancyStatus.CANCEL) {
-            throw new IllegalStateException("Không thể thêm record cho thai kỳ đã kết thúc");
+            throw new IllegalStateException("Cannot add record for completed or cancelled pregnancy");
         }
 
-        int week = pregnancy.getGestationalWeeks();
-        if (week <= 0) {
+        int currentWeek = pregnancy.getGestationalWeeks();
+        if (currentWeek <= 0) {
             throw new RuntimeException("Invalid gestational week");
         }
 
-        if (fetusRecordRepository.existsByFetusFetusIdAndWeek(fetusId, week)) {
-            throw new IllegalArgumentException("FetusRecord for this week already exists.");
+        Optional<FetusRecord> latestRecord = fetusRecordRepository
+            .findFirstByFetusFetusIdOrderByWeekDesc(fetusId);
+        
+        if (latestRecord.isPresent() && latestRecord.get().getWeek() >= currentWeek) {
+            throw new IllegalStateException("Cannot create record for week older than or equal to the latest record");
+        }
+
+        if (fetusRecordRepository.existsByFetusFetusIdAndWeek(fetusId, currentWeek)) {
+            throw new IllegalArgumentException("FetusRecord for this week already exists");
         }
 
         FetusRecord record = new FetusRecord();
         record.setFetus(fetus);
-        record.setWeek(week);
-
+        record.setWeek(currentWeek);
         record.setFetalWeight(recordDTO.getFetalWeight() != null ? recordDTO.getFetalWeight() : BigDecimal.ZERO);
         record.setCrownHeelLength(recordDTO.getCrownHeelLength() != null ? recordDTO.getCrownHeelLength() : BigDecimal.ZERO);
         record.setHeadCircumference(recordDTO.getHeadCircumference() != null ? recordDTO.getHeadCircumference() : BigDecimal.ZERO);
 
         FetusRecord savedRecord = fetusRecordRepository.save(record);
-        
         checkFetusGrowth(savedRecord);
         
         return savedRecord;
@@ -120,12 +133,15 @@ public class FetusRecordService {
         }
 
         if (severity != null) {
-            Reminder reminder = reminderRepository.findByPregnancy_PregnancyId(
-                    record.getFetus().getPregnancy().getPregnancyId())
-                    .stream()
-                    .findFirst()
-                    .orElseThrow(() -> new RuntimeException("No Reminder found"));
-
+            List<Reminder> reminders = reminderRepository.findByPregnancy_PregnancyId(
+                    record.getFetus().getPregnancy().getPregnancyId());
+            
+            if (reminders.isEmpty()) {
+                throw new RuntimeException("No Reminder found");
+            }
+            
+            Reminder reminder = reminders.get(0);
+            
             ReminderHealthAlert alert = new ReminderHealthAlert();
             alert.setReminder(reminder);
             alert.setHealthType(HealthType.FETUS_GROWTH);
@@ -133,10 +149,10 @@ public class FetusRecordService {
             alert.setSource(AlertSource.SYSTEM);
             alert.setNotes("Fetus growth measurement out of normal range.");
             reminderHealthAlertRepository.save(alert);
-
+        
             Fetus fetus = record.getFetus();
             fetus.setStatus(FetusStatus.ISSUE);
-            fetusRecordRepository.save(record);
+            fetusRepository.save(fetus);
         }
     }
 
@@ -155,4 +171,24 @@ public class FetusRecordService {
         return currentSeverity;
     }
 
+    public List<BigDecimal> getHeadCircumferenceByFetusId(Long fetusId) {
+        return fetusRecordRepository.findByFetusFetusIdOrderByWeekAsc(fetusId)
+            .stream()
+            .map(FetusRecord::getHeadCircumference)
+            .collect(Collectors.toList());
+    }
+
+    public List<BigDecimal> getFetalWeightByFetusId(Long fetusId) {
+        return fetusRecordRepository.findByFetusFetusIdOrderByWeekAsc(fetusId)
+            .stream()
+            .map(FetusRecord::getFetalWeight)
+            .collect(Collectors.toList());
+    }
+
+    public List<BigDecimal> getCrownHeelLengthByFetusId(Long fetusId) {
+        return fetusRecordRepository.findByFetusFetusIdOrderByWeekAsc(fetusId)
+            .stream()
+            .map(FetusRecord::getCrownHeelLength)
+            .collect(Collectors.toList());
+    }
 }

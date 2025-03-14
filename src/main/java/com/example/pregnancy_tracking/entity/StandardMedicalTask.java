@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "dbo.StandardMedicalTasks")
+@Table(name = "StandardMedicalTasks", schema = "dbo")
 @Getter
 @Setter
 public class StandardMedicalTask {

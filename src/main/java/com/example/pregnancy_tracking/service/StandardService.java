@@ -113,11 +113,12 @@ public class StandardService {
     }
 
     public void checkAndCreateWeeklyTasks(Long userId, Long pregnancyId, Integer currentWeek) {
-        List<ReminderDTO> existingReminders = reminderService.getAllReminders();
+        // Get reminders only for this pregnancy
+        List<ReminderDTO> existingReminders = reminderService.getRemindersByPregnancyId(pregnancyId);
+        
         boolean reminderExists = existingReminders.stream()
             .anyMatch(reminder -> 
-                reminder.getUserId().equals(userId) &&
-                reminder.getPregnancyId().equals(pregnancyId) &&
+                reminder.getType().equals("MEDICAL") &&
                 reminder.getTasks().stream()
                     .anyMatch(task -> currentWeek.equals(task.getWeek()))
             );

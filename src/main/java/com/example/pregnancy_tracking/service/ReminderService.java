@@ -139,7 +139,7 @@ public class ReminderService {
                         task.getTaskType(),
                         task.getTaskName(),
                         task.getNotes(),
-                        reminder.getStatus().name()  // Use parent reminder's status
+                        reminder.getStatus().name()
                 ))
                 .collect(Collectors.toList());
 
@@ -158,4 +158,11 @@ public class ReminderService {
     public boolean existsByUserIdAndPregnancyIdAndWeek(Long userId, Long pregnancyId, Integer week) {
         return reminderRepository.existsByUserIdAndPregnancyIdAndWeek(userId, pregnancyId, week);
     }
+
+    public List<ReminderDTO> getRemindersByPregnancyId(Long pregnancyId) {
+            return reminderRepository.findByPregnancy_PregnancyId(pregnancyId)
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+        }
 }

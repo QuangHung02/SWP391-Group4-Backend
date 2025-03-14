@@ -108,6 +108,22 @@ public class StandardController {
         return ResponseEntity.ok(standardService.getAllPregnancyStandards());
     }
 
+    @Operation(summary = "Get pregnancy standards by fetus number", 
+              description = "Retrieves all standard values for a specific number of fetuses")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Standards retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "No standards found"),
+            @ApiResponse(responseCode = "500", description = "Server error")
+    })
+    @GetMapping("/pregnancy/fetus/{fetusNumber}")
+    public ResponseEntity<List<PregnancyStandardDTO>> getPregnancyStandardsByFetusNumber(
+            @PathVariable Integer fetusNumber) {
+        List<PregnancyStandardDTO> standards = standardService.getPregnancyStandardsByFetusNumber(fetusNumber);
+        if (standards.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(standards);
+    }
     @Operation(summary = "Get pregnancy standards by week and fetus number")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Standards retrieved successfully"),

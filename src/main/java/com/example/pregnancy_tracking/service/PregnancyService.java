@@ -144,11 +144,11 @@ public class PregnancyService {
     @Transactional
     public void updatePregnancyStatus(Long pregnancyId, PregnancyStatus newStatus) {
         Pregnancy pregnancy = pregnancyRepository.findById(pregnancyId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy thai kỳ"));
+                .orElseThrow(() -> new RuntimeException("Pregnancy not found"));
 
         if (pregnancy.getStatus() == PregnancyStatus.COMPLETED || 
             pregnancy.getStatus() == PregnancyStatus.CANCEL) {
-            throw new IllegalStateException("Không thể thay đổi trạng thái của thai kỳ đã kết thúc");
+            throw new IllegalStateException("Cannot change status of a completed or cancelled pregnancy");
         }
 
         if (pregnancy.getStatus() == PregnancyStatus.ONGOING) {
@@ -166,7 +166,7 @@ public class PregnancyService {
             
             pregnancyRepository.save(pregnancy);
         } else {
-            throw new IllegalStateException("Chỉ có thể thay đổi trạng thái của thai kỳ đang tiến triển");
+            throw new IllegalStateException("Can only change status of an ongoing pregnancy");
         }
     }
     public List<PregnancyListDTO> getPregnanciesByUserId(Long userId) {
@@ -215,18 +215,18 @@ public class PregnancyService {
         
         if (fetus.getStatus() == FetusStatus.COMPLETED || 
             fetus.getStatus() == FetusStatus.CANCEL) {
-            throw new IllegalStateException("Không thể thay đổi trạng thái của thai nhi đã kết thúc");
+            throw new IllegalStateException("Cannot change status of a completed or cancelled fetus");
         }
 
         if (fetus.getPregnancy().getStatus() != PregnancyStatus.ONGOING) {
-            throw new IllegalStateException("Không thể thay đổi trạng thái thai nhi khi thai kỳ đã kết thúc");
+            throw new IllegalStateException("Cannot change fetus status when pregnancy is not ongoing");
         }
 
         if (fetus.getStatus() == FetusStatus.ACTIVE) {
             fetus.setStatus(status);
             fetusRepository.save(fetus);
         } else {
-            throw new IllegalStateException("Chỉ có thể thay đổi trạng thái của thai nhi đang phát triển");
+            throw new IllegalStateException("Can only change status of an active fetus");
         }
     }
 
