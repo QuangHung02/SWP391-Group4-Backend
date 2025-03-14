@@ -15,8 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/fetus-records")
@@ -25,8 +23,6 @@ public class FetusRecordController {
     @Autowired
     private FetusRecordService fetusRecordService;
 
-    @Autowired
-    private StandardService standardService;
 
     @Operation(summary = "Create a Fetus Record", description = "Creates a fetus record for a specific fetus ID.")
     @ApiResponses(value = {
@@ -51,17 +47,6 @@ public class FetusRecordController {
     public ResponseEntity<List<FetusRecordDTO>> getRecordsByFetusId(@PathVariable Long fetusId) {
         List<FetusRecordDTO> response = fetusRecordService.getRecordsByFetusId(fetusId);
         return ResponseEntity.ok(response);
-    }
-
-    @Operation(summary = "Get Pregnancy Standards", description = "Retrieves standard values for a specific gestational week and fetus index.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Standards retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "No standards found"),
-            @ApiResponse(responseCode = "500", description = "Server error")
-    })
-    @GetMapping("/standards/all")
-    public ResponseEntity<List<PregnancyStandardDTO>> getAllPregnancyStandards() {
-        return ResponseEntity.ok(standardService.getAllPregnancyStandards());
     }
 }
 

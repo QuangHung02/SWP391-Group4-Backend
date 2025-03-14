@@ -42,9 +42,19 @@ public class FetusRecordService {
         Fetus fetus = fetusRepository.findById(fetusId)
                 .orElseThrow(() -> new RuntimeException("Fetus not found"));
 
+        if (fetus.getStatus() == FetusStatus.COMPLETED || 
+            fetus.getStatus() == FetusStatus.CANCEL) {
+            throw new IllegalStateException("Không thể thêm record cho thai nhi đã kết thúc");
+        }
+
         Pregnancy pregnancy = fetus.getPregnancy();
         if (pregnancy == null) {
             throw new RuntimeException("Fetus has no associated pregnancy");
+        }
+
+        if (pregnancy.getStatus() == PregnancyStatus.COMPLETED || 
+            pregnancy.getStatus() == PregnancyStatus.CANCEL) {
+            throw new IllegalStateException("Không thể thêm record cho thai kỳ đã kết thúc");
         }
 
         int week = pregnancy.getGestationalWeeks();
@@ -59,26 +69,6 @@ public class FetusRecordService {
         FetusRecord record = new FetusRecord();
         record.setFetus(fetus);
         record.setWeek(week);
-        
-        if (recordDTO.getFetalWeight() != null && recordDTO.getFetalWeight().compareTo(new BigDecimal("10000")) > 0) {
-            throw new IllegalArgumentException("Fetal weight cannot be more than 10000g (10kg)");
-        }
-        if (recordDTO.getCrownHeelLength() != null && recordDTO.getCrownHeelLength().compareTo(new BigDecimal("100")) > 0) {
-            throw new IllegalArgumentException("Crown heel length cannot be more than 100cm");
-        }
-        if (recordDTO.getHeadCircumference() != null && recordDTO.getHeadCircumference().compareTo(new BigDecimal("100")) > 0) {
-            throw new IllegalArgumentException("Head circumference cannot be more than 100cm");
-        }
-
-        if (recordDTO.getFetalWeight() != null && recordDTO.getFetalWeight().compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Fetal weight cannot be negative");
-        }
-        if (recordDTO.getCrownHeelLength() != null && recordDTO.getCrownHeelLength().compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Crown heel length cannot be negative");
-        }
-        if (recordDTO.getHeadCircumference() != null && recordDTO.getHeadCircumference().compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Head circumference cannot be negative");
-        }
 
         record.setFetalWeight(recordDTO.getFetalWeight() != null ? recordDTO.getFetalWeight() : BigDecimal.ZERO);
         record.setCrownHeelLength(recordDTO.getCrownHeelLength() != null ? recordDTO.getCrownHeelLength() : BigDecimal.ZERO);

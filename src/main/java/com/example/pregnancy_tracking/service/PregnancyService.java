@@ -31,6 +31,9 @@ public class PregnancyService {
     @Autowired
     private FetusRepository fetusRepository;
 
+    @Autowired
+    private StandardService standardService;
+
     @Transactional
     public PregnancyListDTO createPregnancy(PregnancyDTO pregnancyDTO) {
         if (pregnancyDTO.getGestationalWeeks() < 0 || pregnancyDTO.getGestationalDays() < 0) {
@@ -68,6 +71,12 @@ public class PregnancyService {
         pregnancy.setLastUpdatedAt(now);
 
         Pregnancy savedPregnancy = pregnancyRepository.save(pregnancy);
+
+        standardService.checkAndCreateWeeklyTasks(
+            user.getId(),
+            savedPregnancy.getPregnancyId(),
+            pregnancyDTO.getGestationalWeeks()
+        );
 
         System.out.println("Creating fetuses for pregnancy: " + savedPregnancy.getPregnancyId());
 
@@ -115,6 +124,12 @@ public class PregnancyService {
         pregnancy.setGestationalDays(pregnancyDTO.getGestationalDays());
         pregnancy.setLastUpdatedAt(LocalDateTime.now());
 
+        standardService.checkAndCreateWeeklyTasks(
+            pregnancy.getUser().getId(),
+            pregnancy.getPregnancyId(),
+            pregnancyDTO.getGestationalWeeks()
+        );
+
         List<FetusRecord> records = fetusRecordRepository.findByFetusPregnancyPregnancyId(pregnancyId);
         for (FetusRecord record : records) {
             int adjustedWeek = pregnancyDTO.getGestationalWeeks() - (oldWeeks - record.getWeek());
@@ -126,29 +141,33 @@ public class PregnancyService {
         return convertToListDTO(savedPregnancy);
     }
 
+    @Transactional
     public void updatePregnancyStatus(Long pregnancyId, PregnancyStatus newStatus) {
-        System.out.println("Bắt đầu cập nhật trạng thái thai kỳ: " + pregnancyId + " thành " + newStatus);
-        
         Pregnancy pregnancy = pregnancyRepository.findById(pregnancyId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy thai kỳ"));
-        System.out.println("Tìm thấy thai kỳ với trạng thái hiện tại: " + pregnancy.getStatus());
-    
-        pregnancy.setStatus(newStatus);
-    
-        List<Fetus> fetuses = fetusRepository.findByPregnancyPregnancyId(pregnancyId);
-        System.out.println("Tìm thấy " + fetuses.size() + " thai nhi cần cập nhật");
-    
-        for (Fetus fetus : fetuses) {
-            if (newStatus == PregnancyStatus.COMPLETED) {
-                fetus.setStatus(FetusStatus.COMPLETED);
-            } else if (newStatus == PregnancyStatus.ONGOING) {
-                fetus.setStatus(FetusStatus.ACTIVE);
-            }
-            fetusRepository.save(fetus);
+
+        if (pregnancy.getStatus() == PregnancyStatus.COMPLETED || 
+            pregnancy.getStatus() == PregnancyStatus.CANCEL) {
+            throw new IllegalStateException("Không thể thay đổi trạng thái của thai kỳ đã kết thúc");
         }
-    
-        Pregnancy savedPregnancy = pregnancyRepository.save(pregnancy);
-        System.out.println("Đã lưu thai kỳ với trạng thái mới: " + savedPregnancy.getStatus());
+
+        if (pregnancy.getStatus() == PregnancyStatus.ONGOING) {
+            pregnancy.setStatus(newStatus);
+            
+            List<Fetus> fetuses = fetusRepository.findByPregnancyPregnancyId(pregnancyId);
+            for (Fetus fetus : fetuses) {
+                if (newStatus == PregnancyStatus.COMPLETED) {
+                    fetus.setStatus(FetusStatus.COMPLETED);
+                } else if (newStatus == PregnancyStatus.CANCEL) {
+                    fetus.setStatus(FetusStatus.CANCEL);
+                }
+                fetusRepository.save(fetus);
+            }
+            
+            pregnancyRepository.save(pregnancy);
+        } else {
+            throw new IllegalStateException("Chỉ có thể thay đổi trạng thái của thai kỳ đang tiến triển");
+        }
     }
     public List<PregnancyListDTO> getPregnanciesByUserId(Long userId) {
         List<Pregnancy> pregnancies = pregnancyRepository.findByUserId(userId);
@@ -190,28 +209,25 @@ public class PregnancyService {
 
         return convertToListDTO(pregnancy);
     }
-
-    // Có thể xóa các DTO và method convert không cần thiết như PregnancyResponseDTO, convertToDTO
     public void updateFetusStatus(Long fetusId, FetusStatus status) {
         Fetus fetus = fetusRepository.findById(fetusId)
                 .orElseThrow(() -> new ResourceNotFoundException("Fetus not found with id: " + fetusId));
         
-        fetus.setStatus(status);
-        fetusRepository.save(fetus);
-    }
-    private PregnancyResponseDTO convertToDTO(Pregnancy pregnancy) {
-        PregnancyResponseDTO dto = new PregnancyResponseDTO();
-        dto.setPregnancyId(pregnancy.getPregnancyId());
-        dto.setUserId(pregnancy.getUser().getId());
-        dto.setStartDate(pregnancy.getStartDate());
-        dto.setDueDate(pregnancy.getDueDate());
-        dto.setExamDate(pregnancy.getExamDate());
-        dto.setGestationalWeeks(pregnancy.getGestationalWeeks());
-        dto.setGestationalDays(pregnancy.getGestationalDays());
-        dto.setStatus(pregnancy.getStatus());
-        dto.setFetuses(pregnancy.getFetuses());
-        return dto;
-    }
+        if (fetus.getStatus() == FetusStatus.COMPLETED || 
+            fetus.getStatus() == FetusStatus.CANCEL) {
+            throw new IllegalStateException("Không thể thay đổi trạng thái của thai nhi đã kết thúc");
+        }
 
+        if (fetus.getPregnancy().getStatus() != PregnancyStatus.ONGOING) {
+            throw new IllegalStateException("Không thể thay đổi trạng thái thai nhi khi thai kỳ đã kết thúc");
+        }
+
+        if (fetus.getStatus() == FetusStatus.ACTIVE) {
+            fetus.setStatus(status);
+            fetusRepository.save(fetus);
+        } else {
+            throw new IllegalStateException("Chỉ có thể thay đổi trạng thái của thai nhi đang phát triển");
+        }
+    }
 
 }

@@ -25,13 +25,13 @@ public class FetusRecord {
     @Column(name = "week", nullable = false)
     private Integer week;
 
-    @Column(name = "fetal_weight", precision = 8, scale = 2) 
+    @Column(name = "fetal_weight", precision = 10, scale = 2)
     private BigDecimal fetalWeight;
 
-    @Column(name = "crown_heel_length", precision = 6, scale = 2)  
+    @Column(name = "crown_heel_length", precision = 10, scale = 2)
     private BigDecimal crownHeelLength;
 
-    @Column(name = "head_circumference", precision = 6, scale = 2) 
+    @Column(name = "head_circumference", precision = 10, scale = 2)
     private BigDecimal headCircumference;
     
     @CreationTimestamp

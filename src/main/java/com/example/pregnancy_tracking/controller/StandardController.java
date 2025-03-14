@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.example.pregnancy_tracking.dto.PregnancyStandardDTO;
 
 import java.util.List;
 
@@ -93,5 +94,32 @@ public class StandardController {
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
         }
+    }
+
+    @Operation(summary = "Get all pregnancy standards", 
+              description = "Retrieves standard values for all gestational weeks.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Standards retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "No standards found"),
+            @ApiResponse(responseCode = "500", description = "Server error")
+    })
+    @GetMapping("/pregnancy/all")
+    public ResponseEntity<List<PregnancyStandardDTO>> getAllPregnancyStandards() {
+        return ResponseEntity.ok(standardService.getAllPregnancyStandards());
+    }
+
+    @Operation(summary = "Get pregnancy standards by week and fetus number")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Standards retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "No standards found"),
+            @ApiResponse(responseCode = "500", description = "Server error")
+    })
+    @GetMapping("/pregnancy")
+    public ResponseEntity<PregnancyStandardDTO> getPregnancyStandard(
+            @RequestParam Integer week,
+            @RequestParam Integer fetusNumber) {
+        return standardService.getPregnancyStandard(week, fetusNumber)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 }
