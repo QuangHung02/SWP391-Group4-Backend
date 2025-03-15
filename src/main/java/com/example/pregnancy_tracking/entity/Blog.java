@@ -19,10 +19,10 @@ public class Blog {
     @Column(name = "blog_id")
     private Long blogId;
 
-    @Column(name = "title", nullable = false)
+    @Column(name = "title", nullable = false, length = 255)
     private String title;
 
-    @Column(name = "content", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "content", nullable = false, columnDefinition = "NVARCHAR(MAX)")
     private String content;
 
     @ManyToOne

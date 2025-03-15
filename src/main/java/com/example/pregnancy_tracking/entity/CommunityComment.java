@@ -30,7 +30,7 @@ public class CommunityComment {
     @JoinColumn(name = "author_id", nullable = false)
     private User author;
 
-    @Column(name = "content", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "content", nullable = false, columnDefinition = "NVARCHAR(MAX)")
     private String content;
 
     @Column(name = "isAnonymous")

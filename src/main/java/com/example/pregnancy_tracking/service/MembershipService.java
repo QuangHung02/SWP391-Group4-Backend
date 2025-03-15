@@ -14,7 +14,6 @@ import java.time.LocalDate;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
-import com.example.pregnancy_tracking.dto.UpdatePackagePriceDTO;
 
 @Service
 @RequiredArgsConstructor
@@ -108,12 +107,19 @@ public class MembershipService {
         MembershipPackage existingPackage = packageRepository.findById(packageId)
                 .orElseThrow(() -> new RuntimeException("Package not found"));
 
-        // Only update the price
-        existingPackage.setPrice(packageDTO.getPrice());
-
+        if (packageDTO.getPrice() != null) {
+            existingPackage.setPrice(packageDTO.getPrice());
+        }
+        if (packageDTO.getName() != null) {
+            existingPackage.setName(packageDTO.getName());
+        }
+        if (packageDTO.getDescription() != null) {
+            existingPackage.setDescription(packageDTO.getDescription());
+        }
+        if (packageDTO.getDuration() != null) {
+            existingPackage.setDuration(packageDTO.getDuration());
+        }
         MembershipPackage updatedPackage = packageRepository.save(existingPackage);
-        
-        // Convert to DTO
         MembershipPackageDTO dto = new MembershipPackageDTO();
         dto.setId(updatedPackage.getId());
         dto.setName(updatedPackage.getName());
@@ -126,22 +132,4 @@ public class MembershipService {
         return dto;
     }
 
-    public MembershipPackageDTO updatePackagePrice(Long packageId, UpdatePackagePriceDTO priceDTO) {
-        MembershipPackage existingPackage = packageRepository.findById(packageId)
-                .orElseThrow(() -> new RuntimeException("Package not found"));
-
-        existingPackage.setPrice(priceDTO.getPrice());
-        MembershipPackage updatedPackage = packageRepository.save(existingPackage);
-        
-        MembershipPackageDTO dto = new MembershipPackageDTO();
-        dto.setId(updatedPackage.getId());
-        dto.setName(updatedPackage.getName());
-        dto.setDescription(updatedPackage.getDescription());
-        dto.setPrice(updatedPackage.getPrice());
-        dto.setDuration(updatedPackage.getDuration());
-        dto.setCreatedAt(updatedPackage.getCreatedAt());
-        dto.setUpdatedAt(updatedPackage.getUpdatedAt());
-        
-        return dto;
-    }
 }

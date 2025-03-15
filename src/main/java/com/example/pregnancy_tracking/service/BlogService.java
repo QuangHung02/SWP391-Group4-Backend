@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.ArrayList;
 
 @Service
 @RequiredArgsConstructor
@@ -29,30 +30,9 @@ public class BlogService {
         blog.setAuthor(author);
         blog.setCreatedAt(LocalDateTime.now());
         
-        blog = blogRepository.save(blog);
-
-        if (request.getImageUrls() != null && !request.getImageUrls().isEmpty()) {
-            for (String imageUrl : request.getImageUrls()) {
-                BlogImage image = new BlogImage();
-                image.setBlog(blog);
-                image.setImageUrl(imageUrl);
-                image.setCreatedAt(LocalDateTime.now());
-                blogImageRepository.save(image);
-            }
-        }
-
-        return blog;
-    }
-
-    public Blog updateBlog(Long blogId, BlogRequest request) {
-        Blog blog = blogRepository.findById(blogId)
-                .orElseThrow(() -> new RuntimeException("Blog not found"));
+        // Initialize the images list
+        blog.setImages(new ArrayList<>());
         
-        blog.setTitle(request.getTitle());
-        blog.setContent(request.getContent());
-        
-        // Update images
-        blog.getImages().clear();
         if (request.getImageUrls() != null && !request.getImageUrls().isEmpty()) {
             for (String imageUrl : request.getImageUrls()) {
                 BlogImage image = new BlogImage();
@@ -63,6 +43,28 @@ public class BlogService {
             }
         }
         
+        return blogRepository.save(blog);
+    }
+
+    public Blog updateBlog(Long blogId, BlogRequest request) {
+        Blog blog = blogRepository.findById(blogId)
+                .orElseThrow(() -> new RuntimeException("Blog not found"));
+        
+        blog.setTitle(request.getTitle());
+        blog.setContent(request.getContent());
+        
+        if (request.getImageUrls() != null && !request.getImageUrls().isEmpty()) {
+            blogImageRepository.deleteAll(blog.getImages());
+            blog.getImages().clear();
+            
+            for (String imageUrl : request.getImageUrls()) {
+                BlogImage image = new BlogImage();
+                image.setBlog(blog);
+                image.setImageUrl(imageUrl);
+                image.setCreatedAt(LocalDateTime.now());
+                blog.getImages().add(image);
+            }
+        }
         return blogRepository.save(blog);
     }
 
