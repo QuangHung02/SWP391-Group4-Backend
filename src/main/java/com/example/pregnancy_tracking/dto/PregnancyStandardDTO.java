@@ -19,7 +19,7 @@ public class PregnancyStandardDTO {
     private BigDecimal maxHeadCircumference;
     private BigDecimal avgHeadCircumference;
 
-    public PregnancyStandardDTO() {} // Thêm constructor mặc định
+    public PregnancyStandardDTO() {}
 
     public PregnancyStandardDTO(PregnancyStandard standard) {
         this.week = standard.getId().getWeek();

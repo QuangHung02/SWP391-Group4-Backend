@@ -113,7 +113,6 @@ public class StandardService {
     }
 
     public void checkAndCreateWeeklyTasks(Long userId, Long pregnancyId, Integer currentWeek) {
-        // Get reminders only for this pregnancy
         List<ReminderDTO> existingReminders = reminderService.getRemindersByPregnancyId(pregnancyId);
         
         boolean reminderExists = existingReminders.stream()
@@ -162,8 +161,8 @@ public class StandardService {
             }
         }
 
-        if (latestRecord.getCrownHeelLength() != null) {
-            BigDecimal length = latestRecord.getCrownHeelLength();
+        if (latestRecord.getFemurLength() != null) {
+            BigDecimal length = latestRecord.getFemurLength();
             if (length.compareTo(standard.getMinLength()) < 0 || 
                 length.compareTo(standard.getMaxLength()) > 0) {
                 isIssue = true;

@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.ArrayList;
+import java.util.Date;
 
 @Entity
 @Table(name = "Pregnancies")
@@ -32,6 +33,9 @@ public class Pregnancy {
 
     @Column(name = "exam_date", nullable = false)
     private LocalDate examDate;
+
+    @Column(name = "last_exam_date")
+    private LocalDate lastExamDate;
 
     @Column(name = "gestational_weeks", nullable = false)
     private Integer gestationalWeeks;

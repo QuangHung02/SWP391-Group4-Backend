@@ -10,8 +10,8 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/fetus-records")
@@ -62,52 +62,20 @@ public class FetusRecordController {
         return ResponseEntity.ok(weeks);
     }
 
-    @Operation(summary = "Get Head Circumference measurements", 
-              description = "Retrieves all head circumference measurements for a specific fetus ordered by week")
+    @Operation(summary = "Get All Growth Measurements", 
+              description = "Retrieves all growth measurements (head circumference, fetal weight, crown heel length) for a specific fetus ordered by week")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Measurements retrieved successfully"),
             @ApiResponse(responseCode = "404", description = "No measurements found"),
             @ApiResponse(responseCode = "500", description = "Server error")
     })
-    @GetMapping("/{fetusId}/head-circumference")
-    public ResponseEntity<List<BigDecimal>> getHeadCircumference(@PathVariable Long fetusId) {
-        List<BigDecimal> measurements = fetusRecordService.getHeadCircumferenceByFetusId(fetusId);
-        if (measurements.isEmpty()) {
+    @GetMapping("/{fetusId}/growth-data")
+    public ResponseEntity<Map<String, List<Object[]>>> getAllGrowthData(@PathVariable Long fetusId) {
+        Map<String, List<Object[]>> growthData = fetusRecordService.getAllGrowthData(fetusId);
+        if (growthData.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(measurements);
-    }
-
-    @Operation(summary = "Get Fetal Weight measurements", 
-              description = "Retrieves all fetal weight measurements for a specific fetus ordered by week")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Measurements retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "No measurements found"),
-            @ApiResponse(responseCode = "500", description = "Server error")
-    })
-    @GetMapping("/{fetusId}/fetal-weight")
-    public ResponseEntity<List<BigDecimal>> getFetalWeight(@PathVariable Long fetusId) {
-        List<BigDecimal> measurements = fetusRecordService.getFetalWeightByFetusId(fetusId);
-        if (measurements.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(measurements);
-    }
-
-    @Operation(summary = "Get Crown Heel Length measurements", 
-              description = "Retrieves all crown heel length measurements for a specific fetus ordered by week")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Measurements retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "No measurements found"),
-            @ApiResponse(responseCode = "500", description = "Server error")
-    })
-    @GetMapping("/{fetusId}/crown-heel-length")
-    public ResponseEntity<List<BigDecimal>> getCrownHeelLength(@PathVariable Long fetusId) {
-        List<BigDecimal> measurements = fetusRecordService.getCrownHeelLengthByFetusId(fetusId);
-        if (measurements.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(measurements);
+        return ResponseEntity.ok(growthData);
     }
 }
 

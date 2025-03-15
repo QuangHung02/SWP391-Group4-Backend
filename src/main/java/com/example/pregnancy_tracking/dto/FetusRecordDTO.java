@@ -12,7 +12,7 @@ public class FetusRecordDTO {
     @DecimalMin(value = "0.0", message = "Value must be positive")
     private BigDecimal fetalWeight;
     @DecimalMin(value = "0.0", message = "Value must be positive")
-    private BigDecimal crownHeelLength;
+    private BigDecimal femurLength;
     @DecimalMin(value = "0.0", message = "Value must be positive")
     private BigDecimal headCircumference;
 
@@ -22,7 +22,7 @@ public class FetusRecordDTO {
         this.recordId = record.getRecordId();
         this.week = record.getWeek();
         this.fetalWeight = record.getFetalWeight();
-        this.crownHeelLength = record.getCrownHeelLength();
+        this.femurLength = record.getFemurLength();
         this.headCircumference = record.getHeadCircumference();
     }
 }

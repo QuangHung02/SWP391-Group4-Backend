@@ -53,7 +53,6 @@ public class MembershipService {
         packageDTO.setDescription(premiumPackage.getDescription());
         packageDTO.setDuration(premiumPackage.getDuration());
 
-        // Check if user has active Basic subscription
         boolean hasActiveBasic = subscriptionRepository
                 .existsByUserIdAndPackageIdAndStatus(userId, basicPackage.getId(), "Active");
 
@@ -77,13 +76,11 @@ public class MembershipService {
             throw new RuntimeException("Premium package not found");
         }
 
-        // Calculate price based on Basic subscription
         BigDecimal finalPrice;
         boolean hasActiveBasic = subscriptionRepository
                 .existsByUserIdAndPackageIdAndStatus(userId, basicPackage.getId(), "Active");
         if (hasActiveBasic) {
             finalPrice = premiumPackage.getPrice().divide(BigDecimal.valueOf(2));
-            // Update Basic subscription status to Expired
             subscriptionRepository.findByUserIdAndPackageIdAndStatus(userId, basicPackage.getId(), "Active")
                     .ifPresent(sub -> {
                         sub.setStatus("Expired");
@@ -93,7 +90,6 @@ public class MembershipService {
             finalPrice = premiumPackage.getPrice();
         }
 
-        // Create new Premium subscription
         Subscription premiumSub = new Subscription();
         premiumSub.setUser(user);
         premiumSub.setMembershipPackage(premiumPackage);
@@ -108,12 +104,10 @@ public class MembershipService {
         MembershipPackage existingPackage = packageRepository.findById(packageId)
                 .orElseThrow(() -> new RuntimeException("Package not found"));
 
-        // Only update the price
         existingPackage.setPrice(packageDTO.getPrice());
 
         MembershipPackage updatedPackage = packageRepository.save(existingPackage);
         
-        // Convert to DTO
         MembershipPackageDTO dto = new MembershipPackageDTO();
         dto.setId(updatedPackage.getId());
         dto.setName(updatedPackage.getName());

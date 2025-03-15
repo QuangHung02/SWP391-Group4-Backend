@@ -1,9 +1,7 @@
 package com.example.pregnancy_tracking.service;
 
-import com.example.pregnancy_tracking.dto.PregnancyResponseDTO;
 import com.example.pregnancy_tracking.entity.*;
 import com.example.pregnancy_tracking.exception.ResourceNotFoundException;
-import com.example.pregnancy_tracking.repository.FetusRecordRepository;
 import com.example.pregnancy_tracking.repository.FetusRepository;
 import com.example.pregnancy_tracking.repository.PregnancyRepository;
 import com.example.pregnancy_tracking.repository.UserRepository;
@@ -16,6 +14,7 @@ import java.util.List;
 import jakarta.transaction.Transactional;
 import java.util.stream.Collectors;
 import com.example.pregnancy_tracking.dto.PregnancyListDTO;
+import java.time.temporal.ChronoUnit;
 
 @Service
 public class PregnancyService {
@@ -26,7 +25,7 @@ public class PregnancyService {
     private UserRepository userRepository;
 
     @Autowired
-    private FetusRecordRepository fetusRecordRepository;
+    private FetusRecordService fetusRecordService;
 
     @Autowired
     private FetusRepository fetusRepository;
@@ -37,15 +36,15 @@ public class PregnancyService {
     @Transactional
     public PregnancyListDTO createPregnancy(PregnancyDTO pregnancyDTO) {
         if (pregnancyDTO.getGestationalWeeks() < 0 || pregnancyDTO.getGestationalDays() < 0) {
-            throw new IllegalArgumentException("Gestational weeks and days must be non-negative.");
+            throw new IllegalArgumentException("Tuần thai và ngày thai không được âm");
         }
 
         User user = userRepository.findById(pregnancyDTO.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
 
         boolean hasOngoingPregnancy = pregnancyRepository.existsByUserIdAndStatus(user.getId(), PregnancyStatus.ONGOING);
         if (hasOngoingPregnancy) {
-            throw new IllegalStateException("User already has an ongoing pregnancy.");
+            throw new IllegalStateException("Người dùng đã có thai kỳ đang theo dõi");
         }
 
         LocalDate examDate = pregnancyDTO.getExamDate();
@@ -97,25 +96,34 @@ public class PregnancyService {
 
     public PregnancyListDTO getPregnancyById(Long pregnancyId) {
         Pregnancy pregnancy = pregnancyRepository.findById(pregnancyId)
-                .orElseThrow(() -> new RuntimeException("Pregnancy not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thai kỳ"));
         return convertToListDTO(pregnancy);
     }
 
     @Transactional
     public PregnancyListDTO updatePregnancy(Long pregnancyId, PregnancyDTO pregnancyDTO) {
         if (pregnancyDTO.getGestationalWeeks() < 0 || pregnancyDTO.getGestationalDays() < 0) {
-            throw new IllegalArgumentException("Gestational weeks and days must be non-negative.");
+            throw new IllegalArgumentException("Tuần thai và ngày thai không được âm");
         }
 
         Pregnancy pregnancy = pregnancyRepository.findById(pregnancyId)
-                .orElseThrow(() -> new RuntimeException("Pregnancy not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thai kỳ"));
+
+        if (pregnancy.getStatus() != PregnancyStatus.ONGOING) {
+            throw new IllegalStateException("Chỉ có thể cập nhật thai kỳ đang theo dõi");
+        }
+
+        if (pregnancyDTO.getGestationalWeeks() <= pregnancy.getGestationalWeeks()) {
+            throw new IllegalArgumentException("Tuần thai mới phải lớn hơn tuần thai hiện tại");
+        }
+
+        LocalDate lastExamDate = pregnancy.getExamDate();
+        int oldWeeks = pregnancy.getGestationalWeeks();
 
         LocalDate examDate = pregnancyDTO.getExamDate();
         int totalDays = (pregnancyDTO.getGestationalWeeks() * 7) + pregnancyDTO.getGestationalDays();
         LocalDate startDate = examDate.minusDays(totalDays);
         LocalDate dueDate = startDate.plusDays(280);
-
-        int oldWeeks = pregnancy.getGestationalWeeks();
         
         pregnancy.setExamDate(examDate);
         pregnancy.setStartDate(startDate);
@@ -124,31 +132,27 @@ public class PregnancyService {
         pregnancy.setGestationalDays(pregnancyDTO.getGestationalDays());
         pregnancy.setLastUpdatedAt(LocalDateTime.now());
 
-        standardService.checkAndCreateWeeklyTasks(
-            pregnancy.getUser().getId(),
-            pregnancy.getPregnancyId(),
-            pregnancyDTO.getGestationalWeeks()
+        Pregnancy savedPregnancy = pregnancyRepository.save(pregnancy);
+        
+        fetusRecordService.updateRecordsForPregnancy(
+            pregnancyId,
+            examDate,
+            lastExamDate,
+            pregnancyDTO.getGestationalWeeks(),
+            oldWeeks
         );
 
-        List<FetusRecord> records = fetusRecordRepository.findByFetusPregnancyPregnancyId(pregnancyId);
-        for (FetusRecord record : records) {
-            int adjustedWeek = pregnancyDTO.getGestationalWeeks() - (oldWeeks - record.getWeek());
-            record.setWeek(Math.max(adjustedWeek, 1));
-        }
-        fetusRecordRepository.saveAll(records);
-        
-        Pregnancy savedPregnancy = pregnancyRepository.save(pregnancy);
         return convertToListDTO(savedPregnancy);
     }
 
     @Transactional
     public void updatePregnancyStatus(Long pregnancyId, PregnancyStatus newStatus) {
         Pregnancy pregnancy = pregnancyRepository.findById(pregnancyId)
-                .orElseThrow(() -> new RuntimeException("Pregnancy not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thai kỳ"));
 
         if (pregnancy.getStatus() == PregnancyStatus.COMPLETED || 
             pregnancy.getStatus() == PregnancyStatus.CANCEL) {
-            throw new IllegalStateException("Cannot change status of a completed or cancelled pregnancy");
+            throw new IllegalStateException("Không thể thay đổi trạng thái của thai kỳ đã hoàn thành hoặc đã hủy");
         }
 
         if (pregnancy.getStatus() == PregnancyStatus.ONGOING) {
