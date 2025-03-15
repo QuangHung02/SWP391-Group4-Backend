@@ -3,7 +3,6 @@ package com.example.pregnancy_tracking.controller;
 import com.example.pregnancy_tracking.dto.FetusRecordDTO;
 import com.example.pregnancy_tracking.dto.PregnancyStandardDTO;
 import com.example.pregnancy_tracking.entity.FetusRecord;
-import com.example.pregnancy_tracking.entity.PregnancyStandard;
 import com.example.pregnancy_tracking.service.FetusRecordService;
 import com.example.pregnancy_tracking.service.StandardService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,10 +12,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/fetus-records")

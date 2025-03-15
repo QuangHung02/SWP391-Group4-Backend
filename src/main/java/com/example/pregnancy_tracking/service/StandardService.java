@@ -3,7 +3,6 @@ package com.example.pregnancy_tracking.service;
 import com.example.pregnancy_tracking.dto.PregnancyStandardDTO;
 import com.example.pregnancy_tracking.entity.PregnancyStandard;
 import com.example.pregnancy_tracking.entity.MomStandard;
-import com.example.pregnancy_tracking.entity.PregnancyStandardId;
 import com.example.pregnancy_tracking.repository.PregnancyStandardRepository;
 import com.example.pregnancy_tracking.repository.MomStandardRepository;
 import org.springframework.beans.factory.annotation.Autowired;

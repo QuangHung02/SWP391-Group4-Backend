@@ -30,7 +30,7 @@ public class CommunityService {
         post.setAuthor(author);
         post.setIsAnonymous(request.getIsAnonymous());
         post.setCreatedAt(LocalDateTime.now());
-        
+
         post = postRepository.save(post);
 
         if (request.getMediaUrls() != null && !request.getMediaUrls().isEmpty()) {
@@ -59,7 +59,7 @@ public class CommunityService {
         comment.setContent(request.getContent());
         comment.setIsAnonymous(request.getIsAnonymous());
         comment.setCreatedAt(LocalDateTime.now());
-        
+
         comment = commentRepository.save(comment);
 
         if (request.getMediaUrls() != null && !request.getMediaUrls().isEmpty()) {
@@ -78,22 +78,18 @@ public class CommunityService {
     public void deletePost(Long postId) {
         CommunityPost post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
-        
-        // Delete associated media files first
+
         mediaFileRepository.deleteAll(post.getMediaFiles());
-        
-        // Delete the post (this will cascade delete comments due to FK constraint)
+
         postRepository.delete(post);
     }
 
     public void deleteComment(Long commentId) {
         CommunityComment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new RuntimeException("Comment not found"));
-        
-        // Delete associated media files first
+
         mediaFileRepository.deleteAll(comment.getMediaFiles());
-        
-        // Delete the comment
+
         commentRepository.delete(comment);
     }
 

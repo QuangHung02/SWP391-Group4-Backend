@@ -36,6 +36,20 @@ public class SubscriptionService {
         return dto;
     }
 
+    public List<SubscriptionDTO> getUserSubscriptions(Long userId) {
+        return subscriptionRepository.findByUserIdOrderByStartDateDesc(userId)
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<SubscriptionDTO> getAllSubscriptions() {
+        return subscriptionRepository.findAll()
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     public SubscriptionDTO createSubscription(Long userId, Long packageId) {
         User user = userRepository.findById(userId)
@@ -49,24 +63,24 @@ public class SubscriptionService {
 
         if (activeSubscription.isPresent()) {
             Subscription currentSub = activeSubscription.get();
-            
+
             if (currentSub.getMembershipPackage().getId().equals(packageId)) {
                 currentSub.setEndDate(currentSub.getEndDate().plusDays(newPackage.getDuration()));
                 return convertToDTO(subscriptionRepository.save(currentSub));
             }
-            
+
             if (newPackage.getPrice().compareTo(currentSub.getMembershipPackage().getPrice()) > 0) {
                 currentSub.setStatus("Expired");
                 currentSub.setEndDate(LocalDate.now());
                 subscriptionRepository.save(currentSub);
-                
+
                 Subscription newSubscription = new Subscription();
                 newSubscription.setUser(user);
                 newSubscription.setMembershipPackage(newPackage);
                 newSubscription.setStartDate(LocalDate.now());
                 newSubscription.setEndDate(LocalDate.now().plusDays(newPackage.getDuration()));
                 newSubscription.setStatus("Active");
-                
+
                 return convertToDTO(subscriptionRepository.save(newSubscription));
             }
         }
@@ -81,16 +95,4 @@ public class SubscriptionService {
         return convertToDTO(subscriptionRepository.save(subscription));
     }
 
-    public List<SubscriptionDTO> getUserSubscriptions(Long userId) {
-        return subscriptionRepository.findByUserIdOrderByStartDateDesc(userId)
-            .stream()
-            .map(this::convertToDTO)
-            .collect(Collectors.toList());
-    }
-    public List<SubscriptionDTO> getAllSubscriptions() {
-        return subscriptionRepository.findAll()
-            .stream()
-            .map(this::convertToDTO)
-            .collect(Collectors.toList());
-    }
 }
