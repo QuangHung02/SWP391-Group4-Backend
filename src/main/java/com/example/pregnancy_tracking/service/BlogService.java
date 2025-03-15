@@ -75,4 +75,8 @@ public class BlogService {
         return blogRepository.findById(blogId)
                 .orElseThrow(() -> new RuntimeException("Blog not found"));
     }
+
+    public List<Blog> getFeaturedBlogs() {
+        return blogRepository.findTop5ByOrderByCreatedAtDesc();
+    }
 }

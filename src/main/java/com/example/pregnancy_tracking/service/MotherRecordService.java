@@ -43,14 +43,14 @@ public class MotherRecordService {
         standardOpt.ifPresent(standard -> {
             double bmi = record.getMotherBmi() != null ? record.getMotherBmi() : 0.0;
             if (bmi < standard.getMinBmi() || bmi > standard.getMaxBmi()) {
-                HealthType healthType = (bmi < standard.getMinBmi()) ? HealthType.LOW_WEIGHT : HealthType.HIGH_BMI;
+                String healthType = (bmi < standard.getMinBmi()) ? "LOW_MOMWEIGHT" : "HIGH_MOMWEIGHT";
 
                 ReminderHealthAlertDTO healthAlertDTO = new ReminderHealthAlertDTO(
                         null,
                         record.getPregnancy().getPregnancyId(),
-                        healthType.name(),
-                        SeverityLevel.MEDIUM.name(),
-                        AlertSource.MOTHER_RECORDS.name(),
+                        healthType,
+                        "MEDIUM",
+                        "MOTHER_RECORDS",
                         "Mother's BMI is outside the standard range."
                 );
 

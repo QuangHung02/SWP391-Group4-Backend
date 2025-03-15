@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/reminders")
@@ -88,9 +89,10 @@ public class ReminderController {
     @PatchMapping("/{id}/status")
     public ResponseEntity<ReminderDTO> updateReminderStatus(
             @PathVariable Long id,
-            @RequestParam String status) {
+            @RequestBody Map<String, String> statusUpdate) {
 
         try {
+            String status = statusUpdate.get("status");
             ReminderStatus reminderStatus = ReminderStatus.valueOf(status.toUpperCase());
             return ResponseEntity.ok(reminderService.updateReminderStatus(id, reminderStatus));
         } catch (IllegalArgumentException e) {

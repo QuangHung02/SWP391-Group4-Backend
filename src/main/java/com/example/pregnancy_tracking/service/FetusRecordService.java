@@ -12,11 +12,12 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Date;
 import java.time.temporal.ChronoUnit;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.LocalDate;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import java.util.Set;
 
 @Service
 public class FetusRecordService {
@@ -35,6 +36,59 @@ public class FetusRecordService {
     @Autowired
     private ReminderHealthAlertRepository reminderHealthAlertRepository;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Autowired
+    private GrowthChartShareRepository growthChartShareRepository;
+
+    @Autowired
+    private CommunityPostRepository postRepository;
+
+    public Map<String, Object> prepareGrowthChartData(Long fetusId, Set<ChartType> chartTypes) {
+        Map<String, Object> chartData = new HashMap<>();
+        Map<String, List<Object[]>> growthData = getAllGrowthData(fetusId);
+        
+        if (chartTypes.contains(ChartType.WEIGHT)) {
+            chartData.put("fetalWeight", growthData.get("fetalWeight"));
+        }
+        if (chartTypes.contains(ChartType.LENGTH)) {
+            chartData.put("femurLength", growthData.get("femurLength"));
+        }
+        if (chartTypes.contains(ChartType.HEAD_CIRCUMFERENCE)) {
+            chartData.put("headCircumference", growthData.get("headCircumference"));
+        }
+        
+        return chartData;
+    }
+
+    public GrowthChartShare createGrowthChartShare(Long fetusId, Set<ChartType> chartTypes, String title, String content) {
+        Fetus fetus = fetusRepository.findById(fetusId)
+                .orElseThrow(() -> new RuntimeException("Fetus not found"));
+                
+        Map<String, Object> chartData = prepareGrowthChartData(fetusId, chartTypes);
+        
+        CommunityPost post = new CommunityPost();
+        post.setTitle(title);
+        post.setContent(content);
+        post.setAuthor(fetus.getPregnancy().getUser());
+        post.setCreatedAt(LocalDateTime.now());
+        post = postRepository.save(post);
+        
+        GrowthChartShare share = new GrowthChartShare();
+        share.setPost(post);
+        share.setFetus(fetus);
+        share.setSharedTypes(chartTypes);
+        try {
+            share.setChartData(objectMapper.writeValueAsString(chartData));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error converting chart data to JSON", e);
+        }
+        share.setCreatedAt(LocalDateTime.now());
+        
+        return growthChartShareRepository.save(share);
+    }
+
     public List<FetusRecordDTO> getRecordsByFetusId(Long fetusId) {
         List<FetusRecord> records = fetusRecordRepository.findByFetusFetusIdOrderByWeekAsc(fetusId);
         return records.stream().map(FetusRecordDTO::new).collect(Collectors.toList());
@@ -50,7 +104,6 @@ public class FetusRecordService {
 
     @Transactional
     public FetusRecord createRecord(Long fetusId, FetusRecordDTO recordDTO) {
-        // Validation checks
         Fetus fetus = fetusRepository.findById(fetusId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy thai nhi"));
 
@@ -124,18 +177,45 @@ public class FetusRecordService {
         }
 
         if (severity != null) {
-            List<Reminder> reminders = reminderRepository.findByPregnancy_PregnancyId(
-                    record.getFetus().getPregnancy().getPregnancyId());
+            Reminder reminder = new Reminder();
+            reminder.setUser(record.getFetus().getPregnancy().getUser());
+            reminder.setPregnancy(record.getFetus().getPregnancy());
+            reminder.setType(ReminderType.HEALTH_ALERT);
+            reminder.setReminderDate(LocalDate.now());
+            reminder.setStatus(ReminderStatus.NOT_YET);
             
-            if (reminders.isEmpty()) {
-                throw new RuntimeException("Không tìm thấy lời nhắc");
-            }
-            
-            Reminder reminder = reminders.get(0);
+            Reminder savedReminder = reminderRepository.save(reminder);
             
             ReminderHealthAlert alert = new ReminderHealthAlert();
-            alert.setReminder(reminder);
-            alert.setHealthType(HealthType.FETUS_GROWTH);
+            alert.setReminder(savedReminder);
+            
+            if (record.getFetalWeight() != null) {
+                BigDecimal weight = record.getFetalWeight();
+                if (weight.compareTo(standard.getMinWeight()) < 0) {
+                    alert.setHealthType(HealthType.LOW_WEIGHT);
+                } else if (weight.compareTo(standard.getMaxWeight()) > 0) {
+                    alert.setHealthType(HealthType.HIGH_WEIGHT);
+                }
+            }
+            
+            if (record.getHeadCircumference() != null) {
+                BigDecimal circumference = record.getHeadCircumference();
+                if (circumference.compareTo(standard.getMinHeadCircumference()) < 0) {
+                    alert.setHealthType(HealthType.LOW_CIRCUMFERENCE);
+                } else if (circumference.compareTo(standard.getMaxHeadCircumference()) > 0) {
+                    alert.setHealthType(HealthType.HIGH_CIRCUMFERENCE);
+                }
+            }
+            
+            if (record.getFemurLength() != null) {
+                BigDecimal length = record.getFemurLength();
+                if (length.compareTo(standard.getMinLength()) < 0) {
+                    alert.setHealthType(HealthType.LOW_HEIGHT);
+                } else if (length.compareTo(standard.getMaxLength()) > 0) {
+                    alert.setHealthType(HealthType.HIGH_HEIGHT);
+                }
+            }
+            
             alert.setSeverity(severity);
             alert.setSource(AlertSource.PREGNANCY_RECORDS);
             alert.setNotes("Fetus growth measurement out of normal range.");
@@ -193,6 +273,45 @@ public class FetusRecordService {
             int adjustedWeek = record.getWeek() + (int)actualWeeksPassed;
             record.setWeek(adjustedWeek);
             fetusRecordRepository.save(record);
+        }
+    }
+
+    public GrowthChartShare getGrowthChartByPostId(Long postId) {
+        return growthChartShareRepository.findByPostPostId(postId)
+                .orElseThrow(() -> new RuntimeException("Shared chart not found"));
+    }
+
+    public List<GrowthChartShare> getGrowthChartsByFetusId(Long fetusId) {
+        return growthChartShareRepository.findByFetusFetusId(fetusId);
+    }
+
+    public Map<ChartType, Boolean> getAvailableChartTypes(Long fetusId) {
+        List<FetusRecord> records = fetusRecordRepository.findByFetusFetusIdOrderByWeekAsc(fetusId);
+        Map<ChartType, Boolean> availability = new HashMap<>();
+        
+        availability.put(ChartType.WEIGHT, records.stream().anyMatch(r -> r.getFetalWeight() != null));
+        availability.put(ChartType.LENGTH, records.stream().anyMatch(r -> r.getFemurLength() != null));
+        availability.put(ChartType.HEAD_CIRCUMFERENCE, records.stream().anyMatch(r -> r.getHeadCircumference() != null));
+        
+        return availability;
+    }
+
+    public Map<String, Object> getChartDataForDisplay(Long postId) {
+        try {
+            GrowthChartShare share = growthChartShareRepository.findByPostPostId(postId)
+                    .orElseThrow(() -> new RuntimeException("Chart not found"));
+                    
+            Map<String, Object> response = new HashMap<>();
+            @SuppressWarnings("unchecked")
+            Map<String, Object> chartData = objectMapper.readValue(share.getChartData(), Map.class);
+            response.put("chartData", chartData);
+            response.put("sharedTypes", share.getSharedTypes());
+            response.put("post", share.getPost());
+            response.put("createdAt", share.getCreatedAt());
+            
+            return response;
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error parsing chart data", e);
         }
     }
 }

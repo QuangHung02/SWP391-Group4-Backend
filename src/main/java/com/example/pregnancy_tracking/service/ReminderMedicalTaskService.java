@@ -7,7 +7,6 @@ import com.example.pregnancy_tracking.entity.ReminderStatus;
 import com.example.pregnancy_tracking.repository.ReminderMedicalTaskRepository;
 import com.example.pregnancy_tracking.repository.ReminderRepository;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -31,7 +30,7 @@ public class ReminderMedicalTaskService {
                         task.getTaskType(),
                         task.getTaskName(),
                         task.getNotes(),
-                        task.getReminder().getStatus().name()  // Use parent reminder's status
+                        task.getReminder().getStatus().name() 
                 ))
                 .collect(Collectors.toList());
     }
@@ -45,14 +44,14 @@ public class ReminderMedicalTaskService {
                         task.getTaskType(),
                         task.getTaskName(),
                         task.getNotes(),
-                        task.getReminder().getStatus().name()  // Use parent reminder's status
+                        task.getReminder().getStatus().name()
                 ))
                 .collect(Collectors.toList());
     }
 
     public ReminderMedicalTaskDTO createTask(ReminderMedicalTaskDTO dto) {
         ReminderMedicalTask task = new ReminderMedicalTask();
-        task.setWeek(dto.getWeek());
+        task.setWeek(dto.getWeek());  
         task.setTaskType(dto.getTaskType());
         task.setTaskName(dto.getTaskName());
         task.setNotes(dto.getNotes());
@@ -70,7 +69,7 @@ public class ReminderMedicalTaskService {
                 task.getTaskType(),
                 task.getTaskName(),
                 task.getNotes(),
-                task.getReminder().getStatus().name()  // Use parent reminder's status
+                task.getReminder().getStatus().name()
         );
     }
 

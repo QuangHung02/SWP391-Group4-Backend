@@ -40,7 +40,8 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList(
             "http://localhost:3000",
-            "https://hare-causal-prawn.ngrok-free.app"
+            "https://hare-causal-prawn.ngrok-free.app",
+            "https://swp-391-group4.vercel.app"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList(
@@ -50,10 +51,16 @@ public class SecurityConfig {
             "Origin",
             "Accept",
             "Access-Control-Request-Method",
-            "Access-Control-Request-Headers"
+            "Access-Control-Request-Headers",
+            "Access-Control-Allow-Origin"
         ));
-        configuration.setExposedHeaders(Arrays.asList("X-Auth-Token"));
+        configuration.setExposedHeaders(Arrays.asList(
+            "X-Auth-Token",
+            "Access-Control-Allow-Origin",
+            "Access-Control-Allow-Credentials"
+        ));
         configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
@@ -72,6 +79,9 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/user/register",
                                 "/api/user/login",
+                                "/api/blogs",                 
+                                "/api/blogs/featured",       
+                                "/api/blogs/*",
                                 "/health/**",
                                 "/",
                                 "/error",

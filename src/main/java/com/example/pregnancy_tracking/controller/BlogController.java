@@ -21,13 +21,6 @@ import java.util.List;
 public class BlogController {
     private final BlogService blogService;
 
-    @Operation(summary = "Create a new blog", description = "Admins can create a new blog post.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Blog created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request data"),
-            @ApiResponse(responseCode = "403", description = "Unauthorized access"),
-            @ApiResponse(responseCode = "500", description = "Server error")
-    })
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Blog> createBlog(
@@ -67,24 +60,34 @@ public class BlogController {
         return ResponseEntity.ok("Blog deleted successfully");
     }
 
-    @Operation(summary = "Get all blogs", description = "Retrieves a list of all blog posts.")
+    @GetMapping
+    @Operation(summary = "Get all blogs", description = "Public endpoint to retrieve all blog posts.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Blogs retrieved successfully"),
             @ApiResponse(responseCode = "500", description = "Server error")
     })
-    @GetMapping
     public ResponseEntity<List<Blog>> getAllBlogs() {
         return ResponseEntity.ok(blogService.getAllBlogs());
     }
 
-    @Operation(summary = "Get a blog by ID", description = "Retrieves details of a specific blog post by ID.")
+    @GetMapping("/{blogId}")
+    @Operation(summary = "Get a blog by ID", description = "Public endpoint to retrieve a specific blog post.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Blog retrieved successfully"),
             @ApiResponse(responseCode = "404", description = "Blog not found"),
             @ApiResponse(responseCode = "500", description = "Server error")
     })
-    @GetMapping("/{blogId}")
     public ResponseEntity<Blog> getBlogById(@PathVariable Long blogId) {
         return ResponseEntity.ok(blogService.getBlogById(blogId));
+    }
+
+    @GetMapping("/featured")
+    @Operation(summary = "Get featured blogs", description = "Public endpoint to retrieve featured blog posts for homepage.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Featured blogs retrieved successfully"),
+            @ApiResponse(responseCode = "500", description = "Server error")
+    })
+    public ResponseEntity<List<Blog>> getFeaturedBlogs() {
+        return ResponseEntity.ok(blogService.getFeaturedBlogs());
     }
 }

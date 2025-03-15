@@ -12,25 +12,25 @@ import lombok.Setter;
 public class ReminderHealthAlert {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long healthAlertId;
+    @Column(name = "health_alert_id")
+    private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "reminder_id", nullable = false)
-    @JsonIgnore
+    @JoinColumn(name = "reminder_id")
     private Reminder reminder;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(name = "health_type")
     private HealthType healthType;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(name = "severity")
     private SeverityLevel severity;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(name = "source")
     private AlertSource source;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "notes")
     private String notes;
 }

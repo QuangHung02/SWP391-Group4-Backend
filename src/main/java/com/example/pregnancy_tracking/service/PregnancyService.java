@@ -124,7 +124,20 @@ public class PregnancyService {
         int totalDays = (pregnancyDTO.getGestationalWeeks() * 7) + pregnancyDTO.getGestationalDays();
         LocalDate startDate = examDate.minusDays(totalDays);
         LocalDate dueDate = startDate.plusDays(280);
+
+        long actualDays = ChronoUnit.DAYS.between(lastExamDate, examDate);
+        long actualWeeksPassed = (actualDays + 3) / 7;
+        int reportedWeeksPassed = pregnancyDTO.getGestationalWeeks() - oldWeeks;
         
+        if (reportedWeeksPassed > actualWeeksPassed + 1) { 
+            throw new IllegalArgumentException(
+                "Tuần thai báo cáo (" + pregnancyDTO.getGestationalWeeks() + 
+                ") chênh lệch quá nhiều so với thời gian thực tế (khoảng " + 
+                (oldWeeks + actualWeeksPassed) + " tuần)"
+            );
+        }
+        
+        pregnancy.setLastExamDate(lastExamDate);
         pregnancy.setExamDate(examDate);
         pregnancy.setStartDate(startDate);
         pregnancy.setDueDate(dueDate);
@@ -133,15 +146,6 @@ public class PregnancyService {
         pregnancy.setLastUpdatedAt(LocalDateTime.now());
 
         Pregnancy savedPregnancy = pregnancyRepository.save(pregnancy);
-        
-        fetusRecordService.updateRecordsForPregnancy(
-            pregnancyId,
-            examDate,
-            lastExamDate,
-            pregnancyDTO.getGestationalWeeks(),
-            oldWeeks
-        );
-
         return convertToListDTO(savedPregnancy);
     }
 

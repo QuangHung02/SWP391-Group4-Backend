@@ -1,16 +1,14 @@
 package com.example.pregnancy_tracking.service;
 
 import com.example.pregnancy_tracking.dto.ReminderHealthAlertDTO;
-import com.example.pregnancy_tracking.entity.Reminder;
-import com.example.pregnancy_tracking.entity.ReminderHealthAlert;
-import com.example.pregnancy_tracking.entity.HealthType;
-import com.example.pregnancy_tracking.entity.SeverityLevel;
-import com.example.pregnancy_tracking.entity.AlertSource;
+import com.example.pregnancy_tracking.entity.*;
 import com.example.pregnancy_tracking.repository.ReminderHealthAlertRepository;
 import com.example.pregnancy_tracking.repository.ReminderRepository;
+import com.example.pregnancy_tracking.repository.UserRepository;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,19 +16,40 @@ import java.util.stream.Collectors;
 public class ReminderHealthAlertService {
     private final ReminderHealthAlertRepository repository;
     private final ReminderRepository reminderRepository;
+    private final UserRepository userRepository;
 
-    public ReminderHealthAlertService(ReminderHealthAlertRepository repository, ReminderRepository reminderRepository) {
+    public ReminderHealthAlertService(
+            ReminderHealthAlertRepository repository, 
+            ReminderRepository reminderRepository,
+            UserRepository userRepository) {
         this.repository = repository;
         this.reminderRepository = reminderRepository;
+        this.userRepository = userRepository;
     }
 
     public List<ReminderHealthAlertDTO> getAllHealthAlerts() {
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        User currentUser = userRepository.findByEmail(currentUsername)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         return repository.findAll().stream()
+                .filter(alert -> alert.getReminder().getUser().getId().equals(currentUser.getId()))
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
     public List<ReminderHealthAlertDTO> getHealthAlertsByReminder(Long reminderId) {
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        User currentUser = userRepository.findByEmail(currentUsername)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Reminder reminder = reminderRepository.findById(reminderId)
+                .orElseThrow(() -> new RuntimeException("Reminder not found"));
+
+        if (!reminder.getUser().getId().equals(currentUser.getId())) {
+            throw new AccessDeniedException("You don't have permission to view these alerts");
+        }
+
         return repository.findByReminderReminderId(reminderId).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
@@ -38,8 +57,16 @@ public class ReminderHealthAlertService {
 
     @Transactional
     public ReminderHealthAlertDTO createHealthAlert(Long reminderId, ReminderHealthAlertDTO dto) {
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        User currentUser = userRepository.findByEmail(currentUsername)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         Reminder reminder = reminderRepository.findById(reminderId)
                 .orElseThrow(() -> new RuntimeException("Reminder not found"));
+
+        if (!reminder.getUser().getId().equals(currentUser.getId())) {
+            throw new AccessDeniedException("You don't have permission to create alert for this reminder");
+        }
 
         ReminderHealthAlert alert = new ReminderHealthAlert();
         alert.setReminder(reminder);
@@ -54,12 +81,23 @@ public class ReminderHealthAlertService {
 
     @Transactional
     public void deleteHealthAlert(Long healthAlertId) {
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        User currentUser = userRepository.findByEmail(currentUsername)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        ReminderHealthAlert alert = repository.findById(healthAlertId)
+                .orElseThrow(() -> new RuntimeException("Health alert not found"));
+
+        if (!alert.getReminder().getUser().getId().equals(currentUser.getId())) {
+            throw new AccessDeniedException("You don't have permission to delete this alert");
+        }
+
         repository.deleteById(healthAlertId);
     }
 
     private ReminderHealthAlertDTO convertToDTO(ReminderHealthAlert alert) {
         return new ReminderHealthAlertDTO(
-                alert.getHealthAlertId(),
+                alert.getId(),          
                 alert.getReminder().getReminderId(),
                 alert.getHealthType().name(),
                 alert.getSeverity().name(),

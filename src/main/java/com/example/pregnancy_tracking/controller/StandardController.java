@@ -10,7 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.example.pregnancy_tracking.dto.PregnancyStandardDTO;
-
+import java.util.Map;
 import java.util.List;
 
 @RestController
@@ -137,5 +137,23 @@ public class StandardController {
         return standardService.getPregnancyStandard(week, fetusNumber)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @Operation(summary = "Get pregnancy standards with prediction line", 
+              description = "Retrieves standards and prediction line for visualization")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Data retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "No data found"),
+            @ApiResponse(responseCode = "500", description = "Server error")
+    })
+    @GetMapping("/pregnancy/fetus/{fetusNumber}/with-prediction")
+    public ResponseEntity<Map<String, Object>> getPregnancyStandardsWithPrediction(
+            @PathVariable Integer fetusNumber,
+            @RequestParam Integer currentWeek) {
+        Map<String, Object> result = standardService.getStandardsWithPrediction(fetusNumber, currentWeek);
+        if (result.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(result);
     }
 }

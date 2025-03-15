@@ -16,13 +16,14 @@ import com.example.pregnancy_tracking.repository.FetusRecordRepository;
 import com.example.pregnancy_tracking.dto.ReminderDTO;
 import com.example.pregnancy_tracking.dto.ReminderMedicalTaskDTO;
 import com.example.pregnancy_tracking.entity.StandardMedicalTask;
-
+import java.util.Map;
+import java.util.HashMap;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
+import java.util.ArrayList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -89,7 +90,7 @@ public class StandardService {
                 ReminderDTO reminderDTO = new ReminderDTO();
                 reminderDTO.setUserId(userId);
                 reminderDTO.setPregnancyId(pregnancyId);
-                reminderDTO.setType("MEDICAL");
+                reminderDTO.setType("MEDICAL_TASK");
                 reminderDTO.setReminderDate(LocalDate.now());
                 
                 List<ReminderMedicalTaskDTO> tasks = standardTasks.stream()
@@ -185,7 +186,34 @@ public class StandardService {
 
     public List<PregnancyStandardDTO> getPregnancyStandardsByFetusNumber(Integer fetusNumber) {
         List<PregnancyStandard> standards = pregnancyStandardRepository.findByIdFetusNumberOrderByIdWeekAsc(fetusNumber);
-        return standards.stream().map(PregnancyStandardDTO::new).collect(Collectors.toList());
+        return standards.stream()
+                .map(PregnancyStandardDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    public Map<String, Object> getStandardsWithPrediction(Integer fetusNumber, Integer currentWeek) {
+        List<PregnancyStandard> standards = pregnancyStandardRepository.findByIdFetusNumberOrderByIdWeekAsc(fetusNumber);
+        List<PregnancyStandardDTO> currentStandards = standards.stream()
+            .filter(s -> s.getId().getWeek() <= currentWeek)
+            .map(PregnancyStandardDTO::new)
+            .collect(Collectors.toList());
+    
+        List<Map<String, Object>> predictions = standards.stream()
+            .filter(s -> s.getId().getWeek() > currentWeek)
+            .map(standard -> {
+                Map<String, Object> prediction = new HashMap<>();
+                prediction.put("week", standard.getId().getWeek());
+                prediction.put("avgWeight", standard.getAvgWeight());
+                prediction.put("avgLength", standard.getAvgLength());
+                prediction.put("avgHeadCircumference", standard.getAvgHeadCircumference());
+                return prediction;
+            })
+            .collect(Collectors.toList());
+    
+        Map<String, Object> result = new HashMap<>();
+        result.put("standards", currentStandards);
+        result.put("predictions", predictions);
+        return result;
     }
 }
 
