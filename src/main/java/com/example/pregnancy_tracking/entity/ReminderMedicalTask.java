@@ -1,11 +1,9 @@
-
 package com.example.pregnancy_tracking.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-
 @Entity
 @Table(name = "ReminderMedicalTasks")
 @Getter
@@ -13,18 +11,25 @@ import lombok.Setter;
 public class ReminderMedicalTask {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "task_id")
     private Long taskId;
 
     @ManyToOne
     @JoinColumn(name = "reminder_id", nullable = false)
-    @JsonIgnore
     private Reminder reminder;
 
-    private Integer week;
-    private String taskType;
+    @Column(name = "task_name", nullable = false)
     private String taskName;
+
+    @Column(name = "task_type")
+    private String taskType;
+
+    @Column(name = "week")
+    private Integer week;
+
+    @Column(name = "notes")
     private String notes;
 
-    @Enumerated(EnumType.STRING)
-    private ReminderStatus status;
+
+
 }

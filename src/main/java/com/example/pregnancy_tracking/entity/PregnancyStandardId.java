@@ -1,5 +1,6 @@
 package com.example.pregnancy_tracking.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,7 +12,10 @@ import java.util.Objects;
 @Getter
 @Setter
 public class PregnancyStandardId implements Serializable {
+    @Column(name = "week")
     private Integer week;
+    
+    @Column(name = "fetus_number")
     private Integer fetusNumber;
 
     public PregnancyStandardId() {}

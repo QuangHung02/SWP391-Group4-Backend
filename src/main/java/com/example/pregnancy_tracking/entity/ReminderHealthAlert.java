@@ -1,4 +1,3 @@
-
 package com.example.pregnancy_tracking.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -21,13 +20,17 @@ public class ReminderHealthAlert {
     private Reminder reminder;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
     private HealthType healthType;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
     private SeverityLevel severity;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
     private AlertSource source;
 
+    @Column(columnDefinition = "TEXT")
     private String notes;
 }

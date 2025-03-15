@@ -1,4 +1,3 @@
-
 package com.example.pregnancy_tracking.service;
 
 import com.example.pregnancy_tracking.dto.ReminderMedicalTaskDTO;
@@ -8,74 +7,102 @@ import com.example.pregnancy_tracking.entity.ReminderStatus;
 import com.example.pregnancy_tracking.repository.ReminderMedicalTaskRepository;
 import com.example.pregnancy_tracking.repository.ReminderRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class ReminderMedicalTaskService {
-    private final ReminderMedicalTaskRepository repository;
+    private final ReminderMedicalTaskRepository taskRepository;
     private final ReminderRepository reminderRepository;
 
-    public ReminderMedicalTaskService(ReminderMedicalTaskRepository repository, ReminderRepository reminderRepository) {
-        this.repository = repository;
+    public ReminderMedicalTaskService(ReminderMedicalTaskRepository taskRepository, ReminderRepository reminderRepository) {
+        this.taskRepository = taskRepository;
         this.reminderRepository = reminderRepository;
     }
 
     public List<ReminderMedicalTaskDTO> getAllMedicalTasks() {
-        return repository.findAll().stream()
-                .map(this::convertToDTO)
+        return taskRepository.findAll().stream()
+                .map(task -> new ReminderMedicalTaskDTO(
+                        task.getTaskId(),
+                        task.getReminder() != null ? task.getReminder().getReminderId() : null,
+                        task.getWeek(),
+                        task.getTaskType(),
+                        task.getTaskName(),
+                        task.getNotes(),
+                        task.getReminder().getStatus().name()  // Use parent reminder's status
+                ))
                 .collect(Collectors.toList());
     }
 
     public List<ReminderMedicalTaskDTO> getTasksByReminder(Long reminderId) {
-        return repository.findByReminderReminderId(reminderId).stream()
-                .map(this::convertToDTO)
+        return taskRepository.findByReminderReminderId(reminderId).stream()
+                .map(task -> new ReminderMedicalTaskDTO(
+                        task.getTaskId(),
+                        task.getReminder().getReminderId(),
+                        task.getWeek(),
+                        task.getTaskType(),
+                        task.getTaskName(),
+                        task.getNotes(),
+                        task.getReminder().getStatus().name()  // Use parent reminder's status
+                ))
                 .collect(Collectors.toList());
     }
 
-    @Transactional
-    public ReminderMedicalTaskDTO createTask(Long reminderId, ReminderMedicalTaskDTO dto) {
-        Reminder reminder = reminderRepository.findById(reminderId)
-                .orElseThrow(() -> new RuntimeException("Reminder not found"));
-
+    public ReminderMedicalTaskDTO createTask(ReminderMedicalTaskDTO dto) {
         ReminderMedicalTask task = new ReminderMedicalTask();
-        task.setReminder(reminder);
         task.setWeek(dto.getWeek());
         task.setTaskType(dto.getTaskType());
         task.setTaskName(dto.getTaskName());
         task.setNotes(dto.getNotes());
-        task.setStatus(ReminderStatus.valueOf(dto.getStatus())); // Fix Enum mapping
 
-        ReminderMedicalTask savedTask = repository.save(task);
-        return convertToDTO(savedTask);
-    }
+        if (dto.getReminderId() != null) {
+            Optional<Reminder> reminderOpt = reminderRepository.findById(dto.getReminderId());
+            reminderOpt.ifPresent(task::setReminder);
+        }
 
-    @Transactional
-    public ReminderMedicalTaskDTO updateTaskStatus(Long taskId, String status) {
-        ReminderMedicalTask task = repository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
-
-        task.setStatus(ReminderStatus.valueOf(status));
-        ReminderMedicalTask updatedTask = repository.save(task);
-        return convertToDTO(updatedTask);
-    }
-
-    @Transactional
-    public void deleteTask(Long taskId) {
-        repository.deleteById(taskId);
-    }
-
-    private ReminderMedicalTaskDTO convertToDTO(ReminderMedicalTask task) {
+        task = taskRepository.save(task);
         return new ReminderMedicalTaskDTO(
                 task.getTaskId(),
-                task.getReminder().getReminderId(),
+                task.getReminder() != null ? task.getReminder().getReminderId() : null,
                 task.getWeek(),
                 task.getTaskType(),
                 task.getTaskName(),
                 task.getNotes(),
-                task.getStatus().name()
+                task.getReminder().getStatus().name()  // Use parent reminder's status
         );
+    }
+
+    public ReminderMedicalTaskDTO updateTaskStatus(Long taskId, String status) {
+        ReminderMedicalTask task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+        
+        Reminder reminder = task.getReminder();
+        if (reminder == null) {
+            throw new RuntimeException("Task has no associated reminder");
+        }
+
+        try {
+            ReminderStatus newStatus = ReminderStatus.valueOf(status.toUpperCase());
+            reminder.setStatus(newStatus);
+            reminderRepository.save(reminder);
+            
+            return new ReminderMedicalTaskDTO(
+                    task.getTaskId(),
+                    reminder.getReminderId(),
+                    task.getWeek(),
+                    task.getTaskType(),
+                    task.getTaskName(),
+                    task.getNotes(),
+                    reminder.getStatus().name()
+            );
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid status value: " + status);
+        }
+    }
+
+    public void deleteTask(Long taskId) {
+        taskRepository.deleteById(taskId);
     }
 }

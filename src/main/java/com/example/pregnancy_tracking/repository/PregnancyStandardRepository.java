@@ -10,4 +10,6 @@ import java.util.List;
 @Repository
 public interface PregnancyStandardRepository extends JpaRepository<PregnancyStandard, PregnancyStandardId> {
     List<PregnancyStandard> findAllByOrderByIdWeekAsc();
+
+    List<PregnancyStandard> findByIdFetusNumberOrderByIdWeekAsc(Integer fetusNumber);
 }

@@ -1,12 +1,14 @@
 package com.example.pregnancy_tracking.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.util.ArrayList;
+import java.util.Date;
 
 @Entity
 @Table(name = "Pregnancies")
@@ -20,7 +22,7 @@ public class Pregnancy {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    @JsonBackReference
+    @JsonIgnoreProperties("pregnancies")
     private User user;
 
     @Column(name = "start_date", nullable = false)
@@ -31,6 +33,9 @@ public class Pregnancy {
 
     @Column(name = "exam_date", nullable = false)
     private LocalDate examDate;
+
+    @Column(name = "last_exam_date")
+    private LocalDate lastExamDate;
 
     @Column(name = "gestational_weeks", nullable = false)
     private Integer gestationalWeeks;
@@ -50,7 +55,16 @@ public class Pregnancy {
 
     @Column(name = "total_fetuses", nullable = false)
     private Integer totalFetuses;
+    
+    @OneToMany(mappedBy = "pregnancy", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JsonIgnoreProperties("pregnancy")
+    private List<Fetus> fetuses = new ArrayList<>();
 
-    @OneToMany(mappedBy = "pregnancy", cascade = CascadeType.ALL)
-    private List<Fetus> fetuses;
+    public List<Fetus> getFetuses() {
+        return fetuses != null ? fetuses : new ArrayList<>();
+    }
+
+    public void setFetuses(List<Fetus> fetuses) {
+        this.fetuses = fetuses != null ? fetuses : new ArrayList<>();
+    }
 }

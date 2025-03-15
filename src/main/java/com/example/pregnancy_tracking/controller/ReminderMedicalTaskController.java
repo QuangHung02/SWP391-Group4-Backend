@@ -31,10 +31,10 @@ public class ReminderMedicalTaskController {
         return ResponseEntity.ok(service.getTasksByReminder(reminderId));
     }
 
-    @Operation(summary = "Create a medical task")
-    @PostMapping("/{reminderId}")
-    public ResponseEntity<ReminderMedicalTaskDTO> createTask(@PathVariable Long reminderId, @RequestBody ReminderMedicalTaskDTO dto) {
-        return ResponseEntity.ok(service.createTask(reminderId, dto));
+    @Operation(summary = "Create a medical task (no reminderId required)")
+    @PostMapping
+    public ResponseEntity<ReminderMedicalTaskDTO> createTask(@RequestBody ReminderMedicalTaskDTO dto) {
+        return ResponseEntity.ok(service.createTask(dto));
     }
 
     @Operation(summary = "Update medical task status")

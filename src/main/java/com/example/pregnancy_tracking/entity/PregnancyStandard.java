@@ -15,24 +15,31 @@ public class PregnancyStandard {
     @EmbeddedId
     private PregnancyStandardId id;
 
-    @Column(name = "min_weight")
+    @Column(name = "min_weight", precision = 7, scale = 2)
     private BigDecimal minWeight;
 
-    @Column(name = "max_weight")
+    @Column(name = "max_weight", precision = 7, scale = 2)
     private BigDecimal maxWeight;
 
-    @Column(name = "min_length")
+    @Column(name = "avg_weight", precision = 7, scale = 2)
+    private BigDecimal avgWeight;
+
+    @Column(name = "min_length", precision = 7, scale = 2)
     private BigDecimal minLength;
 
-    @Column(name = "max_length")
+    @Column(name = "max_length", precision = 7, scale = 2)
     private BigDecimal maxLength;
 
-    @Column(name = "min_head_circumference")
+    @Column(name = "avg_length", precision = 7, scale = 2)
+    private BigDecimal avgLength;
+
+    @Column(name = "min_head_circumference", precision = 7, scale = 2)
     private BigDecimal minHeadCircumference;
 
-    @Column(name = "max_head_circumference")
+    @Column(name = "max_head_circumference", precision = 7, scale = 2)
     private BigDecimal maxHeadCircumference;
 
-    @Column(name = "avg_weight")
-    private BigDecimal avgWeight;
+    @Column(name = "avg_head_circumference", precision = 7, scale = 2)
+    private BigDecimal avgHeadCircumference;
+
 }
