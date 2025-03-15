@@ -3,8 +3,6 @@ package com.example.pregnancy_tracking.controller;
 import com.example.pregnancy_tracking.dto.ReminderMedicalTaskDTO;
 import com.example.pregnancy_tracking.service.ReminderMedicalTaskService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

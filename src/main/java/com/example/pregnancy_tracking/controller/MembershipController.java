@@ -1,7 +1,6 @@
 package com.example.pregnancy_tracking.controller;
 
 import jakarta.validation.Valid;
-import com.example.pregnancy_tracking.dto.UpdatePackagePriceDTO;
 import com.example.pregnancy_tracking.dto.MembershipPackageDTO;
 import com.example.pregnancy_tracking.dto.SubscriptionDTO;
 import com.example.pregnancy_tracking.service.MembershipService;
@@ -95,20 +94,3 @@ public class MembershipController {
             @Valid @RequestBody MembershipPackageDTO packageDTO) {
         return ResponseEntity.ok(membershipService.updatePackage(packageId, packageDTO));
     }
-
-    @Operation(summary = "Update membership package price", description = "Updates the price of a membership package. (Admin only)")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Membership package price updated successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request data"),
-            @ApiResponse(responseCode = "403", description = "Access denied - Admin only"),
-            @ApiResponse(responseCode = "404", description = "Package not found"),
-            @ApiResponse(responseCode = "500", description = "Server error")
-    })
-    @PutMapping("/packages/{packageId}/price")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<MembershipPackageDTO> updatePackagePrice(
-            @PathVariable Long packageId,
-            @Valid @RequestBody UpdatePackagePriceDTO priceDTO) {
-        return ResponseEntity.ok(membershipService.updatePackagePrice(packageId, priceDTO));
-    }
-}

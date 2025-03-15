@@ -70,7 +70,7 @@ public class UserService {
     }
 
     public void changePassword(String email, ChangePasswordRequest request) {
-        // Validate input
+
         if (request.getNewPassword() == null || request.getNewPassword().trim().isEmpty()) {
             throw new RuntimeException("New password cannot be empty");
         }
@@ -78,17 +78,14 @@ public class UserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Validate old password
         if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
             throw new RuntimeException("Old password is incorrect");
         }
 
-        // Validate that new password is different from old password
         if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
             throw new RuntimeException("New password must be different from old password");
         }
 
-        // Update password
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
     }
@@ -142,8 +139,6 @@ public class UserService {
     public void deleteUser(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        
-        // Check if trying to delete an admin
         if (user.getRole() == Role.ADMIN) {
             throw new RuntimeException("Cannot delete admin accounts");
         }

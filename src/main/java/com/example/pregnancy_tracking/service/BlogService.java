@@ -29,10 +29,7 @@ public class BlogService {
         blog.setContent(request.getContent());
         blog.setAuthor(author);
         blog.setCreatedAt(LocalDateTime.now());
-
-        // Initialize the images list
         blog.setImages(new ArrayList<>());
-
         if (request.getImageUrls() != null && !request.getImageUrls().isEmpty()) {
             for (String imageUrl : request.getImageUrls()) {
                 BlogImage image = new BlogImage();
@@ -42,7 +39,6 @@ public class BlogService {
                 blog.getImages().add(image);
             }
         }
-
         return blogRepository.save(blog);
     }
     public Blog updateBlog(Long blogId, BlogRequest request) {
@@ -51,11 +47,10 @@ public class BlogService {
 
         blog.setTitle(request.getTitle());
         blog.setContent(request.getContent());
-
+        
         if (request.getImageUrls() != null && !request.getImageUrls().isEmpty()) {
             blogImageRepository.deleteAll(blog.getImages());
             blog.getImages().clear();
-
             for (String imageUrl : request.getImageUrls()) {
                 BlogImage image = new BlogImage();
                 image.setBlog(blog);
