@@ -19,6 +19,7 @@ public class PaymentService {
     private final UserRepository userRepository;
     private final MembershipPackageRepository packageRepository;
     private final MembershipService membershipService;
+    private final SubscriptionService subscriptionService;
 
     public String createPaymentUrl(Long userId, Long packageId, String returnUrl) {
         User user = userRepository.findById(userId)
@@ -49,7 +50,7 @@ public class PaymentService {
         vnp_Params.put("vnp_CurrCode", "VND");
         vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
         vnp_Params.put("vnp_Locale", "vn");
-        vnp_Params.put("vnp_OrderInfo", "Thanh toan goi " + membershipPackage.getName() + "_" + userId);
+        vnp_Params.put("vnp_OrderInfo", "Thanh toan goi " + membershipPackage.getName() + "_" + packageId + "_" + userId);
         vnp_Params.put("vnp_OrderType", "billpayment");
         vnp_Params.put("vnp_ReturnUrl", returnUrl);
         vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
@@ -68,12 +69,8 @@ public class PaymentService {
                 queryUrl.append(fieldName).append('=').append(URLEncoder.encode(fieldValue, StandardCharsets.UTF_8));
             }
         }
-        
-        // Tạo chuỗi hash và chữ ký
         String hashData = queryUrl.toString();
         String vnp_SecureHash = VNPayConfig.hmacSHA512(VNPayConfig.vnp_HashSecret, hashData);
-        
-        // Thêm chữ ký vào URL
         queryUrl.append("&vnp_SecureHash=").append(vnp_SecureHash);
         
         return VNPayConfig.vnp_PayUrl + "?" + queryUrl.toString();
@@ -84,7 +81,13 @@ public class PaymentService {
         String vnp_TxnRef = vnpParams.get("vnp_TxnRef");
         
         if ("00".equals(vnp_ResponseCode)) {
-            Long userId = Long.parseLong(vnpParams.get("vnp_OrderInfo").split("_")[1]);
+            String orderInfo = vnpParams.get("vnp_OrderInfo");
+            String[] parts = orderInfo.split("_");
+            Long userId = Long.parseLong(parts[parts.length - 1]);
+            Long packageId = Long.parseLong(parts[parts.length - 2]);
+            
+            // Tạo subscription mới
+            subscriptionService.createSubscription(userId, packageId);
             membershipService.upgradeToPremium(userId);
         } else {
             throw new RuntimeException("Payment failed with code: " + vnp_ResponseCode);
