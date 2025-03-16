@@ -12,66 +12,44 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import com.example.pregnancy_tracking.exception.MembershipFeatureException;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import com.example.pregnancy_tracking.service.MembershipService;
+import com.example.pregnancy_tracking.entity.User;
 
 @RestController
 @RequestMapping("/api/fetus-records")
+@SecurityRequirement(name = "Bearer Authentication")
 public class FetusRecordController {
-
     @Autowired
     private FetusRecordService fetusRecordService;
+    
+    @Autowired
+    private MembershipService membershipService; // Thay đổi service
 
-
-    @Operation(summary = "Create a Fetus Record", description = "Creates a fetus record for a specific fetus ID.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Record created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request data"),
-            @ApiResponse(responseCode = "500", description = "Server error")
-    })
     @PostMapping("/{fetusId}")
-    public ResponseEntity<FetusRecord> createRecord(@PathVariable Long fetusId,
-                                                    @RequestBody @Valid FetusRecordDTO recordDTO) {
-        FetusRecord createdRecord = fetusRecordService.createRecord(fetusId, recordDTO);
+    public ResponseEntity<FetusRecord> createRecord(
+            @PathVariable Long fetusId,
+            @RequestBody @Valid FetusRecordDTO recordDTO,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        User user = (User) userDetails;
+        Long userId = user.getId();
+        if (!membershipService.canCreateFetusRecord(userId)) {
+            throw new MembershipFeatureException("This feature requires Basic or Premium membership");
+        }
+        FetusRecord createdRecord = fetusRecordService.createRecord(fetusId, recordDTO, userId);
         return ResponseEntity.ok(createdRecord);
     }
 
-    @Operation(summary = "Get Fetus Records by Fetus ID", description = "Retrieves all fetus records for a specific fetus.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Records retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "No records found"),
-            @ApiResponse(responseCode = "500", description = "Server error")
-    })
-    @GetMapping("/{fetusId}")
-    public ResponseEntity<List<FetusRecordDTO>> getRecordsByFetusId(@PathVariable Long fetusId) {
-        List<FetusRecordDTO> response = fetusRecordService.getRecordsByFetusId(fetusId);
-        return ResponseEntity.ok(response);
-    }
-
-    @Operation(summary = "Get Recorded Weeks by Fetus ID", 
-              description = "Retrieves all gestational weeks that have records for a specific fetus.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Weeks retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "No records found"),
-            @ApiResponse(responseCode = "500", description = "Server error")
-    })
-    @GetMapping("/{fetusId}/weeks")
-    public ResponseEntity<List<Integer>> getWeeksByFetusId(@PathVariable Long fetusId) {
-        List<Integer> weeks = fetusRecordService.getWeeksByFetusId(fetusId);
-        if (weeks.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(weeks);
-    }
-
-    @Operation(summary = "Get All Growth Measurements", 
-              description = "Retrieves all growth measurements (head circumference, fetal weight, crown heel length) for a specific fetus ordered by week")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Measurements retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "No measurements found"),
-            @ApiResponse(responseCode = "500", description = "Server error")
-    })
     @GetMapping("/{fetusId}/growth-data")
-    public ResponseEntity<Map<String, List<Object[]>>> getAllGrowthData(@PathVariable Long fetusId) {
-        Map<String, List<Object[]>> growthData = fetusRecordService.getAllGrowthData(fetusId);
+    public ResponseEntity<Map<String, List<Object[]>>> getAllGrowthData(
+            @PathVariable Long fetusId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        User user = (User) userDetails;
+        Long userId = user.getId();
+        Map<String, List<Object[]>> growthData = fetusRecordService.getAllGrowthData(fetusId, userId);
         if (growthData.isEmpty()) {
             return ResponseEntity.notFound().build();
         }

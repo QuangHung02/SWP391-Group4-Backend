@@ -15,7 +15,8 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Service
+@Service("membershipService")
+@Transactional
 @RequiredArgsConstructor
 public class MembershipService {
     private final UserRepository userRepository;
@@ -80,7 +81,7 @@ public class MembershipService {
                 .existsByUserIdAndPackageIdAndStatus(userId, basicPackage.getId(), "Active");
         if (hasActiveBasic) {
             finalPrice = premiumPackage.getPrice().divide(BigDecimal.valueOf(2));
-            subscriptionRepository.findByUserIdAndPackageIdAndStatus(userId, basicPackage.getId(), "Active")
+            subscriptionRepository.findFirstByUserIdAndStatusOrderByEndDateDesc(userId, "Active")
                     .ifPresent(sub -> {
                         sub.setStatus("Expired");
                         subscriptionRepository.save(sub);
@@ -128,4 +129,33 @@ public class MembershipService {
         return dto;
     }
 
+    public boolean canAccessFeature(Long userId, String packageName) {
+        return subscriptionRepository.findActiveSubscriptionByUserId(userId)
+            .map(subscription -> packageName.equals(subscription.getMembershipPackage().getName()))
+            .orElse(false);
+    }
+
+    public boolean canAccessStandardFeatures(Long userId) {
+        return true;
+    }
+
+    public boolean canCreatePregnancyRecord(Long userId) {
+        return canAccessFeature(userId, "Basic Plan") || canAccessFeature(userId, "Premium Plan");
+    }
+
+    public boolean canCreateFetusRecord(Long userId) {
+        return canAccessFeature(userId, "Basic Plan") || canAccessFeature(userId, "Premium Plan");
+    }
+
+    public boolean canShareGrowthChart(Long userId) {
+        return canAccessFeature(userId, "Basic Plan") || canAccessFeature(userId, "Premium Plan");
+    }
+
+    public boolean canAccessHealthAlerts(Long userId) {
+        return canAccessFeature(userId, "Premium Plan");
+    }
+
+    public boolean canViewPredictionLine(Long userId) {
+        return canAccessFeature(userId, "Premium Plan");
+    }
 }

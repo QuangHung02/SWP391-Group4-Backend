@@ -9,49 +9,70 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import com.example.pregnancy_tracking.exception.MembershipFeatureException;
+import com.example.pregnancy_tracking.service.MembershipService;
 import java.util.List;
+import com.example.pregnancy_tracking.entity.User;
 
 @RestController
 @RequestMapping("/api/health-alerts")
 @SecurityRequirement(name = "Bearer Authentication")
 public class ReminderHealthAlertController {
     private final ReminderHealthAlertService service;
+    private final MembershipService membershipService;
 
-    public ReminderHealthAlertController(ReminderHealthAlertService service) {
+    public ReminderHealthAlertController(ReminderHealthAlertService service, 
+                                       MembershipService membershipService) {  // Thay đổi tham số
         this.service = service;
+        this.membershipService = membershipService;
     }
 
-    @Operation(summary = "Get all health alerts")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Health alerts retrieved successfully"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
     @GetMapping
-    public ResponseEntity<List<ReminderHealthAlertDTO>> getHealthAlerts() {
+    public ResponseEntity<List<ReminderHealthAlertDTO>> getHealthAlerts(@AuthenticationPrincipal UserDetails userDetails) {
+        User user = (User) userDetails;
+        Long userId = user.getId();
+        if (!membershipService.canAccessHealthAlerts(userId)) {
+            throw new MembershipFeatureException("This feature requires Premium membership");
+        }
         return ResponseEntity.ok(service.getAllHealthAlerts());
     }
 
-    @Operation(summary = "Get health alerts by reminder")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Health alerts retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "No alerts found"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
     @GetMapping("/{reminderId}")
-    public ResponseEntity<List<ReminderHealthAlertDTO>> getHealthAlertsByReminder(@PathVariable Long reminderId) {
+    public ResponseEntity<List<ReminderHealthAlertDTO>> getHealthAlertsByReminder(
+            @PathVariable Long reminderId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        User user = (User) userDetails;
+        Long userId = user.getId();
+        if (!membershipService.canAccessHealthAlerts(userId)) {
+            throw new MembershipFeatureException("This feature requires Premium membership");
+        }
         return ResponseEntity.ok(service.getHealthAlertsByReminder(reminderId));
     }
 
-    @Operation(summary = "Create a health alert")
     @PostMapping("/{reminderId}")
-    public ResponseEntity<ReminderHealthAlertDTO> createHealthAlert(@PathVariable Long reminderId, @RequestBody ReminderHealthAlertDTO dto) {
+    public ResponseEntity<?> createHealthAlert(
+            @PathVariable Long reminderId,
+            @RequestBody ReminderHealthAlertDTO dto,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        User user = (User) userDetails;
+        Long userId = user.getId();
+        if (!membershipService.canAccessHealthAlerts(userId)) {
+            throw new MembershipFeatureException("This feature requires Premium membership");
+        }
         return ResponseEntity.ok(service.createHealthAlert(reminderId, dto));
     }
 
-    @Operation(summary = "Delete a health alert")
     @DeleteMapping("/{healthAlertId}")
-    public ResponseEntity<Void> deleteHealthAlert(@PathVariable Long healthAlertId) {
+    public ResponseEntity<Void> deleteHealthAlert(
+            @PathVariable Long healthAlertId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        User user = (User) userDetails;
+        Long userId = user.getId();
+        if (!membershipService.canAccessHealthAlerts(userId)) {
+            throw new MembershipFeatureException("This feature requires Premium membership");
+        }
         service.deleteHealthAlert(healthAlertId);
         return ResponseEntity.noContent().build();
     }

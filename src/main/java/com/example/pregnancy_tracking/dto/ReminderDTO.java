@@ -23,8 +23,7 @@ public class ReminderDTO {
     private LocalDateTime createdAt;
     private List<ReminderMedicalTaskDTO> tasks;
 
-    // Thêm constructor không có createdAt để tương thích với code cũ
-    public ReminderDTO(Long reminderId, Long userId, Long pregnancyId, 
+    public ReminderDTO(Long reminderId, Long userId, Long pregnancyId,
                       String type, LocalDate reminderDate, String status, 
                       List<ReminderMedicalTaskDTO> tasks) {
         this.reminderId = reminderId;

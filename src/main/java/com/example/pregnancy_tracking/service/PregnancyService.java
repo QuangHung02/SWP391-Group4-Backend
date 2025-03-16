@@ -15,9 +15,12 @@ import jakarta.transaction.Transactional;
 import java.util.stream.Collectors;
 import com.example.pregnancy_tracking.dto.PregnancyListDTO;
 import java.time.temporal.ChronoUnit;
-
+import com.example.pregnancy_tracking.service.MembershipService;
 @Service
 public class PregnancyService {
+    @Autowired
+    private MembershipService membershipService;
+
     @Autowired
     private PregnancyRepository pregnancyRepository;
 
@@ -71,11 +74,13 @@ public class PregnancyService {
 
         Pregnancy savedPregnancy = pregnancyRepository.save(pregnancy);
 
-        standardService.checkAndCreateWeeklyTasks(
-            user.getId(),
-            savedPregnancy.getPregnancyId(),
-            pregnancyDTO.getGestationalWeeks()
-        );
+        if (membershipService.canAccessStandardFeatures(user.getId())) {
+            standardService.checkAndCreateWeeklyTasks(
+                user.getId(),
+                savedPregnancy.getPregnancyId(),
+                pregnancyDTO.getGestationalWeeks()
+            );
+        }
 
         System.out.println("Creating fetuses for pregnancy: " + savedPregnancy.getPregnancyId());
 

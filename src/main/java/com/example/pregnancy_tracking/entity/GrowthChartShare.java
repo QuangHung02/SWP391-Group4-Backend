@@ -7,7 +7,7 @@ import java.util.Set;
 
 @Entity
 @Data
-@Table(name = "growth_chart_shares")
+@Table(name = "GrowthChartShares")
 public class GrowthChartShare {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,13 +22,13 @@ public class GrowthChartShare {
     private Fetus fetus;
 
     @ElementCollection
-    @CollectionTable(name = "shared_chart_types", 
+    @CollectionTable(name = "SharedChartTypes",
                     joinColumns = @JoinColumn(name = "share_id"))
     @Column(name = "chart_type")
     @Enumerated(EnumType.STRING)
     private Set<ChartType> sharedTypes;
 
-    @Column(name = "chart_data", columnDefinition = "TEXT")
+    @Column(name = "chart_data", columnDefinition = "NVARCHAR(MAX)")  // Đổi type để khớp với SQL
     private String chartData;
 
     @Column(name = "created_at")
