@@ -15,7 +15,6 @@ import jakarta.transaction.Transactional;
 import java.util.stream.Collectors;
 import com.example.pregnancy_tracking.dto.PregnancyListDTO;
 import java.time.temporal.ChronoUnit;
-import com.example.pregnancy_tracking.service.MembershipService;
 @Service
 public class PregnancyService {
     @Autowired

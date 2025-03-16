@@ -27,8 +27,15 @@ public class FetusRecordController {
     private FetusRecordService fetusRecordService;
     
     @Autowired
-    private MembershipService membershipService; // Thay đổi service
+    private MembershipService membershipService;
 
+    @Operation(summary = "Create a Fetus Record")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Record created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request data"),
+            @ApiResponse(responseCode = "403", description = "Membership required"),
+            @ApiResponse(responseCode = "500", description = "Server error")
+    })
     @PostMapping("/{fetusId}")
     public ResponseEntity<FetusRecord> createRecord(
             @PathVariable Long fetusId,
@@ -43,6 +50,30 @@ public class FetusRecordController {
         return ResponseEntity.ok(createdRecord);
     }
 
+    @Operation(summary = "Get Fetus Records by Fetus ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Records retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "No records found"),
+            @ApiResponse(responseCode = "403", description = "Membership required"),
+            @ApiResponse(responseCode = "500", description = "Server error")
+    })
+    @GetMapping("/{fetusId}")
+    public ResponseEntity<List<FetusRecordDTO>> getRecordsByFetusId(
+            @PathVariable Long fetusId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        User user = (User) userDetails;
+        Long userId = user.getId();
+        List<FetusRecordDTO> records = fetusRecordService.getRecordsByFetusId(fetusId, userId);
+        return ResponseEntity.ok(records);
+    }
+
+    @Operation(summary = "Get All Growth Measurements")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Measurements retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "No measurements found"),
+            @ApiResponse(responseCode = "403", description = "Membership required"),
+            @ApiResponse(responseCode = "500", description = "Server error")
+    })
     @GetMapping("/{fetusId}/growth-data")
     public ResponseEntity<Map<String, List<Object[]>>> getAllGrowthData(
             @PathVariable Long fetusId,

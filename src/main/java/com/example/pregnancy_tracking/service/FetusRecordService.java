@@ -235,17 +235,6 @@ public class FetusRecordService {
             
             return growthChartShareRepository.save(share);
         }
-    
-        public Map<String, List<Object[]>> getAllGrowthData(Long fetusId, Long userId) {
-            Map<String, List<Object[]>> growthData = getAllGrowthData(fetusId);
-            
-            if (membershipService.canViewPredictionLine(userId)) {
-                Map<String, List<Object[]>> predictionData = calculatePredictionLine(fetusId);
-                growthData.putAll(predictionData);
-            }
-            
-            return growthData;
-        }
 
         @Transactional
         public FetusRecord createRecord(Long fetusId, FetusRecordDTO recordDTO, Long userId) {
@@ -409,5 +398,63 @@ public class FetusRecordService {
         
         return availableTypes;
     }
+    @Transactional
+    public FetusRecord getFetusRecord(Long fetusId, Long userId) {
+        if (!membershipService.canViewFetusRecord(userId)) {
+            throw new MembershipFeatureException("This feature requires Basic or Premium membership");
+        }
+
+        FetusRecord record = fetusRecordRepository.findById(fetusId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy chỉ số thai nhi"));
+                
+        Long recordUserId = record.getFetus().getPregnancy().getUser().getId();
+        if (!recordUserId.equals(userId)) {
+            throw new RuntimeException("Không có quyền truy cập chỉ số thai nhi này");
+        }
+        
+        return record;
+    }
+
+    @Transactional
+    public List<FetusRecordDTO> getRecordsByFetusId(Long fetusId, Long userId) {
+        if (!membershipService.canViewFetusRecord(userId)) {
+            throw new MembershipFeatureException("Gói thành viên của bạn không cho phép xem chỉ số thai nhi");
+        }
+
+        Fetus fetus = fetusRepository.findById(fetusId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thai nhi"));
+                
+        if (!fetus.getPregnancy().getUser().getId().equals(userId)) {
+            throw new RuntimeException("Không có quyền truy cập chỉ số thai nhi này");
+        }
+
+        List<FetusRecord> records = fetusRecordRepository.findByFetusFetusIdOrderByWeekAsc(fetusId);
+        return records.stream()
+                .map(FetusRecordDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    public Map<String, List<Object[]>> getAllGrowthData(Long fetusId, Long userId) {
+        if (!membershipService.canViewFetusRecord(userId)) {
+            throw new MembershipFeatureException("Gói thành viên của bạn không cho phép xem chỉ số thai nhi");
+        }
+
+        Fetus fetus = fetusRepository.findById(fetusId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thai nhi"));
+                
+        if (!fetus.getPregnancy().getUser().getId().equals(userId)) {
+            throw new RuntimeException("Không có quyền truy cập chỉ số thai nhi này");
+        }
+
+        Map<String, List<Object[]>> growthData = getAllGrowthData(fetusId);
+        
+        if (membershipService.canViewPredictionLine(userId)) {
+            Map<String, List<Object[]>> predictionData = calculatePredictionLine(fetusId);
+            growthData.putAll(predictionData);
+        }
+        
+        return growthData;
+    }
 
 }
+

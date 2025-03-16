@@ -158,4 +158,8 @@ public class MembershipService {
     public boolean canViewPredictionLine(Long userId) {
         return canAccessFeature(userId, "Premium Plan");
     }
+
+    public boolean canViewFetusRecord(Long userId) {
+        return canAccessFeature(userId, "Basic Plan") || canAccessFeature(userId, "Premium Plan");
+    }
 }
