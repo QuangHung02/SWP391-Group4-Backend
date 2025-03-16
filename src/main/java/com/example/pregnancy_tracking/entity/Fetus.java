@@ -1,9 +1,9 @@
 package com.example.pregnancy_tracking.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name = "Fetuses")
@@ -17,7 +17,7 @@ public class Fetus {
 
     @ManyToOne
     @JoinColumn(name = "pregnancy_id", nullable = false)
-    @JsonIgnore
+    @JsonIgnoreProperties("fetuses")
     private Pregnancy pregnancy;
 
     @Column(name = "fetus_index")

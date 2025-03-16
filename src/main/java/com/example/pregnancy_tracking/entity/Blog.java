@@ -5,8 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
-import java.util.List;  
-import com.fasterxml.jackson.annotation.JsonManagedReference;  
+import java.util.List;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
 @Table(name = "Blogs")

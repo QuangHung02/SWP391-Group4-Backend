@@ -11,11 +11,15 @@ public class PregnancyStandardDTO {
     private Integer fetusNumber;
     private BigDecimal minWeight;
     private BigDecimal maxWeight;
+    private BigDecimal avgWeight;
     private BigDecimal minLength;
     private BigDecimal maxLength;
+    private BigDecimal avgLength;
     private BigDecimal minHeadCircumference;
     private BigDecimal maxHeadCircumference;
-    private BigDecimal avgWeight;
+    private BigDecimal avgHeadCircumference;
+
+    public PregnancyStandardDTO() {}
 
     public PregnancyStandardDTO(PregnancyStandard standard) {
         this.week = standard.getId().getWeek();
@@ -27,5 +31,7 @@ public class PregnancyStandardDTO {
         this.minHeadCircumference = standard.getMinHeadCircumference();
         this.maxHeadCircumference = standard.getMaxHeadCircumference();
         this.avgWeight = standard.getAvgWeight();
+        this.avgLength = standard.getAvgLength();
+        this.avgHeadCircumference = standard.getAvgHeadCircumference();
     }
 }

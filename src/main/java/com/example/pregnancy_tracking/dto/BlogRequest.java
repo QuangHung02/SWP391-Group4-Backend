@@ -12,9 +12,9 @@ import java.util.List;
 public class BlogRequest {
     @NotBlank
     private String title;
-    
+
     @NotBlank
     private String content;
-    
+
     private List<String> imageUrls;
 }

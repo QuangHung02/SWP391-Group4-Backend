@@ -38,12 +38,23 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
-        configuration.setExposedHeaders(Arrays.asList("Authorization"));
+        configuration.setAllowedOrigins(Arrays.asList(
+            "http://localhost:3000",
+            "https://hare-causal-prawn.ngrok-free.app"
+        ));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList(
+            "Authorization",
+            "Content-Type",
+            "X-Auth-Token",
+            "Origin",
+            "Accept",
+            "Access-Control-Request-Method",
+            "Access-Control-Request-Headers"
+        ));
+        configuration.setExposedHeaders(Arrays.asList("X-Auth-Token"));
         configuration.setAllowCredentials(true);
-
+        
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;

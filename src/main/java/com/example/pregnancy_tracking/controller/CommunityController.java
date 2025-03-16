@@ -14,15 +14,22 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
-import java.util.List;  
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/community")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*", allowedHeaders = "*")  
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 public class CommunityController {
     private final CommunityService communityService;
 
+    @Operation(summary = "Create a post", description = "Creates a new community post.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Post created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request data"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "500", description = "Server error")
+    })
     @PostMapping("/posts")
     public ResponseEntity<CommunityPost> createPost(
             @Valid @RequestBody PostRequest request,
@@ -31,6 +38,14 @@ public class CommunityController {
         return ResponseEntity.ok(communityService.createPost(request, userEmail));
     }
 
+    @Operation(summary = "Create a comment", description = "Creates a new comment on a post.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Comment created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request data"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "Post not found"),
+            @ApiResponse(responseCode = "500", description = "Server error")
+    })
     @PostMapping("/posts/{postId}/comments")
     public ResponseEntity<CommunityComment> createComment(
             @PathVariable Long postId,
@@ -40,7 +55,7 @@ public class CommunityController {
         return ResponseEntity.ok(communityService.createComment(postId, request, userEmail));
     }
 
-    @Operation(summary = "Delete post", description = "Deletes a post and all its comments (Admin only)")
+    @Operation(summary = "Delete post", description = "Deletes a post and all its comments (Admin only).")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Post deleted successfully"),
             @ApiResponse(responseCode = "403", description = "Access denied - Admin only"),
@@ -54,7 +69,7 @@ public class CommunityController {
         return ResponseEntity.ok("Post deleted successfully");
     }
 
-    @Operation(summary = "Delete comment", description = "Deletes a comment (Admin only)")
+    @Operation(summary = "Delete comment", description = "Deletes a comment (Admin only).")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Comment deleted successfully"),
             @ApiResponse(responseCode = "403", description = "Access denied - Admin only"),
@@ -68,17 +83,33 @@ public class CommunityController {
         return ResponseEntity.ok("Comment deleted successfully");
     }
 
+    @Operation(summary = "Get all posts", description = "Retrieves all community posts.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Posts retrieved successfully"),
+            @ApiResponse(responseCode = "500", description = "Server error")
+    })
     @GetMapping("/posts")
-    @CrossOrigin(origins = "*")  
     public ResponseEntity<List<CommunityPost>> getAllPosts() {
         return ResponseEntity.ok(communityService.getAllPosts());
     }
 
+    @Operation(summary = "Get post by ID", description = "Retrieves details of a specific post by ID.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Post retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Post not found"),
+            @ApiResponse(responseCode = "500", description = "Server error")
+    })
     @GetMapping("/posts/{postId}")
     public ResponseEntity<CommunityPost> getPostById(@PathVariable Long postId) {
         return ResponseEntity.ok(communityService.getPostById(postId));
     }
 
+    @Operation(summary = "Get comments for a post", description = "Retrieves all comments for a specific post.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Comments retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Post not found"),
+            @ApiResponse(responseCode = "500", description = "Server error")
+    })
     @GetMapping("/posts/{postId}/comments")
     public ResponseEntity<List<CommunityComment>> getPostComments(@PathVariable Long postId) {
         return ResponseEntity.ok(communityService.getCommentsByPostId(postId));
