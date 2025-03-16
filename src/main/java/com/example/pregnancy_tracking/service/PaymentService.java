@@ -12,6 +12,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import com.example.pregnancy_tracking.dto.MembershipPackageDTO;
 
 @Service
 @RequiredArgsConstructor
@@ -25,20 +26,18 @@ public class PaymentService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
+        MembershipPackageDTO packageDTO = membershipService.calculateUpgradePrice(userId);
         MembershipPackage membershipPackage = packageRepository.findById(packageId)
                 .orElseThrow(() -> new RuntimeException("Package not found"));
 
         String vnp_TxnRef = VNPayConfig.getRandomNumber(8);
         String vnp_IpAddr = "127.0.0.1";
         
-        // Tạo thời gian giao dịch
-        // Sửa lại format thời gian cho đúng với yêu cầu của VNPay
         Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
         String vnp_CreateDate = formatter.format(cld.getTime());
         
-        // Tính toán số tiền
-        long amount = membershipPackage.getPrice().multiply(new BigDecimal("100")).longValue();
+        long amount = packageDTO.getPrice().multiply(new BigDecimal("100")).longValue();
         
         Map<String, String> vnp_Params = new LinkedHashMap<>();
         vnp_Params.put("vnp_Version", VNPayConfig.vnp_Version);
@@ -56,7 +55,6 @@ public class PaymentService {
         vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
         vnp_Params.put("vnp_Version", VNPayConfig.vnp_Version);
 
-        // Tạo URL thanh toán không có hash
         StringBuilder queryUrl = new StringBuilder();
         List<String> fieldNames = new ArrayList<>(vnp_Params.keySet());
         Collections.sort(fieldNames);
@@ -76,6 +74,7 @@ public class PaymentService {
         return VNPayConfig.vnp_PayUrl + "?" + queryUrl.toString();
     }
 
+    
     public void processPaymentReturn(Map<String, String> vnpParams) {
         String vnp_ResponseCode = vnpParams.get("vnp_ResponseCode");
         String vnp_TxnRef = vnpParams.get("vnp_TxnRef");
@@ -86,9 +85,12 @@ public class PaymentService {
             Long userId = Long.parseLong(parts[parts.length - 1]);
             Long packageId = Long.parseLong(parts[parts.length - 2]);
             
-            // Tạo subscription mới
             subscriptionService.createSubscription(userId, packageId);
-            membershipService.upgradeToPremium(userId);
+            MembershipPackage membershipPackage = packageRepository.findById(packageId)
+                    .orElseThrow(() -> new RuntimeException("Package not found"));
+            if ("Premium Plan".equals(membershipPackage.getName())) {
+                membershipService.upgradeToPremium(userId);
+            }
         } else {
             throw new RuntimeException("Payment failed with code: " + vnp_ResponseCode);
         }
