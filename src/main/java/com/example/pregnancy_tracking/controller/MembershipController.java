@@ -94,3 +94,4 @@ public class MembershipController {
             @Valid @RequestBody MembershipPackageDTO packageDTO) {
         return ResponseEntity.ok(membershipService.updatePackage(packageId, packageDTO));
     }
+}
