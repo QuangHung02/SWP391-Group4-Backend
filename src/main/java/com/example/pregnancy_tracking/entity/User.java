@@ -39,7 +39,6 @@ public class User implements UserDetails {
     private LocalDateTime createdAt;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-
     @JsonManagedReference
     private UserProfile userProfile;
 

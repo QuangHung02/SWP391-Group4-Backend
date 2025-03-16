@@ -53,4 +53,9 @@ public class GrowthChartShareController {
             userId
         ));
     }
+
+    @GetMapping("/post/{postId}")
+    public ResponseEntity<Map<String, Object>> getChartData(@PathVariable Long postId) {
+        return ResponseEntity.ok(fetusRecordService.getChartDataForDisplay(postId));
+    }
 }

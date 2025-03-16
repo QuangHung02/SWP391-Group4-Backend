@@ -88,7 +88,6 @@ public class ReminderService {
                 task.setTaskType(taskDTO.getTaskType() != null ? taskDTO.getTaskType() : "");
                 task.setTaskName(taskDTO.getTaskName());
                 task.setNotes(taskDTO.getNotes() != null ? taskDTO.getNotes() : "");
-                // Remove status setting
                 taskRepository.save(task);
             }
         }
@@ -101,9 +100,29 @@ public class ReminderService {
         Reminder reminder = reminderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Reminder not found"));
 
-        reminder.setType(ReminderType.valueOf(reminderDTO.getType()));
-        reminder.setReminderDate(reminderDTO.getReminderDate());
-        reminder.setStatus(ReminderStatus.valueOf(reminderDTO.getStatus()));
+        if (reminderDTO.getType() != null) {
+            reminder.setType(ReminderType.valueOf(reminderDTO.getType()));
+        }
+        if (reminderDTO.getReminderDate() != null) {
+            reminder.setReminderDate(reminderDTO.getReminderDate());
+        }
+        if (reminderDTO.getStatus() != null) {
+            reminder.setStatus(ReminderStatus.valueOf(reminderDTO.getStatus()));
+        }
+
+        if (reminderDTO.getTasks() != null && !reminderDTO.getTasks().isEmpty()) {
+            taskRepository.deleteByReminder(reminder);
+            
+            for (ReminderMedicalTaskDTO taskDTO : reminderDTO.getTasks()) {
+                ReminderMedicalTask task = new ReminderMedicalTask();
+                task.setReminder(reminder);
+                task.setWeek(taskDTO.getWeek());
+                task.setTaskType(taskDTO.getTaskType());
+                task.setTaskName(taskDTO.getTaskName());
+                task.setNotes(taskDTO.getNotes());
+                taskRepository.save(task);
+            }
+        }
 
         Reminder updatedReminder = reminderRepository.save(reminder);
         return convertToDTO(updatedReminder);

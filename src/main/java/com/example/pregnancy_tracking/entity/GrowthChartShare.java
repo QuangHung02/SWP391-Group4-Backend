@@ -28,7 +28,7 @@ public class GrowthChartShare {
     @Enumerated(EnumType.STRING)
     private Set<ChartType> sharedTypes;
 
-    @Column(name = "chart_data", columnDefinition = "NVARCHAR(MAX)")  // Đổi type để khớp với SQL
+    @Column(name = "chart_data", columnDefinition = "NVARCHAR(MAX)")
     private String chartData;
 
     @Column(name = "created_at")

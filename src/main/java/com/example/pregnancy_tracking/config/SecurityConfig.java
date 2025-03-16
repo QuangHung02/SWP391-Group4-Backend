@@ -40,8 +40,11 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList(
             "http://localhost:3000",
+            "http://localhost:3001",
             "https://hare-causal-prawn.ngrok-free.app",
-            "https://swp-391-group4.vercel.app"
+            "https://swp-391-group4.vercel.app",
+            "https://swp-391-group4-git-main-trungnghias-projects.vercel.app",
+            "https://swp-391-group4-trungnghias-projects.vercel.app"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList(
@@ -52,12 +55,16 @@ public class SecurityConfig {
             "Accept",
             "Access-Control-Request-Method",
             "Access-Control-Request-Headers",
-            "Access-Control-Allow-Origin"
+            "Access-Control-Allow-Origin",
+            "Access-Control-Allow-Credentials", 
+            "Access-Control-Allow-Headers"   
         ));
         configuration.setExposedHeaders(Arrays.asList(
             "X-Auth-Token",
+            "Authorization",
             "Access-Control-Allow-Origin",
-            "Access-Control-Allow-Credentials"
+            "Access-Control-Allow-Credentials",
+            "Access-Control-Allow-Headers"     
         ));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
@@ -81,7 +88,9 @@ public class SecurityConfig {
                                 "/api/user/login",
                                 "/api/blogs",                 
                                 "/api/blogs/featured",       
-                                "/api/blogs/*",
+                                "/api/blogs/**", 
+                                "/api/membership/packages",
+                                "/api/membership/packages/**",
                                 "/health/**",
                                 "/",
                                 "/error",
