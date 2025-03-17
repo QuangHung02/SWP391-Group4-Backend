@@ -48,20 +48,25 @@ public class FetusRecordService {
 
     public Map<String, Object> prepareGrowthChartData(Long fetusId, Set<ChartType> chartTypes, Long userId) {
         Map<String, Object> chartData = new HashMap<>();
-        Map<String, List<Object[]>> growthData = getAllGrowthData(fetusId);
+        List<FetusRecord> records = fetusRecordRepository.findByFetusFetusIdOrderByWeekAsc(fetusId);
         
         if (chartTypes.contains(ChartType.WEIGHT)) {
-            chartData.put("fetalWeight", growthData.get("fetalWeight"));
+            chartData.put("fetalWeight", records.stream()
+                .filter(r -> r.getFetalWeight() != null)
+                .map(r -> new Object[]{r.getWeek(), r.getFetalWeight()})
+                .collect(Collectors.toList()));
         }
         if (chartTypes.contains(ChartType.LENGTH)) {
-            chartData.put("femurLength", growthData.get("femurLength"));
+            chartData.put("femurLength", records.stream()
+                .filter(r -> r.getFemurLength() != null)
+                .map(r -> new Object[]{r.getWeek(), r.getFemurLength()})
+                .collect(Collectors.toList()));
         }
         if (chartTypes.contains(ChartType.HEAD_CIRCUMFERENCE)) {
-            chartData.put("headCircumference", growthData.get("headCircumference"));
-        }
-
-        if (membershipService.canViewPredictionLine(userId)) {
-            chartData.put("predictionLine", calculatePredictionLine(fetusId));
+            chartData.put("headCircumference", records.stream()
+                .filter(r -> r.getHeadCircumference() != null)
+                .map(r -> new Object[]{r.getWeek(), r.getHeadCircumference()})
+                .collect(Collectors.toList()));
         }
         
         return chartData;
@@ -300,8 +305,12 @@ public class FetusRecordService {
                 Map<String, Object> chartData = objectMapper.readValue(share.getChartData(), Map.class);
                 response.put("chartData", chartData);
                 response.put("sharedTypes", share.getSharedTypes());
-                response.put("post", share.getPost());
-                response.put("createdAt", share.getCreatedAt());
+                Map<String, Object> postInfo = new HashMap<>();
+                postInfo.put("title", share.getPost().getTitle());
+                postInfo.put("content", share.getPost().getContent());
+                postInfo.put("authorId", share.getPost().getAuthor().getId());
+                postInfo.put("createdAt", share.getPost().getCreatedAt());
+                response.put("post", postInfo);
                 
                 return response;
             } catch (JsonProcessingException e) {

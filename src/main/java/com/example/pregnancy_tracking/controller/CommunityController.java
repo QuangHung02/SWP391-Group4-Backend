@@ -15,6 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/community")
@@ -89,8 +90,8 @@ public class CommunityController {
             @ApiResponse(responseCode = "500", description = "Server error")
     })
     @GetMapping("/posts")
-    public ResponseEntity<List<CommunityPost>> getAllPosts() {
-        return ResponseEntity.ok(communityService.getAllPosts());
+    public ResponseEntity<List<Map<String, Object>>> getAllPosts() {
+        return ResponseEntity.ok(communityService.getAllPostsWithCharts());
     }
 
     @Operation(summary = "Get post by ID", description = "Retrieves details of a specific post by ID.")

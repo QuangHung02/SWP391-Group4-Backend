@@ -11,6 +11,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.access.prepost.PreAuthorize;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.example.pregnancy_tracking.repository.GrowthChartShareRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +30,9 @@ public class CommunityService {
     private final CommunityPostRepository postRepository;
     private final CommunityCommentRepository commentRepository;
     private final CommunityMediaFileRepository mediaFileRepository;
+    private final GrowthChartShareRepository growthChartShareRepository;
+    private final ObjectMapper objectMapper;
+    private static final Logger log = LoggerFactory.getLogger(CommunityService.class);
 
     public CommunityPost createPost(PostRequest request, String userEmail) {
         User author = userRepository.findByEmail(userEmail)
@@ -93,8 +107,35 @@ public class CommunityService {
         commentRepository.delete(comment);
     }
 
-    public List<CommunityPost> getAllPosts() {
-        return postRepository.findAll();
+    @Transactional
+    public List<Map<String, Object>> getAllPostsWithCharts() {
+        List<CommunityPost> posts = postRepository.findAll();
+        return posts.stream().map(post -> {
+            Map<String, Object> postData = new HashMap<>();
+            postData.put("postId", post.getPostId());
+            postData.put("title", post.getTitle());
+            postData.put("content", post.getContent());
+            postData.put("author", post.getAuthor());
+            postData.put("createdAt", post.getCreatedAt());
+            postData.put("mediaFiles", post.getMediaFiles());
+            postData.put("comments", post.getComments());
+            
+            Optional<GrowthChartShare> chartShare = growthChartShareRepository.findByPostPostId(post.getPostId());
+            if (chartShare.isPresent()) {
+                try {
+                    GrowthChartShare share = chartShare.get();
+                    Map<String, Object> chartData = objectMapper.readValue(share.getChartData(), Map.class);
+                    postData.put("chartData", chartData);
+                    postData.put("sharedTypes", share.getSharedTypes());
+                    postData.put("postType", "GROWTH_CHART");
+                    postData.put("fetusId", share.getFetus().getFetusId());
+                } catch (JsonProcessingException e) {
+                    log.error("Error parsing chart data for post {}: {}", post.getPostId(), e.getMessage());
+                }
+            }
+            
+            return postData;
+        }).collect(Collectors.toList());
     }
 
     public List<CommunityComment> getCommentsByPostId(Long postId) {
@@ -107,4 +148,5 @@ public class CommunityService {
         return postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
     }
+    
 }

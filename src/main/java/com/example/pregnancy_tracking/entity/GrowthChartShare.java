@@ -11,6 +11,7 @@ import java.util.Set;
 public class GrowthChartShare {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "share_id")
     private Long id;
 
     @ManyToOne

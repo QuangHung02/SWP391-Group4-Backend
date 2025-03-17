@@ -11,4 +11,6 @@ public class GrowthChartShareRequest {
     private Set<ChartType> chartTypes;
     private String title;
     private String content;
+    private String type;
+    private Boolean isAnonymous = false;
 }
