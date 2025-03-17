@@ -18,7 +18,7 @@ public class ReminderMedicalTask {
     @JoinColumn(name = "reminder_id", nullable = false)
     private Reminder reminder;
 
-    @Column(name = "task_name", nullable = false)
+    @Column(name = "task_name", nullable = false, columnDefinition = "NVARCHAR(255)")
     private String taskName;
 
     @Column(name = "task_type")
@@ -27,9 +27,6 @@ public class ReminderMedicalTask {
     @Column(name = "week")
     private Integer week;
 
-    @Column(name = "notes")
+    @Column(name = "notes", columnDefinition = "NVARCHAR(MAX)")
     private String notes;
-
-
-
 }

@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 import java.util.List;
 import java.util.Map;
+import com.example.pregnancy_tracking.entity.User;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 
 @RestController
 @RequestMapping("/api/reminders")
@@ -29,8 +32,9 @@ public class ReminderController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping
-    public ResponseEntity<List<ReminderDTO>> getReminders() {
-        return ResponseEntity.ok(reminderService.getAllReminders());
+    public ResponseEntity<List<ReminderDTO>> getReminders(@AuthenticationPrincipal UserDetails userDetails) {
+        User user = (User) userDetails;
+        return ResponseEntity.ok(reminderService.getAllReminders(user.getId()));
     }
 
     @Operation(summary = "Get a reminder by ID including medical tasks")

@@ -20,6 +20,6 @@ public interface ReminderRepository extends JpaRepository<Reminder, Long> {
         @Param("pregnancyId") Long pregnancyId, 
         @Param("week") Integer week
     );
-
+    List<Reminder> findByUser_Id(Long userId);
     List<Reminder> findByPregnancy_PregnancyId(Long pregnancyId);
 }

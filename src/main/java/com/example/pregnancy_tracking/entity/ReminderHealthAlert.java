@@ -31,6 +31,6 @@ public class ReminderHealthAlert {
     @Column(name = "source")
     private AlertSource source;
 
-    @Column(name = "notes")
+    @Column(name = "notes", columnDefinition = "NVARCHAR(MAX)")
     private String notes;
 }

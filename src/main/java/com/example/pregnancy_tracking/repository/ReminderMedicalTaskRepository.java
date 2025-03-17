@@ -16,4 +16,5 @@ public interface ReminderMedicalTaskRepository extends JpaRepository<ReminderMed
     @Modifying
     @Query("DELETE FROM ReminderMedicalTask t WHERE t.reminder = :reminder")
     void deleteByReminder(Reminder reminder);
+    List<ReminderMedicalTask> findByReminder_User_Id(Long userId);
 }

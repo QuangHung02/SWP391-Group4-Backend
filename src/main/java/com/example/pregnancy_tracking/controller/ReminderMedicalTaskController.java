@@ -6,7 +6,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import com.example.pregnancy_tracking.entity.User;
 import java.util.List;
 
 @RestController
@@ -21,8 +23,9 @@ public class ReminderMedicalTaskController {
 
     @Operation(summary = "Get all medical tasks")
     @GetMapping
-    public ResponseEntity<List<ReminderMedicalTaskDTO>> getMedicalTasks() {
-        return ResponseEntity.ok(service.getAllMedicalTasks());
+    public ResponseEntity<List<ReminderMedicalTaskDTO>> getMedicalTasks(@AuthenticationPrincipal UserDetails userDetails) {
+        User user = (User) userDetails;
+        return ResponseEntity.ok(service.getAllMedicalTasks(user.getId()));
     }
 
     @Operation(summary = "Get medical tasks by reminder")

@@ -21,8 +21,8 @@ public class ReminderMedicalTaskService {
         this.reminderRepository = reminderRepository;
     }
 
-    public List<ReminderMedicalTaskDTO> getAllMedicalTasks() {
-        return taskRepository.findAll().stream()
+    public List<ReminderMedicalTaskDTO> getAllMedicalTasks(Long userId) {
+        return taskRepository.findByReminder_User_Id(userId).stream()
                 .map(task -> new ReminderMedicalTaskDTO(
                         task.getTaskId(),
                         task.getReminder() != null ? task.getReminder().getReminderId() : null,
@@ -30,7 +30,7 @@ public class ReminderMedicalTaskService {
                         task.getTaskType(),
                         task.getTaskName(),
                         task.getNotes(),
-                        task.getReminder().getStatus().name() 
+                        task.getReminder().getStatus().name()
                 ))
                 .collect(Collectors.toList());
     }

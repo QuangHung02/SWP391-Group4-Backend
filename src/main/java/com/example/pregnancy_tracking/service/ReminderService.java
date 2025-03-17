@@ -30,8 +30,8 @@ public class ReminderService {
         this.taskRepository = taskRepository;
     }
 
-    public List<ReminderDTO> getAllReminders() {
-        return reminderRepository.findAll().stream()
+    public List<ReminderDTO> getAllReminders(Long userId) {
+        return reminderRepository.findByUser_Id(userId).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
