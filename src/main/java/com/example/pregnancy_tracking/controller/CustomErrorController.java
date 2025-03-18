@@ -10,20 +10,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import java.util.HashMap;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/error")
 public class CustomErrorController implements ErrorController {
-
-    @Operation(summary = "Handle API errors", description = "Returns detailed error messages for different HTTP status codes")
+    @Operation(summary = "Xử lý lỗi API", description = "Trả về thông báo lỗi chi tiết cho các mã trạng thái HTTP khác nhau")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "404", description = "Resource not found"),
-            @ApiResponse(responseCode = "403", description = "Access forbidden"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized access"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy tài nguyên"),
+            @ApiResponse(responseCode = "403", description = "Không có quyền truy cập"),
+            @ApiResponse(responseCode = "401", description = "Chưa xác thực"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @RequestMapping
     public ResponseEntity<Map<String, Object>> handleError(HttpServletRequest request) {
@@ -31,13 +29,11 @@ public class CustomErrorController implements ErrorController {
 
         HttpStatus status = getStatus(request);
         String message = getErrorMessage(status);
-
         errorDetails.put("timestamp", System.currentTimeMillis());
         errorDetails.put("status", status.value());
         errorDetails.put("error", status.getReasonPhrase());
         errorDetails.put("message", message);
         errorDetails.put("path", request.getAttribute(RequestDispatcher.ERROR_REQUEST_URI));
-
         return ResponseEntity.status(status).body(errorDetails);
     }
 
@@ -56,13 +52,13 @@ public class CustomErrorController implements ErrorController {
     private String getErrorMessage(HttpStatus status) {
         switch (status) {
             case NOT_FOUND:
-                return "The requested resource was not found";
+                return "Không tìm thấy tài nguyên yêu cầu";
             case FORBIDDEN:
-                return "Access to this resource is forbidden";
+                return "Bạn không có quyền truy cập tài nguyên này";
             case UNAUTHORIZED:
-                return "Authentication is required to access this resource";
+                return "Vui lòng đăng nhập để truy cập tài nguyên này";
             default:
-                return "An unexpected error occurred";
+                return "Đã xảy ra lỗi không mong muốn";
         }
     }
 }

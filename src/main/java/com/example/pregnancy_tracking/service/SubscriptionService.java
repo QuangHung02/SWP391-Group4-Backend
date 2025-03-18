@@ -14,6 +14,10 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.time.LocalDateTime;
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -95,4 +99,27 @@ public class SubscriptionService {
         return convertToDTO(subscriptionRepository.save(subscription));
     }
 
+    public Map<String, Object> calculateRevenue() {
+        List<Subscription> allSubscriptions = subscriptionRepository.findAll();
+        Map<String, Object> statistics = new HashMap<>();
+        
+        BigDecimal totalRevenue = BigDecimal.ZERO;
+        Map<String, BigDecimal> revenueByPackage = new HashMap<>();
+        Map<String, Integer> subscriptionsByPackage = new HashMap<>();
+        for (Subscription subscription : allSubscriptions) {
+            MembershipPackage pack = subscription.getMembershipPackage();
+            BigDecimal price = pack.getPrice();
+            String packageName = pack.getName();
+            totalRevenue = totalRevenue.add(price);
+            revenueByPackage.merge(packageName, price, BigDecimal::add);
+            subscriptionsByPackage.merge(packageName, 1, Integer::sum);
+        }
+        statistics.put("totalRevenue", totalRevenue);
+        statistics.put("revenueByPackage", revenueByPackage);
+        statistics.put("subscriptionsByPackage", subscriptionsByPackage);
+        statistics.put("totalSubscriptions", allSubscriptions.size());
+        statistics.put("lastUpdated", LocalDateTime.now());
+        
+        return statistics;
+    }
 }

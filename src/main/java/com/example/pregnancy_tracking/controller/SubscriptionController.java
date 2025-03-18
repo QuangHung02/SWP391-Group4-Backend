@@ -9,8 +9,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
+import org.springframework.security.access.prepost.PreAuthorize;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/subscriptions")
@@ -67,5 +68,18 @@ public class SubscriptionController {
         } catch (Exception e) {
             throw new RuntimeException("Error processing token: " + e.getMessage());
         }
+    }
+
+    @Operation(summary = "Get revenue statistics", description = "Retrieves revenue statistics for all subscriptions. Admin only.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Statistics retrieved successfully"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - Not an admin"),
+            @ApiResponse(responseCode = "500", description = "Server error")
+    })
+    @GetMapping("/revenue-statistics")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, Object>> getRevenueStatistics() {
+        Map<String, Object> statistics = subscriptionService.calculateRevenue();
+        return ResponseEntity.ok(statistics);
     }
 }

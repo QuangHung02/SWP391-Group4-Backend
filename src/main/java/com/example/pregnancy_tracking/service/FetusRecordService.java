@@ -210,7 +210,8 @@ public class FetusRecordService {
     }
 
     public GrowthChartShare createGrowthChartShare(Long fetusId, Set<ChartType> chartTypes, 
-                                                  String title, String content, Long userId) {
+                                                  String title, String content, Long userId,
+                                                  Boolean isAnonymous) {
             if (!membershipService.canShareGrowthChart(userId)) {
                 throw new MembershipFeatureException("Gói thành viên của bạn không cho phép chia sẻ biểu đồ");
             }
@@ -224,6 +225,7 @@ public class FetusRecordService {
             post.setTitle(title);
             post.setContent(content);
             post.setAuthor(fetus.getPregnancy().getUser());
+            post.setIsAnonymous(isAnonymous != null ? isAnonymous : false);
             post.setCreatedAt(LocalDateTime.now());
             post = postRepository.save(post);
             

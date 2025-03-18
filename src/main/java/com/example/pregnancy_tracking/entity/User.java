@@ -1,6 +1,5 @@
 package com.example.pregnancy_tracking.entity;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
@@ -9,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Data
 @Entity
@@ -23,23 +23,27 @@ public class User implements UserDetails {
     private String username;
 
     @Column(nullable = false, unique = true, length = 100)
+    @JsonIgnore
     private String email;
 
     @Column(nullable = false)
+    @JsonIgnore
     private String password;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Role role = Role.MEMBER;
+    @JsonIgnore
+    private Role role;
 
     @Column(name = "total_pregnancies", nullable = false)
-    private int totalPregnancies = 0;
+    @JsonIgnore
+    private int totalPregnancies;
 
     @Column(name = "created_at")
+    @JsonIgnore
     private LocalDateTime createdAt;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    @JsonManagedReference
     private UserProfile userProfile;
 
     public UserProfile getUserProfile() {

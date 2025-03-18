@@ -50,7 +50,8 @@ public class GrowthChartShareController {
             request.getChartTypes(), 
             request.getTitle(), 
             request.getContent(),
-            userId
+            userId,
+            request.getIsAnonymous()
         ));
     }
 

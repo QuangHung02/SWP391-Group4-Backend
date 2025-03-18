@@ -8,16 +8,9 @@ import java.util.Random;
 import java.security.MessageDigest;
 @Configuration
 public class VNPayConfig {
-    // URL cổng thanh toán VNPay (môi trường test)
     public static String vnp_PayUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-    
-    // URL nhận kết quả thanh toán từ VNPay
     public static String vnp_ReturnUrl = "https://swp-391-group4.vercel.app/confirm";
-    
-    // Mã website của merchant trên hệ thống VNPay
     public static String vnp_TmnCode = "OXCWL4UM";
-    
-    // Chuỗi bí mật để tạo checksum
     public static String vnp_HashSecret = "XIDQU0703EVPXGY3HWTG6FEX2U4TY66I";
     public static String vnp_Version = "2.1.0";
     public static String vnp_Command = "pay";

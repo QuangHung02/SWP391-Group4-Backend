@@ -16,7 +16,6 @@ import java.util.HashMap;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.security.access.prepost.PreAuthorize;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -42,7 +41,7 @@ public class CommunityService {
         post.setTitle(request.getTitle());
         post.setContent(request.getContent());
         post.setAuthor(author);
-        post.setIsAnonymous(request.getIsAnonymous());
+        post.setIsAnonymous(request.getIsAnonymous() != null ? request.getIsAnonymous() : false);
         post.setCreatedAt(LocalDateTime.now());
 
         post = postRepository.save(post);
@@ -63,10 +62,8 @@ public class CommunityService {
     public CommunityComment createComment(Long postId, CommentRequest request, String userEmail) {
         User author = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-
         CommunityPost post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
-
         CommunityComment comment = new CommunityComment();
         comment.setPost(post);
         comment.setAuthor(author);
@@ -116,22 +113,32 @@ public class CommunityService {
             postData.put("title", post.getTitle());
             postData.put("content", post.getContent());
             postData.put("author", post.getAuthor());
+            postData.put("isAnonymous", post.getIsAnonymous());
             postData.put("createdAt", post.getCreatedAt());
             postData.put("mediaFiles", post.getMediaFiles());
             postData.put("comments", post.getComments());
             
-            Optional<GrowthChartShare> chartShare = growthChartShareRepository.findByPostPostId(post.getPostId());
-            if (chartShare.isPresent()) {
-                try {
+            try {
+                Optional<GrowthChartShare> chartShare = growthChartShareRepository.findByPostPostId(post.getPostId());
+                if (chartShare.isPresent()) {
                     GrowthChartShare share = chartShare.get();
-                    Map<String, Object> chartData = objectMapper.readValue(share.getChartData(), Map.class);
-                    postData.put("chartData", chartData);
-                    postData.put("sharedTypes", share.getSharedTypes());
-                    postData.put("postType", "GROWTH_CHART");
-                    postData.put("fetusId", share.getFetus().getFetusId());
-                } catch (JsonProcessingException e) {
-                    log.error("Error parsing chart data for post {}: {}", post.getPostId(), e.getMessage());
+                    String chartDataStr = share.getChartData();
+                    if (chartDataStr != null && !chartDataStr.isEmpty()) {
+                        try {
+                            Map<String, Object> chartData = objectMapper.readValue(chartDataStr, Map.class);
+                            postData.put("chartData", chartData);
+                            postData.put("sharedTypes", share.getSharedTypes());
+                            postData.put("postType", "GROWTH_CHART");
+                            if (share.getFetus() != null) {
+                                postData.put("fetusId", share.getFetus().getFetusId());
+                            }
+                        } catch (JsonProcessingException e) {
+                            log.error("Error parsing chart data JSON for post {}: {}", post.getPostId(), e.getMessage());
+                        }
+                    }
                 }
+            } catch (Exception e) {
+                log.error("Error processing growth chart share for post {}: {}", post.getPostId(), e.getMessage(), e);
             }
             
             return postData;

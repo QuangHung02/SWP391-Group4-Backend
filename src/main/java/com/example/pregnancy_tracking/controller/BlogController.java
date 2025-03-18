@@ -30,13 +30,13 @@ public class BlogController {
         return ResponseEntity.ok(blogService.createBlog(request, userEmail));
     }
 
-    @Operation(summary = "Update a blog", description = "Admins can update an existing blog post.")
+    @Operation(summary = "Cập nhật bài viết", description = "Admin có thể cập nhật bài viết đã tồn tại.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Blog updated successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request data"),
-            @ApiResponse(responseCode = "403", description = "Unauthorized access"),
-            @ApiResponse(responseCode = "404", description = "Blog not found"),
-            @ApiResponse(responseCode = "500", description = "Server error")
+            @ApiResponse(responseCode = "200", description = "Cập nhật bài viết thành công"),
+            @ApiResponse(responseCode = "400", description = "Dữ liệu không hợp lệ"),
+            @ApiResponse(responseCode = "403", description = "Không có quyền truy cập"),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy bài viết"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @PutMapping("/{blogId}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -46,46 +46,46 @@ public class BlogController {
         return ResponseEntity.ok(blogService.updateBlog(blogId, request));
     }
 
-    @Operation(summary = "Delete a blog", description = "Admins can delete a blog post.")
+    @Operation(summary = "Xóa bài viết", description = "Admin có thể xóa bài viết.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Blog deleted successfully"),
-            @ApiResponse(responseCode = "403", description = "Unauthorized access"),
-            @ApiResponse(responseCode = "404", description = "Blog not found"),
-            @ApiResponse(responseCode = "500", description = "Server error")
+            @ApiResponse(responseCode = "200", description = "Xóa bài viết thành công"),
+            @ApiResponse(responseCode = "403", description = "Không có quyền truy cập"),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy bài viết"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @DeleteMapping("/{blogId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> deleteBlog(@PathVariable Long blogId) {
         blogService.deleteBlog(blogId);
-        return ResponseEntity.ok("Blog deleted successfully");
+        return ResponseEntity.ok("Xóa bài viết thành công");
     }
 
     @GetMapping
-    @Operation(summary = "Get all blogs", description = "Public endpoint to retrieve all blog posts.")
+    @Operation(summary = "Lấy tất cả bài viết", description = "API công khai để lấy tất cả bài viết.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Blogs retrieved successfully"),
-            @ApiResponse(responseCode = "500", description = "Server error")
+            @ApiResponse(responseCode = "200", description = "Lấy danh sách bài viết thành công"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     public ResponseEntity<List<Blog>> getAllBlogs() {
         return ResponseEntity.ok(blogService.getAllBlogs());
     }
 
     @GetMapping("/{blogId}")
-    @Operation(summary = "Get a blog by ID", description = "Public endpoint to retrieve a specific blog post.")
+    @Operation(summary = "Lấy bài viết theo ID", description = "API công khai để lấy một bài viết cụ thể.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Blog retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "Blog not found"),
-            @ApiResponse(responseCode = "500", description = "Server error")
+            @ApiResponse(responseCode = "200", description = "Lấy bài viết thành công"),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy bài viết"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     public ResponseEntity<Blog> getBlogById(@PathVariable Long blogId) {
         return ResponseEntity.ok(blogService.getBlogById(blogId));
     }
 
     @GetMapping("/featured")
-    @Operation(summary = "Get featured blogs", description = "Public endpoint to retrieve featured blog posts for homepage.")
+    @Operation(summary = "Lấy bài viết nổi bật", description = "API công khai để lấy các bài viết nổi bật cho trang chủ.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Featured blogs retrieved successfully"),
-            @ApiResponse(responseCode = "500", description = "Server error")
+            @ApiResponse(responseCode = "200", description = "Lấy bài viết nổi bật thành công"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     public ResponseEntity<List<Blog>> getFeaturedBlogs() {
         return ResponseEntity.ok(blogService.getFeaturedBlogs());

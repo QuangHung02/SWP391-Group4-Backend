@@ -2,6 +2,7 @@ package com.example.pregnancy_tracking.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "UserProfiles", schema = "dbo")
@@ -20,6 +21,7 @@ public class UserProfile {
     private String fullName;
 
     @Column(name = "phone_number", length = 15)
+    @JsonIgnore
     private String phoneNumber;
 
     @Column(name = "avatar", length = 255)

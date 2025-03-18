@@ -24,12 +24,12 @@ import java.util.Map;
 public class CommunityController {
     private final CommunityService communityService;
 
-    @Operation(summary = "Create a post", description = "Creates a new community post.")
+    @Operation(summary = "Tạo bài viết", description = "Tạo một bài viết mới trong cộng đồng.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Post created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request data"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "500", description = "Server error")
+            @ApiResponse(responseCode = "200", description = "Tạo bài viết thành công"),
+            @ApiResponse(responseCode = "400", description = "Dữ liệu không hợp lệ"),
+            @ApiResponse(responseCode = "401", description = "Chưa đăng nhập"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @PostMapping("/posts")
     public ResponseEntity<CommunityPost> createPost(
@@ -39,13 +39,13 @@ public class CommunityController {
         return ResponseEntity.ok(communityService.createPost(request, userEmail));
     }
 
-    @Operation(summary = "Create a comment", description = "Creates a new comment on a post.")
+    @Operation(summary = "Tạo bình luận", description = "Tạo bình luận mới cho bài viết.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Comment created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request data"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "404", description = "Post not found"),
-            @ApiResponse(responseCode = "500", description = "Server error")
+            @ApiResponse(responseCode = "200", description = "Tạo bình luận thành công"),
+            @ApiResponse(responseCode = "400", description = "Dữ liệu không hợp lệ"),
+            @ApiResponse(responseCode = "401", description = "Chưa đăng nhập"),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy bài viết"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @PostMapping("/posts/{postId}/comments")
     public ResponseEntity<CommunityComment> createComment(
@@ -56,60 +56,60 @@ public class CommunityController {
         return ResponseEntity.ok(communityService.createComment(postId, request, userEmail));
     }
 
-    @Operation(summary = "Delete post", description = "Deletes a post and all its comments (Admin only).")
+    @Operation(summary = "Xóa bài viết", description = "Xóa bài viết và tất cả bình luận (Chỉ Admin).")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Post deleted successfully"),
-            @ApiResponse(responseCode = "403", description = "Access denied - Admin only"),
-            @ApiResponse(responseCode = "404", description = "Post not found"),
-            @ApiResponse(responseCode = "500", description = "Server error")
+            @ApiResponse(responseCode = "200", description = "Xóa bài viết thành công"),
+            @ApiResponse(responseCode = "403", description = "Không có quyền truy cập - Chỉ dành cho Admin"),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy bài viết"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @DeleteMapping("/posts/{postId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> deletePost(@PathVariable Long postId) {
         communityService.deletePost(postId);
-        return ResponseEntity.ok("Post deleted successfully");
+        return ResponseEntity.ok("Xóa bài viết thành công");
     }
 
-    @Operation(summary = "Delete comment", description = "Deletes a comment (Admin only).")
+    @Operation(summary = "Xóa bình luận", description = "Xóa bình luận (Chỉ Admin).")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Comment deleted successfully"),
-            @ApiResponse(responseCode = "403", description = "Access denied - Admin only"),
-            @ApiResponse(responseCode = "404", description = "Comment not found"),
-            @ApiResponse(responseCode = "500", description = "Server error")
+            @ApiResponse(responseCode = "200", description = "Xóa bình luận thành công"),
+            @ApiResponse(responseCode = "403", description = "Không có quyền truy cập - Chỉ dành cho Admin"),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy bình luận"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @DeleteMapping("/comments/{commentId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> deleteComment(@PathVariable Long commentId) {
         communityService.deleteComment(commentId);
-        return ResponseEntity.ok("Comment deleted successfully");
+        return ResponseEntity.ok("Xóa bình luận thành công");
     }
 
-    @Operation(summary = "Get all posts", description = "Retrieves all community posts.")
+    @Operation(summary = "Lấy tất cả bài viết", description = "Lấy tất cả bài viết trong cộng đồng.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Posts retrieved successfully"),
-            @ApiResponse(responseCode = "500", description = "Server error")
+            @ApiResponse(responseCode = "200", description = "Lấy danh sách bài viết thành công"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @GetMapping("/posts")
     public ResponseEntity<List<Map<String, Object>>> getAllPosts() {
         return ResponseEntity.ok(communityService.getAllPostsWithCharts());
     }
 
-    @Operation(summary = "Get post by ID", description = "Retrieves details of a specific post by ID.")
+    @Operation(summary = "Lấy bài viết theo ID", description = "Lấy chi tiết của một bài viết cụ thể theo ID.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Post retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "Post not found"),
-            @ApiResponse(responseCode = "500", description = "Server error")
+            @ApiResponse(responseCode = "200", description = "Lấy bài viết thành công"),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy bài viết"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @GetMapping("/posts/{postId}")
     public ResponseEntity<CommunityPost> getPostById(@PathVariable Long postId) {
         return ResponseEntity.ok(communityService.getPostById(postId));
     }
 
-    @Operation(summary = "Get comments for a post", description = "Retrieves all comments for a specific post.")
+    @Operation(summary = "Lấy bình luận của bài viết", description = "Lấy tất cả bình luận của một bài viết cụ thể.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Comments retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "Post not found"),
-            @ApiResponse(responseCode = "500", description = "Server error")
+            @ApiResponse(responseCode = "200", description = "Lấy danh sách bình luận thành công"),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy bài viết"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @GetMapping("/posts/{postId}/comments")
     public ResponseEntity<List<CommunityComment>> getPostComments(@PathVariable Long postId) {
