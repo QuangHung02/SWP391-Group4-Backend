@@ -233,13 +233,8 @@ public class PregnancyService {
         if (fetus.getPregnancy().getStatus() != PregnancyStatus.ONGOING) {
             throw new IllegalStateException("Không thể thay đổi trạng thái thai nhi khi thai kỳ không còn theo dõi!");
         }
-
-        if (fetus.getStatus() == FetusStatus.ACTIVE) {
-            fetus.setStatus(status);
-            fetusRepository.save(fetus);
-        } else {
-            throw new IllegalStateException("Chỉ có thể thay đổi trạng thái của thai nhi đang theo dõi!");
-        }
+        fetus.setStatus(status);
+        fetusRepository.save(fetus);
     }
 
 }
