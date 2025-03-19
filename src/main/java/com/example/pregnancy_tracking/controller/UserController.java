@@ -21,60 +21,93 @@ import java.util.List;
 public class UserController {
     private final UserService userService;
 
-    @Operation(summary = "Get all users", description = "Retrieves a list of all registered users.")
+    @Operation(summary = "Lấy tất cả người dùng", description = "Lấy danh sách tất cả người dùng đã đăng ký.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lấy danh sách thành công"),
+            @ApiResponse(responseCode = "403", description = "Không có quyền truy cập - Chỉ Admin"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
+    })
     @GetMapping("/all")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<UserDTO>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
-    @Operation(summary = "Get user by ID", description = "Retrieves user details based on user ID.")
+    @Operation(summary = "Lấy thông tin người dùng theo ID", description = "Lấy chi tiết thông tin người dùng dựa trên ID.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lấy thông tin thành công"),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy người dùng"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
+    })
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
-    @Operation(summary = "Update user", description = "Updates user information based on user ID.")
+    @Operation(summary = "Cập nhật thông tin người dùng", description = "Cập nhật thông tin người dùng dựa trên ID.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Cập nhật thành công"),
+            @ApiResponse(responseCode = "400", description = "Dữ liệu không hợp lệ"),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy người dùng"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
+    })
     @PutMapping("/{id}")
     public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @Valid @RequestBody UserDTO userDTO) {
         return ResponseEntity.ok(userService.updateUser(id, userDTO));
     }
 
-    @Operation(summary = "Register a new user", description = "Creates a new user account in the system.")
+    @Operation(summary = "Đăng ký người dùng mới", description = "Tạo tài khoản người dùng mới trong hệ thống.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Đăng ký thành công"),
+            @ApiResponse(responseCode = "400", description = "Dữ liệu đăng ký không hợp lệ"),
+            @ApiResponse(responseCode = "409", description = "Email đã được sử dụng"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
+    })
     @PostMapping("/register")
     public ResponseEntity<String> register(@Valid @RequestBody RegisterRequest request) {
         return ResponseEntity.ok(userService.register(request));
     }
 
-    @Operation(summary = "User login", description = "Authenticates a user and returns a token.")
+    @Operation(summary = "Đăng nhập", description = "Xác thực người dùng và trả về token.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Đăng nhập thành công"),
+            @ApiResponse(responseCode = "401", description = "Thông tin đăng nhập không hợp lệ"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
+    })
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(userService.login(request));
     }
 
-    @Operation(summary = "Change user password", description = "Allows users to change their password securely.")
+    @Operation(summary = "Đổi mật khẩu", description = "Cho phép người dùng thay đổi mật khẩu một cách an toàn.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Đổi mật khẩu thành công"),
+            @ApiResponse(responseCode = "400", description = "Mật khẩu không hợp lệ"),
+            @ApiResponse(responseCode = "401", description = "Chưa xác thực"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
+    })
     @PutMapping("/change-password")
     public ResponseEntity<String> changePassword(@Valid @RequestBody ChangePasswordRequest request,
-                                               Authentication authentication) {
+            Authentication authentication) {
         if (authentication == null || authentication.getName() == null) {
-            return ResponseEntity.status(401).body("Unauthorized: No authentication provided.");
+            return ResponseEntity.status(401).body("Chưa xác thực: Không có thông tin xác thực.");
         }
         String email = authentication.getName();
         userService.changePassword(email, request);
-        return ResponseEntity.ok("Password changed successfully!");
+        return ResponseEntity.ok("Đổi mật khẩu thành công!");
     }
 
-    @Operation(summary = "Delete user", description = "Deletes a user account from the system (Admin only).")
+    @Operation(summary = "Xóa người dùng", description = "Xóa tài khoản người dùng khỏi hệ thống (Chỉ dành cho Admin).")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User deleted successfully"),
-            @ApiResponse(responseCode = "403", description = "Access denied - Admin only"),
-            @ApiResponse(responseCode = "404", description = "User not found"),
-            @ApiResponse(responseCode = "500", description = "Server error")
+            @ApiResponse(responseCode = "200", description = "Xóa người dùng thành công"),
+            @ApiResponse(responseCode = "403", description = "Từ chối truy cập - Chỉ dành cho Admin"),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy người dùng"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
-        return ResponseEntity.ok("User deleted successfully");
+        return ResponseEntity.ok("Xóa người dùng thành công");
     }
 }

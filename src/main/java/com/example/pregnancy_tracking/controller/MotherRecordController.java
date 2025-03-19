@@ -20,11 +20,11 @@ public class MotherRecordController {
     @Autowired
     private MotherRecordService motherRecordService;
 
-    @Operation(summary = "Create a Mother Record", description = "Creates a new mother record linked to a pregnancy.")
+    @Operation(summary = "Tạo bản ghi theo dõi mẹ", description = "Tạo bản ghi theo dõi mới cho mẹ liên kết với một thai kỳ.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Record created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request data"),
-            @ApiResponse(responseCode = "500", description = "Server error")
+            @ApiResponse(responseCode = "200", description = "Tạo bản ghi thành công"),
+            @ApiResponse(responseCode = "400", description = "Dữ liệu không hợp lệ"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @PostMapping("/{pregnancyId}")
     public ResponseEntity<MotherRecord> createRecord(@PathVariable Long pregnancyId,
@@ -33,11 +33,12 @@ public class MotherRecordController {
         return ResponseEntity.ok(createdRecord);
     }
 
-    @Operation(summary = "Get Mother Records by Pregnancy ID", description = "Retrieves all mother records associated with a specific pregnancy.")
+    @Operation(summary = "Lấy bản ghi theo dõi mẹ theo ID thai kỳ", 
+              description = "Lấy tất cả bản ghi theo dõi mẹ liên quan đến một thai kỳ cụ thể.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Records retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "No records found"),
-            @ApiResponse(responseCode = "500", description = "Server error")
+            @ApiResponse(responseCode = "200", description = "Lấy danh sách bản ghi thành công"),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy bản ghi"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @GetMapping("/{pregnancyId}")
     public ResponseEntity<List<MotherRecord>> getRecordsByPregnancyId(@PathVariable Long pregnancyId) {

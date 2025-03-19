@@ -26,10 +26,10 @@ public class ReminderController {
         this.reminderService = reminderService;
     }
 
-    @Operation(summary = "Get all reminders including medical tasks")
+    @Operation(summary = "Lấy tất cả nhắc nhở bao gồm các nhiệm vụ y tế")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Reminders retrieved successfully"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
+            @ApiResponse(responseCode = "200", description = "Lấy danh sách nhắc nhở thành công"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @GetMapping
     public ResponseEntity<List<ReminderDTO>> getReminders(@AuthenticationPrincipal UserDetails userDetails) {
@@ -37,22 +37,22 @@ public class ReminderController {
         return ResponseEntity.ok(reminderService.getAllReminders(user.getId()));
     }
 
-    @Operation(summary = "Get a reminder by ID including medical tasks")
+    @Operation(summary = "Lấy nhắc nhở theo ID bao gồm các nhiệm vụ y tế")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Reminder found"),
-            @ApiResponse(responseCode = "404", description = "Reminder not found"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
+            @ApiResponse(responseCode = "200", description = "Tìm thấy nhắc nhở"),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy nhắc nhở"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @GetMapping("/{id}")
     public ResponseEntity<ReminderDTO> getReminderById(@PathVariable Long id) {
         return ResponseEntity.ok(reminderService.getReminderById(id));
     }
 
-    @Operation(summary = "Create a new reminder")
+    @Operation(summary = "Tạo nhắc nhở mới")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Reminder created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request data"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
+            @ApiResponse(responseCode = "201", description = "Tạo nhắc nhở thành công"),
+            @ApiResponse(responseCode = "400", description = "Dữ liệu không hợp lệ"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @PostMapping
     public ResponseEntity<ReminderDTO> createReminder(@RequestBody ReminderDTO reminderDTO) {
@@ -60,11 +60,11 @@ public class ReminderController {
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-    @Operation(summary = "Create a reminder with medical tasks")
+    @Operation(summary = "Tạo nhắc nhở với các nhiệm vụ y tế")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Reminder and tasks created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request data"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
+            @ApiResponse(responseCode = "201", description = "Tạo nhắc nhở và nhiệm vụ thành công"),
+            @ApiResponse(responseCode = "400", description = "Dữ liệu không hợp lệ"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @PostMapping("/with-tasks")
     public ResponseEntity<ReminderDTO> createReminderWithTasks(@RequestBody ReminderDTO reminderDTO) {
@@ -72,11 +72,11 @@ public class ReminderController {
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-    @Operation(summary = "Update a reminder")
+    @Operation(summary = "Cập nhật nhắc nhở")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Reminder updated successfully"),
-            @ApiResponse(responseCode = "404", description = "Reminder not found"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
+            @ApiResponse(responseCode = "200", description = "Cập nhật nhắc nhở thành công"),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy nhắc nhở"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @PutMapping("/{id}")
     public ResponseEntity<ReminderDTO> updateReminder(@PathVariable Long id, @RequestBody ReminderDTO reminderDTO) {

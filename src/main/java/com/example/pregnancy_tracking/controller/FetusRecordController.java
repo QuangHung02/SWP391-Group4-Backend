@@ -29,12 +29,12 @@ public class FetusRecordController {
     @Autowired
     private MembershipService membershipService;
 
-    @Operation(summary = "Create a Fetus Record")
+    @Operation(summary = "Tạo bản ghi theo dõi thai nhi")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Record created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request data"),
-            @ApiResponse(responseCode = "403", description = "Membership required"),
-            @ApiResponse(responseCode = "500", description = "Server error")
+            @ApiResponse(responseCode = "200", description = "Tạo bản ghi thành công"),
+            @ApiResponse(responseCode = "400", description = "Dữ liệu không hợp lệ"),
+            @ApiResponse(responseCode = "403", description = "Yêu cầu gói thành viên"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @PostMapping("/{fetusId}")
     public ResponseEntity<FetusRecord> createRecord(
@@ -44,18 +44,18 @@ public class FetusRecordController {
         User user = (User) userDetails;
         Long userId = user.getId();
         if (!membershipService.canCreateFetusRecord(userId)) {
-            throw new MembershipFeatureException("This feature requires Basic or Premium membership");
+            throw new MembershipFeatureException("Tính năng này yêu cầu gói Basic hoặc Premium");
         }
         FetusRecord createdRecord = fetusRecordService.createRecord(fetusId, recordDTO, userId);
         return ResponseEntity.ok(createdRecord);
     }
 
-    @Operation(summary = "Get Fetus Records by Fetus ID")
+    @Operation(summary = "Lấy danh sách bản ghi theo ID thai nhi")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Records retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "No records found"),
-            @ApiResponse(responseCode = "403", description = "Membership required"),
-            @ApiResponse(responseCode = "500", description = "Server error")
+            @ApiResponse(responseCode = "200", description = "Lấy danh sách bản ghi thành công"),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy bản ghi"),
+            @ApiResponse(responseCode = "403", description = "Yêu cầu gói thành viên"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @GetMapping("/{fetusId}")
     public ResponseEntity<List<FetusRecordDTO>> getRecordsByFetusId(
@@ -67,12 +67,12 @@ public class FetusRecordController {
         return ResponseEntity.ok(records);
     }
 
-    @Operation(summary = "Get All Growth Measurements")
+    @Operation(summary = "Lấy tất cả dữ liệu đo lường sự phát triển")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Measurements retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "No measurements found"),
-            @ApiResponse(responseCode = "403", description = "Membership required"),
-            @ApiResponse(responseCode = "500", description = "Server error")
+            @ApiResponse(responseCode = "200", description = "Lấy dữ liệu đo lường thành công"),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy dữ liệu đo lường"),
+            @ApiResponse(responseCode = "403", description = "Yêu cầu gói thành viên"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @GetMapping("/{fetusId}/growth-data")
     public ResponseEntity<Map<String, List<Object[]>>> getAllGrowthData(

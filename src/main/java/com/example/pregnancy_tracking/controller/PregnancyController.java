@@ -1,7 +1,6 @@
 package com.example.pregnancy_tracking.controller;
 
 import com.example.pregnancy_tracking.dto.PregnancyDTO;
-import com.example.pregnancy_tracking.dto.PregnancyResponseDTO;
 import com.example.pregnancy_tracking.entity.FetusStatus;
 import com.example.pregnancy_tracking.entity.PregnancyStatus;
 import com.example.pregnancy_tracking.service.PregnancyService;
@@ -24,11 +23,11 @@ public class PregnancyController {
     @Autowired
     private PregnancyService pregnancyService;
 
-    @Operation(summary = "Create a new pregnancy", description = "Creates a new pregnancy record and returns the created object.")
+    @Operation(summary = "Tạo thai kỳ mới", description = "Tạo bản ghi thai kỳ mới và trả về đối tượng đã tạo.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Pregnancy created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request data"),
-            @ApiResponse(responseCode = "500", description = "Server error")
+            @ApiResponse(responseCode = "200", description = "Tạo thai kỳ thành công"),
+            @ApiResponse(responseCode = "400", description = "Dữ liệu không hợp lệ"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @PostMapping("")
     public ResponseEntity<PregnancyListDTO> createPregnancy(@Valid @RequestBody PregnancyDTO pregnancyDTO) {
@@ -43,11 +42,11 @@ public class PregnancyController {
         return ResponseEntity.ok(updatedPregnancy);
     }
 
-    @Operation(summary = "Get pregnancy by ID", description = "Retrieves a pregnancy record by its unique ID.")
+    @Operation(summary = "Lấy thai kỳ theo ID", description = "Lấy thông tin thai kỳ theo ID duy nhất.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Pregnancy retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "Pregnancy not found"),
-            @ApiResponse(responseCode = "500", description = "Server error")
+            @ApiResponse(responseCode = "200", description = "Lấy thông tin thai kỳ thành công"),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy thai kỳ"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @GetMapping("/{id}")
     public ResponseEntity<PregnancyListDTO> getPregnancyById(@PathVariable Long id) {
@@ -69,11 +68,12 @@ public class PregnancyController {
         }
     }
 
-    @Operation(summary = "Get pregnancies by User ID", description = "Retrieves all pregnancies of a specific user.")
+    @Operation(summary = "Lấy danh sách thai kỳ theo ID người dùng", 
+              description = "Lấy tất cả thai kỳ của một người dùng cụ thể.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Pregnancies retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "User not found"),
-            @ApiResponse(responseCode = "500", description = "Server error")
+            @ApiResponse(responseCode = "200", description = "Lấy danh sách thai kỳ thành công"),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy người dùng"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<PregnancyListDTO>> getPregnanciesByUserId(@PathVariable Long userId) {
@@ -81,12 +81,12 @@ public class PregnancyController {
         return ResponseEntity.ok(pregnancies);
     }
 
-    @Operation(summary = "Get ongoing pregnancy by User ID",
-            description = "Retrieves the full details of the ongoing pregnancy for a specific user, including fetus data.")
+    @Operation(summary = "Lấy thai kỳ đang theo dõi theo ID người dùng",
+            description = "Lấy thông tin chi tiết của thai kỳ đang theo dõi của người dùng, bao gồm dữ liệu thai nhi.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Ongoing pregnancy retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "No ongoing pregnancy found"),
-            @ApiResponse(responseCode = "500", description = "Server error")
+            @ApiResponse(responseCode = "200", description = "Lấy thai kỳ đang theo dõi thành công"),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy thai kỳ đang theo dõi"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @GetMapping("/ongoing/{userId}")
     public ResponseEntity<PregnancyListDTO> getOngoingPregnancyByUserId(@PathVariable Long userId) {
@@ -94,12 +94,13 @@ public class PregnancyController {
         return ResponseEntity.ok(pregnancy);
     }
 
-    @Operation(summary = "Update fetus status", description = "Updates the status of a specific fetus.")
+    @Operation(summary = "Cập nhật trạng thái thai nhi", 
+              description = "Cập nhật trạng thái của một thai nhi cụ thể.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Fetus status updated successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid status value"),
-            @ApiResponse(responseCode = "404", description = "Fetus not found"),
-            @ApiResponse(responseCode = "500", description = "Server error")
+            @ApiResponse(responseCode = "200", description = "Cập nhật trạng thái thai nhi thành công"),
+            @ApiResponse(responseCode = "400", description = "Giá trị trạng thái không hợp lệ"),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy thai nhi"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @PatchMapping("/fetus/{fetusId}/status")
     public ResponseEntity<Void> updateFetusStatus(

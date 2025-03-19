@@ -21,45 +21,45 @@ public class MembershipController {
     private final MembershipService membershipService;
     private final SubscriptionService subscriptionService;
 
-    @Operation(summary = "Get all membership packages", description = "Retrieves a list of all available membership packages.")
+    @Operation(summary = "Lấy tất cả gói thành viên", description = "Lấy danh sách tất cả các gói thành viên hiện có.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Packages retrieved successfully"),
-            @ApiResponse(responseCode = "500", description = "Server error")
+            @ApiResponse(responseCode = "200", description = "Lấy danh sách gói thành công"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @GetMapping("/packages")
     public ResponseEntity<List<MembershipPackageDTO>> getAllPackages() {
         return ResponseEntity.ok(membershipService.getAllPackages());
     }
 
-    @Operation(summary = "Get upgrade price", description = "Calculates the upgrade price for a specific user.")
+    @Operation(summary = "Lấy giá nâng cấp", description = "Tính toán giá nâng cấp cho người dùng cụ thể.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Upgrade price retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "User not found"),
-            @ApiResponse(responseCode = "500", description = "Server error")
+            @ApiResponse(responseCode = "200", description = "Lấy giá nâng cấp thành công"),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy người dùng"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @GetMapping("/upgrade-price/{userId}")
     public ResponseEntity<MembershipPackageDTO> getUpgradePrice(@PathVariable Long userId) {
         return ResponseEntity.ok(membershipService.calculateUpgradePrice(userId));
     }
 
-    @Operation(summary = "Upgrade user to premium", description = "Upgrades a user to a premium membership.")
+    @Operation(summary = "Nâng cấp lên gói Premium", description = "Nâng cấp người dùng lên gói thành viên Premium.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User upgraded to premium successfully"),
-            @ApiResponse(responseCode = "404", description = "User not found"),
-            @ApiResponse(responseCode = "500", description = "Server error")
+            @ApiResponse(responseCode = "200", description = "Nâng cấp lên Premium thành công"),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy người dùng"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @PostMapping("/upgrade/{userId}")
     public ResponseEntity<String> upgradeToPremium(@PathVariable Long userId) {
         membershipService.upgradeToPremium(userId);
-        return ResponseEntity.ok("Upgraded to Premium successfully");
+        return ResponseEntity.ok("Nâng cấp lên Premium thành công");
     }
 
-    @Operation(summary = "Get user subscription history", description = "Retrieves the subscription history of a specific user. (Admin only)")
+    @Operation(summary = "Xem lịch sử đăng ký", description = "Lấy lịch sử đăng ký của người dùng cụ thể. (Chỉ Admin)")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Subscription history retrieved successfully"),
-            @ApiResponse(responseCode = "403", description = "Access denied - Admin only"),
-            @ApiResponse(responseCode = "404", description = "User not found"),
-            @ApiResponse(responseCode = "500", description = "Server error")
+            @ApiResponse(responseCode = "200", description = "Lấy lịch sử đăng ký thành công"),
+            @ApiResponse(responseCode = "403", description = "Từ chối truy cập - Chỉ dành cho Admin"),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy người dùng"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @GetMapping("/subscriptions/{userId}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -67,11 +67,11 @@ public class MembershipController {
         return ResponseEntity.ok(subscriptionService.getUserSubscriptions(userId));
     }
 
-    @Operation(summary = "Get all subscriptions", description = "Retrieves all user subscriptions. (Admin only)")
+    @Operation(summary = "Xem tất cả đăng ký", description = "Lấy tất cả đăng ký của người dùng. (Chỉ Admin)")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "All subscriptions retrieved successfully"),
-            @ApiResponse(responseCode = "403", description = "Access denied - Admin only"),
-            @ApiResponse(responseCode = "500", description = "Server error")
+            @ApiResponse(responseCode = "200", description = "Lấy tất cả đăng ký thành công"),
+            @ApiResponse(responseCode = "403", description = "Từ chối truy cập - Chỉ dành cho Admin"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @GetMapping("/subscriptions/all")
     @PreAuthorize("hasRole('ADMIN')")
@@ -79,13 +79,13 @@ public class MembershipController {
         return ResponseEntity.ok(subscriptionService.getAllSubscriptions());
     }
 
-    @Operation(summary = "Update membership package", description = "Updates a membership package. (Admin only)")
+    @Operation(summary = "Cập nhật gói thành viên", description = "Cập nhật thông tin gói thành viên. (Chỉ Admin)")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Membership package updated successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request data"),
-            @ApiResponse(responseCode = "403", description = "Access denied - Admin only"),
-            @ApiResponse(responseCode = "404", description = "Package not found"),
-            @ApiResponse(responseCode = "500", description = "Server error")
+            @ApiResponse(responseCode = "200", description = "Cập nhật gói thành công"),
+            @ApiResponse(responseCode = "400", description = "Dữ liệu không hợp lệ"),
+            @ApiResponse(responseCode = "403", description = "Từ chối truy cập - Chỉ dành cho Admin"),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy gói"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @PutMapping("/packages/{packageId}")
     @PreAuthorize("hasRole('ADMIN')")

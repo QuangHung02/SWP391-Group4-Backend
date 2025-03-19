@@ -23,21 +23,21 @@ public class StandardController {
         this.standardService = standardService;
     }
 
-    @Operation(summary = "Get all standard medical tasks")
+    @Operation(summary = "Lấy tất cả nhiệm vụ y tế tiêu chuẩn")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully retrieved all tasks"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
+            @ApiResponse(responseCode = "200", description = "Lấy danh sách nhiệm vụ thành công"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @GetMapping("/medical-tasks")
     public ResponseEntity<List<StandardMedicalTask>> getAllStandardMedicalTasks() {
         return ResponseEntity.ok(standardService.getAllStandardMedicalTasks());
     }
 
-    @Operation(summary = "Get standard medical tasks by week")
+    @Operation(summary = "Lấy nhiệm vụ y tế tiêu chuẩn theo tuần")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully retrieved tasks for week"),
-            @ApiResponse(responseCode = "404", description = "No tasks found for this week"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
+            @ApiResponse(responseCode = "200", description = "Lấy nhiệm vụ theo tuần thành công"),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy nhiệm vụ cho tuần này"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @GetMapping("/medical-tasks/week/{week}")
     public ResponseEntity<List<StandardMedicalTask>> getStandardMedicalTasksByWeek(@PathVariable Integer week) {
@@ -48,11 +48,11 @@ public class StandardController {
         return ResponseEntity.ok(tasks);
     }
 
-    @Operation(summary = "Create a standard medical task")
+    @Operation(summary = "Tạo nhiệm vụ y tế tiêu chuẩn")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Task created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid task data"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
+            @ApiResponse(responseCode = "201", description = "Tạo nhiệm vụ thành công"),
+            @ApiResponse(responseCode = "400", description = "Dữ liệu nhiệm vụ không hợp lệ"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @PostMapping("/medical-tasks")
     public ResponseEntity<StandardMedicalTask> createStandardMedicalTask(@RequestBody StandardMedicalTask task) {
@@ -60,11 +60,11 @@ public class StandardController {
                 .body(standardService.createStandardMedicalTask(task));
     }
 
-    @Operation(summary = "Delete a standard medical task")
+    @Operation(summary = "Xóa nhiệm vụ y tế tiêu chuẩn")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Task deleted successfully"),
-            @ApiResponse(responseCode = "404", description = "Task not found"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
+            @ApiResponse(responseCode = "204", description = "Xóa nhiệm vụ thành công"),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy nhiệm vụ"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @DeleteMapping("/medical-tasks/{taskId}")
     public ResponseEntity<Void> deleteStandardMedicalTask(@PathVariable Long taskId) {
@@ -76,12 +76,12 @@ public class StandardController {
         }
     }
 
-    @Operation(summary = "Generate weekly tasks for user")
+    @Operation(summary = "Tạo nhiệm vụ hàng tuần cho người dùng")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Tasks generated successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request parameters"),
-            @ApiResponse(responseCode = "404", description = "User or pregnancy not found"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
+            @ApiResponse(responseCode = "200", description = "Tạo nhiệm vụ thành công"),
+            @ApiResponse(responseCode = "400", description = "Tham số yêu cầu không hợp lệ"),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy người dùng hoặc thai kỳ"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @PostMapping("/generate-tasks")
     public ResponseEntity<Void> generateWeeklyTasks(
@@ -96,24 +96,24 @@ public class StandardController {
         }
     }
 
-    @Operation(summary = "Get all pregnancy standards", 
-              description = "Retrieves standard values for all gestational weeks.")
+    @Operation(summary = "Lấy tất cả tiêu chuẩn thai kỳ", 
+              description = "Lấy giá trị tiêu chuẩn cho tất cả các tuần thai kỳ.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Standards retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "No standards found"),
-            @ApiResponse(responseCode = "500", description = "Server error")
+            @ApiResponse(responseCode = "200", description = "Lấy tiêu chuẩn thành công"),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy tiêu chuẩn"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @GetMapping("/pregnancy/all")
     public ResponseEntity<List<PregnancyStandardDTO>> getAllPregnancyStandards() {
         return ResponseEntity.ok(standardService.getAllPregnancyStandards());
     }
 
-    @Operation(summary = "Get pregnancy standards by fetus number", 
-              description = "Retrieves all standard values for a specific number of fetuses")
+    @Operation(summary = "Lấy tiêu chuẩn thai kỳ theo số thai", 
+              description = "Lấy tất cả giá trị tiêu chuẩn cho một số thai cụ thể")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Standards retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "No standards found"),
-            @ApiResponse(responseCode = "500", description = "Server error")
+            @ApiResponse(responseCode = "200", description = "Lấy tiêu chuẩn thành công"),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy tiêu chuẩn"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @GetMapping("/pregnancy/fetus/{fetusNumber}")
     public ResponseEntity<List<PregnancyStandardDTO>> getPregnancyStandardsByFetusNumber(

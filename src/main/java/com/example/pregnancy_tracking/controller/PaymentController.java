@@ -24,6 +24,6 @@ public class PaymentController {
     @GetMapping("/vnpay-return")
     public ResponseEntity<String> paymentReturn(@RequestParam Map<String, String> queryParams) {
         paymentService.processPaymentReturn(queryParams);
-        return ResponseEntity.ok("Payment processed successfully");
+        return ResponseEntity.ok("Thanh toán thành công!");
     }
 }

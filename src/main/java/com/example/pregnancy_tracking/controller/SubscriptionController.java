@@ -20,12 +20,13 @@ public class SubscriptionController {
     private final SubscriptionService subscriptionService;
     private final JwtUtil jwtUtil;
 
-    @Operation(summary = "Subscribe to a package", description = "Subscribes the authenticated user to a membership package.")
+    @Operation(summary = "Đăng ký gói thành viên", 
+              description = "Đăng ký gói thành viên cho người dùng đã xác thực.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Subscription created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request data"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
-            @ApiResponse(responseCode = "500", description = "Server error")
+            @ApiResponse(responseCode = "200", description = "Đăng ký gói thành công"),
+            @ApiResponse(responseCode = "400", description = "Dữ liệu yêu cầu không hợp lệ"),
+            @ApiResponse(responseCode = "401", description = "Chưa xác thực - Token không hợp lệ hoặc thiếu"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @PostMapping("/subscribe/{packageId}")
     public ResponseEntity<SubscriptionDTO> subscribe(
@@ -46,11 +47,12 @@ public class SubscriptionController {
         }
     }
 
-    @Operation(summary = "Get user subscriptions", description = "Retrieves all subscriptions for the authenticated user.")
+    @Operation(summary = "Lấy danh sách đăng ký của người dùng", 
+              description = "Lấy tất cả đăng ký của người dùng đã xác thực.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Subscriptions retrieved successfully"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
-            @ApiResponse(responseCode = "500", description = "Server error")
+            @ApiResponse(responseCode = "200", description = "Lấy danh sách đăng ký thành công"),
+            @ApiResponse(responseCode = "401", description = "Chưa xác thực - Token không hợp lệ hoặc thiếu"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @GetMapping("/my-subscriptions")
     public ResponseEntity<List<SubscriptionDTO>> getMySubscriptions(
@@ -70,11 +72,12 @@ public class SubscriptionController {
         }
     }
 
-    @Operation(summary = "Get revenue statistics", description = "Retrieves revenue statistics for all subscriptions. Admin only.")
+    @Operation(summary = "Lấy thống kê doanh thu", 
+              description = "Lấy thống kê doanh thu từ tất cả đăng ký. Chỉ dành cho Admin.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Statistics retrieved successfully"),
-            @ApiResponse(responseCode = "403", description = "Forbidden - Not an admin"),
-            @ApiResponse(responseCode = "500", description = "Server error")
+            @ApiResponse(responseCode = "200", description = "Lấy thống kê thành công"),
+            @ApiResponse(responseCode = "403", description = "Từ chối truy cập - Không phải Admin"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @GetMapping("/revenue-statistics")
     @PreAuthorize("hasRole('ADMIN')")
