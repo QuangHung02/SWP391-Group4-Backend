@@ -24,9 +24,9 @@ public class PaymentService {
 
     public String createPaymentUrl(Long userId, Long packageId, String returnUrl) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại!"));
         MembershipPackage membershipPackage = packageRepository.findById(packageId)
-                .orElseThrow(() -> new RuntimeException("Package not found"));
+                .orElseThrow(() -> new RuntimeException("Gói thành viên không tồn tại!"));
         BigDecimal price = membershipPackage.getPrice();
         
         if ("Premium Plan".equals(membershipPackage.getName())) {
@@ -91,7 +91,7 @@ public class PaymentService {
             
             subscriptionService.createSubscription(userId, packageId);
             MembershipPackage membershipPackage = packageRepository.findById(packageId)
-                    .orElseThrow(() -> new RuntimeException("Package not found"));
+                    .orElseThrow(() -> new RuntimeException("Gói thành viên không tồn tại!"));
             if ("Premium Plan".equals(membershipPackage.getName())) {
                 membershipService.upgradeToPremium(userId);
             }

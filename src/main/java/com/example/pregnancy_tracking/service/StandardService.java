@@ -56,10 +56,10 @@ public class StandardService {
 
     public StandardMedicalTask createStandardMedicalTask(StandardMedicalTask task) {
         if (task == null) {
-            throw new IllegalArgumentException("Task cannot be null");
+            throw new IllegalArgumentException("Nhiệm vụ không được để trống");
         }
         if (task.getWeek() == null || task.getTaskName() == null) {
-            throw new IllegalArgumentException("Week and task name are required");
+            throw new IllegalArgumentException("Tuần thai và tên nhiệm vụ là bắt buộc");
         }
         return standardMedicalTaskRepository.save(task);
     }
@@ -79,7 +79,7 @@ public class StandardService {
 
     public void createReminderFromStandardTasks(Long userId, Long pregnancyId, Integer currentWeek) {
         if (userId == null || pregnancyId == null || currentWeek == null) {
-            throw new IllegalArgumentException("userId, pregnancyId, and currentWeek cannot be null");
+            throw new IllegalArgumentException("ID người dùng, ID thai kỳ và tuần thai hiện tại không được để trống");
         }
 
         try {
@@ -108,7 +108,7 @@ public class StandardService {
                 reminderService.createReminderWithTasks(reminderDTO);
             }
         } catch (Exception e) {
-            throw new RuntimeException("Failed to create reminder from standard tasks: " + e.getMessage());
+            throw new RuntimeException("Không thể tạo nhắc nhở từ nhiệm vụ tiêu chuẩn: " + e.getMessage());
         }
     }
 
@@ -135,7 +135,7 @@ public class StandardService {
 
     public void checkFetusStatus(Long fetusId) {
         Fetus fetus = fetusRepository.findById(fetusId)
-                .orElseThrow(() -> new RuntimeException("Fetus not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thai nhi"));
         
         List<FetusRecord> records = fetusRecordRepository.findByFetusFetusIdOrderByWeekAsc(fetusId);
         if (records.isEmpty()) {
@@ -149,7 +149,7 @@ public class StandardService {
 
         PregnancyStandardId id = new PregnancyStandardId(currentWeek, totalFetuses);
         PregnancyStandard standard = pregnancyStandardRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Standard not found for week " + currentWeek));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy tiêu chuẩn cho tuần " + currentWeek));
 
         boolean isIssue = false;
         

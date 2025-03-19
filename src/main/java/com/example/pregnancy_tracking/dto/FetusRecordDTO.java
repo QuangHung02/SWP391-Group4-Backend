@@ -9,11 +9,11 @@ import java.math.BigDecimal;
 public class FetusRecordDTO {
     private Long recordId;
     private Integer week;
-    @DecimalMin(value = "0.0", message = "Value must be positive")
+    @DecimalMin(value = "0.0", message = "Giá trị phải là số dương")
     private BigDecimal fetalWeight;
-    @DecimalMin(value = "0.0", message = "Value must be positive")
+    @DecimalMin(value = "0.0", message = "Giá trị phải là số dương")
     private BigDecimal femurLength;
-    @DecimalMin(value = "0.0", message = "Value must be positive")
+    @DecimalMin(value = "0.0", message = "Giá trị phải là số dương")
     private BigDecimal headCircumference;
 
     public FetusRecordDTO() {}

@@ -57,10 +57,10 @@ public class SubscriptionService {
     @Transactional
     public SubscriptionDTO createSubscription(Long userId, Long packageId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại!"));
 
         MembershipPackage newPackage = packageRepository.findById(packageId)
-                .orElseThrow(() -> new RuntimeException("Package not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy gói thành viên!"));
 
         Optional<Subscription> activeSubscription = subscriptionRepository
                 .findFirstByUserIdAndStatusOrderByEndDateDesc(userId, "Active");

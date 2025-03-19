@@ -39,12 +39,12 @@ public class MembershipService {
 
     public MembershipPackageDTO calculateUpgradePrice(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại!"));
 
         MembershipPackage basicPackage = packageRepository.findByName("Basic Plan");
         MembershipPackage premiumPackage = packageRepository.findByName("Premium Plan");
         if (premiumPackage == null || basicPackage == null) {
-            throw new RuntimeException("Package not found");
+            throw new RuntimeException("Gói thành viên không tồn tại!");
         }
 
         MembershipPackageDTO packageDTO = new MembershipPackageDTO();
@@ -68,12 +68,12 @@ public class MembershipService {
     @Transactional
     public void upgradeToPremium(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại!"));
 
         MembershipPackage basicPackage = packageRepository.findByName("Basic Plan");
         MembershipPackage premiumPackage = packageRepository.findByName("Premium Plan");
         if (premiumPackage == null) {
-            throw new RuntimeException("Premium package not found");
+            throw new RuntimeException("Không tìm thấy gói Premium!");
         }
 
         BigDecimal finalPrice;
@@ -102,7 +102,7 @@ public class MembershipService {
 
     public MembershipPackageDTO updatePackage(Long packageId, MembershipPackageDTO packageDTO) {
         MembershipPackage existingPackage = packageRepository.findById(packageId)
-                .orElseThrow(() -> new RuntimeException("Package not found"));
+                .orElseThrow(() -> new RuntimeException("Gói thành viên không tồn tại!"));
 
         if (packageDTO.getPrice() != null) {
             existingPackage.setPrice(packageDTO.getPrice());

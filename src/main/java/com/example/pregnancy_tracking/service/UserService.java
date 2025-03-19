@@ -26,7 +26,7 @@ public class UserService {
 
     public String register(RegisterRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already exists");
+            throw new RuntimeException("Email đã tồn tại");
         }
 
         User user = new User();
@@ -35,7 +35,7 @@ public class UserService {
 
         String username = request.getUsername();
         if (username == null || username.trim().isEmpty()) {
-            throw new RuntimeException("Username is required");
+            throw new RuntimeException("Tên người dùng là bắt buộc");
         }
         user.setUsername(username);
         user.setRole(Role.MEMBER);
@@ -51,18 +51,18 @@ public class UserService {
         User savedUser = userRepository.save(user);
 
         if (savedUser.getUserProfile() == null) {
-            throw new RuntimeException("Failed to create user profile");
+            throw new RuntimeException("Không thể tạo hồ sơ người dùng");
         }
 
-        return "User registered successfully";
+        return "Đăng ký người dùng thành công";
     }
 
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid credentials");
+            throw new RuntimeException("Thông tin đăng nhập không hợp lệ");
         }
 
         String token = jwtUtil.generateToken(user, user.getId());
@@ -72,18 +72,18 @@ public class UserService {
     public void changePassword(String email, ChangePasswordRequest request) {
 
         if (request.getNewPassword() == null || request.getNewPassword().trim().isEmpty()) {
-            throw new RuntimeException("New password cannot be empty");
+            throw new RuntimeException("Mật khẩu mới không được để trống");
         }
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
 
         if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
-            throw new RuntimeException("Old password is incorrect");
+            throw new RuntimeException("Mật khẩu cũ không chính xác");
         }
 
         if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
-            throw new RuntimeException("New password must be different from old password");
+            throw new RuntimeException("Mật khẩu mới phải khác mật khẩu cũ");
         }
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
@@ -100,13 +100,13 @@ public class UserService {
 
     public UserDTO getUserById(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found: " + id));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng: " + id));
         return new UserDTO(user, user.getUserProfile());
     }
 
     public UserDTO updateUser(Long id, UserDTO userDTO) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
 
         if (userDTO.getEmail() != null) {
             user.setEmail(userDTO.getEmail());
@@ -138,9 +138,9 @@ public class UserService {
 
     public void deleteUser(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
         if (user.getRole() == Role.ADMIN) {
-            throw new RuntimeException("Cannot delete admin accounts");
+            throw new RuntimeException("Không thể xóa tài khoản quản trị viên");
         }
         
         userRepository.delete(user);

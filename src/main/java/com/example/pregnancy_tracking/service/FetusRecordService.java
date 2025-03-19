@@ -142,7 +142,7 @@ public class FetusRecordService {
             
             alert.setSeverity(severity);
             alert.setSource(AlertSource.PREGNANCY_RECORDS);
-            alert.setNotes("Fetus growth measurement out of normal range.");
+            alert.setNotes("Chỉ số tăng trưởng thai nhi nằm ngoài phạm vi bình thường.");
             reminderHealthAlertRepository.save(alert);
         
             Fetus fetus = record.getFetus();

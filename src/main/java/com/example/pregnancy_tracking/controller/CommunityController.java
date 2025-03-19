@@ -101,10 +101,10 @@ public class CommunityController {
             @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @GetMapping("/posts/{postId}")
-    public ResponseEntity<CommunityPost> getPostById(@PathVariable Long postId) {
-        return ResponseEntity.ok(communityService.getPostById(postId));
+    public ResponseEntity<Map<String, Object>> getPostById(@PathVariable Long postId) {
+        return ResponseEntity.ok(communityService.getPostByIdWithCharts(postId));
     }
-
+    
     @Operation(summary = "Lấy bình luận của bài viết", description = "Lấy tất cả bình luận của một bài viết cụ thể.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Lấy danh sách bình luận thành công"),

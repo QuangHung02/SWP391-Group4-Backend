@@ -124,11 +124,12 @@ public class StandardController {
         }
         return ResponseEntity.ok(standards);
     }
-    @Operation(summary = "Get pregnancy standards by week and fetus number")
+    @Operation(summary = "Lấy tiêu chuẩn thai kỳ theo tuần và số thai", 
+              description = "Lấy giá trị tiêu chuẩn cho một tuần và số thai cụ thể")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Standards retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "No standards found"),
-            @ApiResponse(responseCode = "500", description = "Server error")
+            @ApiResponse(responseCode = "200", description = "Lấy tiêu chuẩn thành công"),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy tiêu chuẩn cho tuần và số thai này"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @GetMapping("/pregnancy")
     public ResponseEntity<PregnancyStandardDTO> getPregnancyStandard(
@@ -139,12 +140,12 @@ public class StandardController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @Operation(summary = "Get pregnancy standards with prediction line", 
-              description = "Retrieves standards and prediction line for visualization")
+    @Operation(summary = "Lấy tiêu chuẩn thai kỳ và đường dự đoán", 
+              description = "Lấy giá trị tiêu chuẩn và đường dự đoán tăng trưởng cho biểu đồ")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Data retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "No data found"),
-            @ApiResponse(responseCode = "500", description = "Server error")
+            @ApiResponse(responseCode = "200", description = "Lấy dữ liệu thành công"),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy dữ liệu cho số thai này"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
     })
     @GetMapping("/pregnancy/fetus/{fetusNumber}/with-prediction")
     public ResponseEntity<Map<String, Object>> getPregnancyStandardsWithPrediction(

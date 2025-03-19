@@ -30,7 +30,7 @@ public class ReminderHealthAlertService {
     public List<ReminderHealthAlertDTO> getAllHealthAlerts() {
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
         User currentUser = userRepository.findByEmail(currentUsername)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
 
         return repository.findAll().stream()
                 .filter(alert -> alert.getReminder().getUser().getId().equals(currentUser.getId()))
@@ -41,13 +41,13 @@ public class ReminderHealthAlertService {
     public List<ReminderHealthAlertDTO> getHealthAlertsByReminder(Long reminderId) {
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
         User currentUser = userRepository.findByEmail(currentUsername)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
 
         Reminder reminder = reminderRepository.findById(reminderId)
-                .orElseThrow(() -> new RuntimeException("Reminder not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhắc nhở"));
 
         if (!reminder.getUser().getId().equals(currentUser.getId())) {
-            throw new AccessDeniedException("You don't have permission to view these alerts");
+            throw new AccessDeniedException("Bạn không có quyền xem các cảnh báo này");
         }
 
         return repository.findByReminderReminderId(reminderId).stream()
@@ -59,13 +59,13 @@ public class ReminderHealthAlertService {
     public ReminderHealthAlertDTO createHealthAlert(Long reminderId, ReminderHealthAlertDTO dto) {
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
         User currentUser = userRepository.findByEmail(currentUsername)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
 
         Reminder reminder = reminderRepository.findById(reminderId)
-                .orElseThrow(() -> new RuntimeException("Reminder not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhắc nhở"));
 
         if (!reminder.getUser().getId().equals(currentUser.getId())) {
-            throw new AccessDeniedException("You don't have permission to create alert for this reminder");
+            throw new AccessDeniedException("Bạn không có quyền tạo cảnh báo cho nhắc nhở này");
         }
 
         ReminderHealthAlert alert = new ReminderHealthAlert();
@@ -83,13 +83,13 @@ public class ReminderHealthAlertService {
     public void deleteHealthAlert(Long healthAlertId) {
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
         User currentUser = userRepository.findByEmail(currentUsername)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
 
         ReminderHealthAlert alert = repository.findById(healthAlertId)
-                .orElseThrow(() -> new RuntimeException("Health alert not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy cảnh báo sức khỏe"));
 
         if (!alert.getReminder().getUser().getId().equals(currentUser.getId())) {
-            throw new AccessDeniedException("You don't have permission to delete this alert");
+            throw new AccessDeniedException("Bạn không có quyền xóa cảnh báo này");
         }
 
         repository.deleteById(healthAlertId);

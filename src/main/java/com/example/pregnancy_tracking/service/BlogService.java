@@ -22,7 +22,7 @@ public class BlogService {
 
     public Blog createBlog(BlogRequest request, String userEmail) {
         User author = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại!"));
 
         Blog blog = new Blog();
         blog.setTitle(request.getTitle());
@@ -43,7 +43,7 @@ public class BlogService {
     }
     public Blog updateBlog(Long blogId, BlogRequest request) {
         Blog blog = blogRepository.findById(blogId)
-                .orElseThrow(() -> new RuntimeException("Blog not found"));
+                .orElseThrow(() -> new RuntimeException("Bài viết không tồn tại!"));
 
         blog.setTitle(request.getTitle());
         blog.setContent(request.getContent());
@@ -64,7 +64,7 @@ public class BlogService {
 
     public void deleteBlog(Long blogId) {
         Blog blog = blogRepository.findById(blogId)
-                .orElseThrow(() -> new RuntimeException("Blog not found"));
+                .orElseThrow(() -> new RuntimeException("Bài viết không tồn tại!"));
         blogRepository.delete(blog);
     }
     public List<Blog> getAllBlogs() {
@@ -73,7 +73,7 @@ public class BlogService {
 
     public Blog getBlogById(Long blogId) {
         return blogRepository.findById(blogId)
-                .orElseThrow(() -> new RuntimeException("Blog not found"));
+                .orElseThrow(() -> new RuntimeException("Bài viết không tồn tại!"));
     }
 
     public List<Blog> getFeaturedBlogs() {

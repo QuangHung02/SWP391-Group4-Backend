@@ -1,6 +1,5 @@
 package com.example.pregnancy_tracking.repository;
 
-import com.example.pregnancy_tracking.entity.FetusRecord;
 import com.example.pregnancy_tracking.entity.Pregnancy;
 import com.example.pregnancy_tracking.entity.PregnancyStatus;
 import com.example.pregnancy_tracking.entity.User;

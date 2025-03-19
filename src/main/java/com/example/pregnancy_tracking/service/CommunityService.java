@@ -35,7 +35,7 @@ public class CommunityService {
 
     public CommunityPost createPost(PostRequest request, String userEmail) {
         User author = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại!"));
 
         CommunityPost post = new CommunityPost();
         post.setTitle(request.getTitle());
@@ -61,9 +61,9 @@ public class CommunityService {
 
     public CommunityComment createComment(Long postId, CommentRequest request, String userEmail) {
         User author = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại!"));
         CommunityPost post = postRepository.findById(postId)
-                .orElseThrow(() -> new RuntimeException("Post not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy bài viết!"));
         CommunityComment comment = new CommunityComment();
         comment.setPost(post);
         comment.setAuthor(author);
@@ -88,7 +88,7 @@ public class CommunityService {
 
     public void deletePost(Long postId) {
         CommunityPost post = postRepository.findById(postId)
-                .orElseThrow(() -> new RuntimeException("Post not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy bài viết!"));
 
         mediaFileRepository.deleteAll(post.getMediaFiles());
 
@@ -97,7 +97,7 @@ public class CommunityService {
 
     public void deleteComment(Long commentId) {
         CommunityComment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new RuntimeException("Comment not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy bình luận!"));
 
         mediaFileRepository.deleteAll(comment.getMediaFiles());
 
@@ -147,13 +147,49 @@ public class CommunityService {
 
     public List<CommunityComment> getCommentsByPostId(Long postId) {
         CommunityPost post = postRepository.findById(postId)
-                .orElseThrow(() -> new RuntimeException("Post not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy bài viết!"));
         return post.getComments();
     }
 
-    public CommunityPost getPostById(Long postId) {
-        return postRepository.findById(postId)
-                .orElseThrow(() -> new RuntimeException("Post not found"));
+    @Transactional
+    public Map<String, Object> getPostByIdWithCharts(Long postId) {
+        CommunityPost post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy bài viết!"));
+
+        Map<String, Object> postData = new HashMap<>();
+        postData.put("postId", post.getPostId());
+        postData.put("title", post.getTitle());
+        postData.put("content", post.getContent());
+        postData.put("author", post.getAuthor());
+        postData.put("isAnonymous", post.getIsAnonymous());
+        postData.put("createdAt", post.getCreatedAt());
+        postData.put("mediaFiles", post.getMediaFiles());
+        postData.put("comments", post.getComments());
+        
+        try {
+            Optional<GrowthChartShare> chartShare = growthChartShareRepository.findByPostPostId(post.getPostId());
+            if (chartShare.isPresent()) {
+                GrowthChartShare share = chartShare.get();
+                String chartDataStr = share.getChartData();
+                if (chartDataStr != null && !chartDataStr.isEmpty()) {
+                    try {
+                        Map<String, Object> chartData = objectMapper.readValue(chartDataStr, Map.class);
+                        postData.put("chartData", chartData);
+                        postData.put("sharedTypes", share.getSharedTypes());
+                        postData.put("postType", "GROWTH_CHART");
+                        if (share.getFetus() != null) {
+                            postData.put("fetusId", share.getFetus().getFetusId());
+                        }
+                    } catch (JsonProcessingException e) {
+                        log.error("Error parsing chart data JSON for post {}: {}", post.getPostId(), e.getMessage());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error processing growth chart share for post {}: {}", post.getPostId(), e.getMessage(), e);
+        }
+        
+        return postData;
     }
     
 }

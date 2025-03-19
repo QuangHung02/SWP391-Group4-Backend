@@ -75,11 +75,11 @@ public class ReminderMedicalTaskService {
 
     public ReminderMedicalTaskDTO updateTaskStatus(Long taskId, String status) {
         ReminderMedicalTask task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhiệm vụ"));
         
         Reminder reminder = task.getReminder();
         if (reminder == null) {
-            throw new RuntimeException("Task has no associated reminder");
+            throw new RuntimeException("Nhiệm vụ không có nhắc nhở liên kết");
         }
 
         try {
@@ -97,7 +97,7 @@ public class ReminderMedicalTaskService {
                     reminder.getStatus().name()
             );
         } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Invalid status value: " + status);
+            throw new RuntimeException("Giá trị trạng thái không hợp lệ: " + status);
         }
     }
 

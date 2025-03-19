@@ -38,7 +38,7 @@ public class ReminderService {
 
     public ReminderDTO getReminderById(Long id) {
         Reminder reminder = reminderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Reminder not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhắc nhở"));
         return convertToDTO(reminder);
     }
 
@@ -50,9 +50,9 @@ public class ReminderService {
 
         Reminder reminder = new Reminder();
         User user = userRepository.findById(reminderDTO.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
         Pregnancy pregnancy = pregnancyRepository.findById(reminderDTO.getPregnancyId())
-                .orElseThrow(() -> new RuntimeException("Pregnancy not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thai kỳ"));
 
         reminder.setUser(user);
         reminder.setPregnancy(pregnancy);
@@ -68,9 +68,9 @@ public class ReminderService {
     public ReminderDTO createReminderWithTasks(ReminderDTO reminderDTO) {
         Reminder reminder = new Reminder();
         User user = userRepository.findById(reminderDTO.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
         Pregnancy pregnancy = pregnancyRepository.findById(reminderDTO.getPregnancyId())
-                .orElseThrow(() -> new RuntimeException("Pregnancy not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thai kỳ"));
     
         reminder.setUser(user);
         reminder.setPregnancy(pregnancy);
@@ -98,7 +98,7 @@ public class ReminderService {
     @Transactional
     public ReminderDTO updateReminder(Long id, ReminderDTO reminderDTO) {
         Reminder reminder = reminderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Reminder not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhắc nhở"));
 
         if (reminderDTO.getType() != null) {
             reminder.setType(ReminderType.valueOf(reminderDTO.getType()));
@@ -131,7 +131,7 @@ public class ReminderService {
     @Transactional
     public ReminderDTO updateReminderStatus(Long id, ReminderStatus status) {
         Reminder reminder = reminderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Reminder not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhắc nhở"));
 
         reminder.setStatus(status);
         Reminder updatedReminder = reminderRepository.save(reminder);
@@ -141,7 +141,7 @@ public class ReminderService {
     @Transactional
     public void deleteReminder(Long id) {
         Reminder reminder = reminderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Reminder not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhắc nhở"));
 
         taskRepository.deleteAll(taskRepository.findByReminderReminderId(id));
 
