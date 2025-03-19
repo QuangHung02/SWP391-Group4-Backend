@@ -1,0 +1,9 @@
+firebase:
+  config:
+    path: firebase-service-account.json
+  project:
+    id: pregnancy-tracking-6034b
+
+logging:
+  level:
+    com.example.pregnancy_tracking.service.NotificationService: DEBUG

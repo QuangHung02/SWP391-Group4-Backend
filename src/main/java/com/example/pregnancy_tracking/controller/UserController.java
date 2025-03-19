@@ -14,13 +14,21 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import java.util.List;
 
+// Thêm imports này vào đầu file
+import com.example.pregnancy_tracking.entity.User;
+import com.example.pregnancy_tracking.repository.UserRepository;
+import com.example.pregnancy_tracking.exception.ResourceNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
+
 @RestController
 @RequestMapping("/api/user")
 @SecurityRequirement(name = "Bearer Authentication")
-@RequiredArgsConstructor
 public class UserController {
-    private final UserService userService;
-
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private UserService userService;
+    
     @Operation(summary = "Lấy tất cả người dùng", description = "Lấy danh sách tất cả người dùng đã đăng ký.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Lấy danh sách thành công"),
@@ -109,5 +117,14 @@ public class UserController {
     public ResponseEntity<String> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.ok("Xóa người dùng thành công");
+    }
+
+    @PutMapping("/{userId}/fcm-token")
+    public ResponseEntity<?> updateFCMToken(@PathVariable Long userId, @RequestBody FCMTokenDTO tokenDTO) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        user.setFcmToken(tokenDTO.getFcmToken());
+        userRepository.save(user);
+        return ResponseEntity.ok().build();
     }
 }

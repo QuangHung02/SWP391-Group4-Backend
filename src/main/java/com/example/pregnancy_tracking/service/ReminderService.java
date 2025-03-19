@@ -28,6 +28,9 @@ public class ReminderService {
     @Autowired
     private MembershipService membershipService;
 
+    @Autowired
+    private NotificationService notificationService;
+
     public ReminderService(ReminderRepository reminderRepository, ReminderMedicalTaskRepository taskRepository) {
         this.reminderRepository = reminderRepository;
         this.taskRepository = taskRepository;
@@ -99,6 +102,11 @@ public class ReminderService {
             }
         }
     
+        // Send notification after creating reminder
+        String title = "Nhắc nhở mới";
+        String body = String.format("Bạn có nhắc nhở mới cho tuần thai %d", reminderDTO.getTasks().get(0).getWeek());
+        notificationService.sendMedicalTaskNotification(reminderDTO.getUserId(), title, body);
+        
         return convertToDTO(savedReminder);
     }
 

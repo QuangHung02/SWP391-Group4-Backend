@@ -49,6 +49,9 @@ public class StandardService {
 
     @Autowired
     private MembershipService membershipService;
+    @Autowired
+    private NotificationService notificationService;
+
     public List<StandardMedicalTask> getAllStandardMedicalTasks() {
         return standardMedicalTaskRepository.findAllByOrderByWeekAsc();
     }
@@ -59,10 +62,10 @@ public class StandardService {
 
     public StandardMedicalTask createStandardMedicalTask(StandardMedicalTask task) {
         if (task == null) {
-            throw new IllegalArgumentException("Nhiệm vụ không được để trống");
+            throw new IllegalArgumentException("Nhắc nhở không được để trống");
         }
         if (task.getWeek() == null || task.getTaskName() == null) {
-            throw new IllegalArgumentException("Tuần thai và tên nhiệm vụ là bắt buộc");
+            throw new IllegalArgumentException("Tuần thai và tên nhắc nhở là bắt buộc");
         }
         return standardMedicalTaskRepository.save(task);
     }
@@ -109,6 +112,10 @@ public class StandardService {
                 
                 reminderDTO.setTasks(tasks);
                 reminderService.createReminderWithTasks(reminderDTO);
+                
+                String title = "Nhắc nhở mới";
+                String body = String.format("Bạn có nhắc nhở mới cần thực hiện ở tuần %d", currentWeek);
+                notificationService.sendMedicalTaskNotification(userId, title, body);
             }
         } catch (Exception e) {
             throw new RuntimeException("Không thể tạo nhắc nhở từ nhiệm vụ tiêu chuẩn: " + e.getMessage());

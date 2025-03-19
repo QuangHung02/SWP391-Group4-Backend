@@ -97,4 +97,16 @@ public class User implements UserDetails {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
     }
+
+    @Column(name = "fcm_token", length = 255)
+    private String fcmToken;
+    
+    // Add getter and setter
+    public String getFcmToken() {
+        return fcmToken;
+    }
+    
+    public void setFcmToken(String fcmToken) {
+        this.fcmToken = fcmToken;
+    }
 }

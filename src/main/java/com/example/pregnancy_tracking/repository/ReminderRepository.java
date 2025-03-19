@@ -3,7 +3,8 @@ package com.example.pregnancy_tracking.repository;
 import com.example.pregnancy_tracking.entity.Reminder;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
+import java.time.LocalDate;
+import com.example.pregnancy_tracking.entity.ReminderStatus;
 import java.util.List;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -22,4 +23,5 @@ public interface ReminderRepository extends JpaRepository<Reminder, Long> {
     );
     List<Reminder> findByUser_Id(Long userId);
     List<Reminder> findByPregnancy_PregnancyId(Long pregnancyId);
+    List<Reminder> findByReminderDateAndStatus(LocalDate reminderDate, ReminderStatus status);
 }
