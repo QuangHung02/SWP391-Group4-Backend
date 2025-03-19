@@ -11,13 +11,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
+import com.example.pregnancy_tracking.exception.MembershipFeatureException;
 
 @Service
 public class ReminderHealthAlertService {
     private final ReminderHealthAlertRepository repository;
     private final ReminderRepository reminderRepository;
     private final UserRepository userRepository;
-
+    @Autowired
+    private MembershipService membershipService;
     public ReminderHealthAlertService(
             ReminderHealthAlertRepository repository, 
             ReminderRepository reminderRepository,
@@ -31,9 +34,10 @@ public class ReminderHealthAlertService {
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
         User currentUser = userRepository.findByEmail(currentUsername)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
-
-        return repository.findAll().stream()
-                .filter(alert -> alert.getReminder().getUser().getId().equals(currentUser.getId()))
+                if (!membershipService.canAccessHealthAlerts(currentUser.getId())) {
+                    throw new MembershipFeatureException("Tính năng này yêu cầu gói Premium");
+                }
+                return repository.findByReminder_User_Id(currentUser.getId()).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }

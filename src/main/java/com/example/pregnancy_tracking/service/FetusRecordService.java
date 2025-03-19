@@ -47,6 +47,9 @@ public class FetusRecordService {
     private CommunityPostRepository postRepository;
 
     public Map<String, Object> prepareGrowthChartData(Long fetusId, Set<ChartType> chartTypes, Long userId) {
+        if (!membershipService.canViewFetusRecord(userId)) {
+            throw new MembershipFeatureException("Requires active subscription to view fetus records");
+        }
         Map<String, Object> chartData = new HashMap<>();
         List<FetusRecord> records = fetusRecordRepository.findByFetusFetusIdOrderByWeekAsc(fetusId);
         
@@ -148,6 +151,13 @@ public class FetusRecordService {
             Fetus fetus = record.getFetus();
             fetus.setStatus(FetusStatus.ISSUE);
             fetusRepository.save(fetus);
+        }
+        else {
+            Fetus fetus = record.getFetus();
+            if (fetus.getStatus() == FetusStatus.ISSUE) {
+                fetus.setStatus(FetusStatus.ACTIVE);
+                fetusRepository.save(fetus);
+            }
         }
     }
 

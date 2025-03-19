@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.example.pregnancy_tracking.exception.MembershipFeatureException;
 
 @Service
 public class StandardService {
@@ -46,6 +47,8 @@ public class StandardService {
     @Autowired
     private FetusRepository fetusRepository;
 
+    @Autowired
+    private MembershipService membershipService;
     public List<StandardMedicalTask> getAllStandardMedicalTasks() {
         return standardMedicalTaskRepository.findAllByOrderByWeekAsc();
     }
@@ -190,7 +193,11 @@ public class StandardService {
                 .collect(Collectors.toList());
     }
 
-    public Map<String, Object> getStandardsWithPrediction(Integer fetusNumber, Integer currentWeek) {
+    public Map<String, Object> getStandardsWithPrediction(Integer fetusNumber, Integer currentWeek, Long userId) {
+        if (!membershipService.canViewFetusRecord(userId)) {
+            throw new MembershipFeatureException("Tính năng này yêu cầu gói Basic hoặc Premium");
+        }
+    
         List<PregnancyStandard> standards = pregnancyStandardRepository.findByIdFetusNumberOrderByIdWeekAsc(fetusNumber);
         List<PregnancyStandardDTO> currentStandards = standards.stream()
             .filter(s -> s.getId().getWeek() <= currentWeek)

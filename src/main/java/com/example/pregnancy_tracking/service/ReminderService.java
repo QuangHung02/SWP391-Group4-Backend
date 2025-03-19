@@ -10,9 +10,9 @@ import com.example.pregnancy_tracking.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 import java.util.stream.Collectors;
+import com.example.pregnancy_tracking.exception.MembershipFeatureException;
 
 @Service
 public class ReminderService {
@@ -24,6 +24,9 @@ public class ReminderService {
 
     @Autowired
     private PregnancyRepository pregnancyRepository;
+
+    @Autowired
+    private MembershipService membershipService;
 
     public ReminderService(ReminderRepository reminderRepository, ReminderMedicalTaskRepository taskRepository) {
         this.reminderRepository = reminderRepository;
@@ -51,6 +54,10 @@ public class ReminderService {
         Reminder reminder = new Reminder();
         User user = userRepository.findById(reminderDTO.getUserId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+                if ("HEALTH_ALERT".equals(reminderDTO.getType()) && 
+                !membershipService.canAccessHealthAlerts(user.getId())) {
+                throw new MembershipFeatureException("Tính năng cảnh báo sức khỏe yêu cầu gói Premium");
+            }
         Pregnancy pregnancy = pregnancyRepository.findById(reminderDTO.getPregnancyId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy thai kỳ"));
 

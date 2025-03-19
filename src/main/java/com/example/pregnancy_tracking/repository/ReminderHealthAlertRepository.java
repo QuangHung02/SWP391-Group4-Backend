@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface ReminderHealthAlertRepository extends JpaRepository<ReminderHealthAlert, Long> {
     List<ReminderHealthAlert> findByReminderReminderId(Long reminderId);
+    List<ReminderHealthAlert> findByReminder_User_Id(Long userId);
 }
