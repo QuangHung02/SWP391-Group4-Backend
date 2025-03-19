@@ -150,8 +150,9 @@ public class StandardController {
     @GetMapping("/pregnancy/fetus/{fetusNumber}/with-prediction")
     public ResponseEntity<Map<String, Object>> getPregnancyStandardsWithPrediction(
             @PathVariable Integer fetusNumber,
-            @RequestParam Integer currentWeek) {
-        Map<String, Object> result = standardService.getStandardsWithPrediction(fetusNumber, currentWeek);
+            @RequestParam Integer currentWeek,
+            @RequestParam Long userId) {
+        Map<String, Object> result = standardService.getStandardsWithPrediction(fetusNumber, currentWeek, userId);
         if (result.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
