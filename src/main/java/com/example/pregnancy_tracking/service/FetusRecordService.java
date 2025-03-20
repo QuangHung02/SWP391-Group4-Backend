@@ -220,7 +220,11 @@ public class FetusRecordService {
             }
         
             FetusRecord savedRecord = fetusRecordRepository.save(record);
-            checkFetusGrowth(savedRecord);
+            
+            try {
+                checkFetusGrowth(savedRecord);
+            } catch (HealthAlertException e) {
+            }
             
             return savedRecord;
         }
