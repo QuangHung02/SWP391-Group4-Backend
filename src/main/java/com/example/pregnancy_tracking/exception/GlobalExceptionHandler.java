@@ -32,4 +32,15 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
+
+    @ExceptionHandler(MembershipFeatureException.class)
+    public ResponseEntity<Map<String, Object>> handleMembershipException(MembershipFeatureException ex) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("error", "MEMBERSHIP_REQUIRED");
+        response.put("message", ex.getMessage());
+        response.put("requiredPlan", ex.getRequiredPlan());
+        response.put("redirectUrl", ex.getRedirectUrl());
+        
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+    }
 }

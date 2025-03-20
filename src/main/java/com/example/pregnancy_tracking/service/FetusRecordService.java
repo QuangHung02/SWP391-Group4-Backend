@@ -244,6 +244,9 @@ public class FetusRecordService {
             }
         }
 
+        @Autowired
+        private StandardService standardService;
+
         private Map<String, List<Object[]>> calculatePredictionLine(Long fetusId) {
             Map<String, List<Object[]>> predictionData = new HashMap<>();
             List<FetusRecord> records = fetusRecordRepository.findByFetusFetusIdOrderByWeekAsc(fetusId);
@@ -252,19 +255,25 @@ public class FetusRecordService {
                 return predictionData;
             }
 
+            Integer fetusNumber = records.get(0).getFetus().getFetusIndex();
+            Integer maxWeek = standardService.getMaxWeekByFetusNumber(fetusNumber);
+
             List<Object[]> weightPrediction = calculateMetricPrediction(records, 
                 FetusRecord::getWeek, 
-                FetusRecord::getFetalWeight);
+                FetusRecord::getFetalWeight,
+                maxWeek);
             predictionData.put("weightPrediction", weightPrediction);
 
             List<Object[]> lengthPrediction = calculateMetricPrediction(records, 
                 FetusRecord::getWeek, 
-                FetusRecord::getFemurLength);
+                FetusRecord::getFemurLength,
+                maxWeek);
             predictionData.put("lengthPrediction", lengthPrediction);
 
             List<Object[]> headPrediction = calculateMetricPrediction(records, 
                 FetusRecord::getWeek, 
-                FetusRecord::getHeadCircumference);
+                FetusRecord::getHeadCircumference,
+                maxWeek);
             predictionData.put("headPrediction", headPrediction);
 
             return predictionData;
@@ -272,7 +281,8 @@ public class FetusRecordService {
 
         private List<Object[]> calculateMetricPrediction(List<FetusRecord> records,
                                                        Function<FetusRecord, Integer> weekExtractor,
-                                                       Function<FetusRecord, BigDecimal> valueExtractor) {
+                                                       Function<FetusRecord, BigDecimal> valueExtractor,
+                                                       Integer maxWeek) {
             List<Object[]> prediction = new ArrayList<>();
             
             List<FetusRecord> validRecords = records.stream()
@@ -291,14 +301,13 @@ public class FetusRecordService {
 
             for (int i = 1; i <= 4; i++) {
                 int predictedWeek = lastWeek + i;
-                if (predictedWeek <= 40) {
+                if (predictedWeek <= maxWeek) {
                     BigDecimal predictedValue = lastValue.multiply(
                         BigDecimal.valueOf(Math.pow(1 + growthRate, i))
                     );
                     prediction.add(new Object[]{predictedWeek, predictedValue});
                 }
             }
-
             return prediction;
         }
 
