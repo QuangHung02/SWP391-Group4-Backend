@@ -127,13 +127,10 @@ public class PregnancyService {
         int oldWeeks = pregnancy.getGestationalWeeks();
         LocalDate examDate = pregnancyDTO.getExamDate();
 
-        // Tính toán lại tuần thai thực tế dựa trên khoảng cách giữa 2 lần khám
         long daysBetweenExams = ChronoUnit.DAYS.between(lastExamDate, examDate);
         int expectedWeeks = oldWeeks + (int)(daysBetweenExams / 7);
         
-        // Nếu tuần thai báo cáo khác với dự đoán, cần điều chỉnh lại toàn bộ
         if (pregnancyDTO.getGestationalWeeks() != expectedWeeks) {
-            // Tính toán lại ngày bắt đầu thai kỳ dựa trên tuần thai mới
             int totalDays = (pregnancyDTO.getGestationalWeeks() * 7) + pregnancyDTO.getGestationalDays();
             LocalDate startDate = examDate.minusDays(totalDays);
             LocalDate dueDate = startDate.plusDays(280);
