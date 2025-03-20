@@ -16,6 +16,7 @@ import com.example.pregnancy_tracking.dto.UserDTO;
 import com.example.pregnancy_tracking.entity.UserProfile;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -136,13 +137,38 @@ public class UserService {
         return new UserDTO(savedUser, savedUser.getUserProfile());
     }
 
-    public void deleteUser(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
-        if (user.getRole() == Role.ADMIN) {
-            throw new RuntimeException("Không thể xóa tài khoản quản trị viên");
-        }
+    private final SubscriptionService subscriptionService;
+        private final CommunityService communityService;
+        private final PregnancyService pregnancyService;
+        private final ReminderService reminderService;
         
-        userRepository.delete(user);
-    }
+        @Transactional
+        public void deleteUser(Long userId) {
+            try {
+                User user = userRepository.findById(userId)
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+                        
+                if (user.getRole() == Role.ADMIN) {
+                    throw new RuntimeException("Không thể xóa tài khoản quản trị viên");
+                }
+                
+                // Delete reminders first (they depend on pregnancies)
+                reminderService.deleteUserReminders(userId);
+                
+                // Delete community content
+                communityService.deleteUserContent(userId);
+                
+                // Delete pregnancies
+                pregnancyService.deleteUserPregnancies(userId);
+                
+                // Delete subscriptions
+                subscriptionService.handleUserDeletion(userId);
+                
+                // Finally delete the user
+                userRepository.delete(user);
+                
+            } catch (Exception e) {
+                throw new RuntimeException("Lỗi khi xóa tài khoản: " + e.getMessage());
+            }
+        }
 }

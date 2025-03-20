@@ -12,4 +12,5 @@ public interface GrowthChartShareRepository extends JpaRepository<GrowthChartSha
     List<GrowthChartShare> findByFetusFetusId(Long fetusId);
     @Query("SELECT g FROM GrowthChartShare g LEFT JOIN FETCH g.post p LEFT JOIN FETCH p.author WHERE g.post.postId = :postId")
 Optional<GrowthChartShare> findByPostPostId(Long postId);
+void deleteByPostAuthorId(Long userId);
 }

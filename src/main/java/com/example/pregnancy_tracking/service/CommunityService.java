@@ -192,4 +192,26 @@ public class CommunityService {
         return postData;
     }
     
+    @Transactional
+    public void deleteUserContent(Long userId) {
+        // Xóa media files của comments và posts
+        List<CommunityComment> userComments = commentRepository.findByAuthorId(userId);
+        List<CommunityPost> userPosts = postRepository.findByAuthorId(userId);
+        
+        userComments.forEach(comment -> 
+            mediaFileRepository.deleteByCommentCommentId(comment.getCommentId()));
+            
+        userPosts.forEach(post -> 
+            mediaFileRepository.deleteByPostPostId(post.getPostId()));
+        
+        // Xóa growth chart shares
+        growthChartShareRepository.deleteByPostAuthorId(userId);
+    
+        
+        // Xóa comments
+        commentRepository.deleteByAuthorId(userId);
+        
+        // Xóa posts
+        postRepository.deleteByAuthorId(userId);
+    }
 }

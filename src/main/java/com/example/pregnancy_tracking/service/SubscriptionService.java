@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.pregnancy_tracking.dto.*;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.time.LocalDateTime;
 import java.math.BigDecimal;
@@ -57,46 +56,59 @@ public class SubscriptionService {
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public SubscriptionDTO createSubscription(Long userId, Long packageId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        MembershipPackage newPackage = packageRepository.findById(packageId)
-                .orElseThrow(() -> new RuntimeException("Package not found"));
-
-        // Check for existing active subscription first
-        List<Subscription> existingActive = subscriptionRepository.findByUserIdAndStatus(userId, "Active");
-        if (!existingActive.isEmpty()) {
-            Subscription currentSub = existingActive.get(0);
+        try {
+            // Kiểm tra xem người dùng đã đăng ký trong 1 phút gần đây chưa
+            LocalDateTime oneMinuteAgo = LocalDateTime.now().minusMinutes(1);
+            if (subscriptionRepository.existsByUserIdAndCreatedAtAfter(userId, oneMinuteAgo)) {
+                throw new RuntimeException("Vui lòng đợi 1 phút trước khi thực hiện đăng ký mới");
+            }
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
             
-            if (currentSub.getMembershipPackage().getId().equals(packageId)) {
-                currentSub.setEndDate(currentSub.getEndDate().plusDays(newPackage.getDuration()));
-                return convertToDTO(subscriptionRepository.save(currentSub));
-            }
+            MembershipPackage newPackage = packageRepository.findById(packageId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy gói đăng ký"));
 
-            if (newPackage.getPrice().compareTo(currentSub.getMembershipPackage().getPrice()) > 0) {
-                currentSub.setStatus("Expired");
-                currentSub.setEndDate(LocalDate.now());  
-                subscriptionRepository.save(currentSub);
+            List<Subscription> existingActive = subscriptionRepository.findByUserIdAndStatus(userId, "Active");
+            
+            if (!existingActive.isEmpty()) {
+                Subscription currentSub = existingActive.get(0);
                 
-                Subscription newSubscription = new Subscription();
-                newSubscription.setUser(user);
-                newSubscription.setMembershipPackage(newPackage);
-                newSubscription.setStartDate(LocalDate.now());
-                newSubscription.setEndDate(LocalDate.now().plusDays(newPackage.getDuration()));
-                newSubscription.setStatus("Active");
-                return convertToDTO(subscriptionRepository.save(newSubscription));
-            } else {
-                throw new RuntimeException("Không thể đăng ký gói thấp hơn gói hiện tại");
-            }
-        }
+                if (currentSub.getMembershipPackage().getId().equals(packageId)) {
+                    currentSub.setEndDate(currentSub.getEndDate().plusDays(newPackage.getDuration()));
+                    currentSub.setCreatedAt(LocalDateTime.now());
+                    return convertToDTO(subscriptionRepository.save(currentSub));
+                }
 
-        Subscription subscription = new Subscription();
-        subscription.setUser(user);
-        subscription.setMembershipPackage(newPackage);
-        subscription.setStartDate(LocalDate.now());
-        subscription.setEndDate(LocalDate.now().plusDays(newPackage.getDuration()));
-        subscription.setStatus("Active");
-        return convertToDTO(subscriptionRepository.save(subscription));
+                if (newPackage.getPrice().compareTo(currentSub.getMembershipPackage().getPrice()) > 0) {
+                    currentSub.setStatus("Expired");
+                    currentSub.setEndDate(LocalDate.now());  
+                    subscriptionRepository.save(currentSub);
+                    
+                    Subscription newSubscription = new Subscription();
+                    newSubscription.setUser(user);
+                    newSubscription.setMembershipPackage(newPackage);
+                    newSubscription.setStartDate(LocalDate.now());
+                    newSubscription.setEndDate(LocalDate.now().plusDays(newPackage.getDuration()));
+                    newSubscription.setStatus("Active");
+                    newSubscription.setCreatedAt(LocalDateTime.now());
+                    return convertToDTO(subscriptionRepository.save(newSubscription));
+                } else {
+                    throw new RuntimeException("Không thể đăng ký gói thấp hơn gói hiện tại");
+                }
+            }
+
+            Subscription subscription = new Subscription();
+            subscription.setUser(user);
+            subscription.setMembershipPackage(newPackage);
+            subscription.setStartDate(LocalDate.now());
+            subscription.setEndDate(LocalDate.now().plusDays(newPackage.getDuration()));
+            subscription.setStatus("Active");
+            subscription.setCreatedAt(LocalDateTime.now());
+            return convertToDTO(subscriptionRepository.save(subscription));
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi khi tạo đăng ký: " + e.getMessage());
+        }
     }
 
     public Map<String, Object> calculateRevenue() {
@@ -119,7 +131,12 @@ public class SubscriptionService {
         statistics.put("subscriptionsByPackage", subscriptionsByPackage);
         statistics.put("totalSubscriptions", allSubscriptions.size());
         statistics.put("lastUpdated", LocalDateTime.now());
-        
         return statistics;
+    }
+
+    @Transactional
+    public void handleUserDeletion(Long userId) {
+        // Delete active subscriptions
+        subscriptionRepository.deleteByUserId(userId);
     }
 }

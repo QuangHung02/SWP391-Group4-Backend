@@ -176,6 +176,12 @@ public class ReminderService {
         reminderRepository.delete(reminder);
     }
 
+    @Transactional
+    public void deleteUserReminders(Long userId) {
+        // Delete all reminders associated with the user
+        reminderRepository.deleteByUserId(userId);
+    }
+
     private ReminderDTO convertToDTO(Reminder reminder) {
         List<ReminderMedicalTaskDTO> tasks = taskRepository.findByReminderReminderId(reminder.getReminderId())
                 .stream()

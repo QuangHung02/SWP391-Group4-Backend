@@ -256,4 +256,9 @@ public class PregnancyService {
         fetusRepository.save(fetus);
     }
 
+    @Transactional
+    public void deleteUserPregnancies(Long userId) {
+        // Delete pregnancy
+        pregnancyRepository.deleteByUserId(userId);
+    }
 }

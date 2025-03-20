@@ -7,14 +7,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import java.util.List;
-
-// Thêm imports này vào đầu file
 import com.example.pregnancy_tracking.entity.User;
 import com.example.pregnancy_tracking.repository.UserRepository;
 import com.example.pregnancy_tracking.exception.ResourceNotFoundException;

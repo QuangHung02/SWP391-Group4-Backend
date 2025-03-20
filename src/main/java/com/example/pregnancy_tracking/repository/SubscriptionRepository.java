@@ -6,6 +6,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDateTime;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.Lock;
 
 public interface SubscriptionRepository extends JpaRepository<Subscription, Long> {
     List<Subscription> findByUserIdOrderByStartDateDesc(Long userId);
@@ -37,4 +40,10 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
            "ORDER BY s.endDate DESC")
     Optional<Subscription> findActiveSubscriptionByUserId(@Param("userId") Long userId);
     List<Subscription> findByUserIdAndStatus(Long userId, String status);
+    
+    boolean existsByUserIdAndCreatedAtAfter(Long userId, LocalDateTime dateTime);
+    void deleteByUserId(Long userId);
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT s FROM Subscription s WHERE s.user.id = :userId AND s.status = :status")
+    List<Subscription> findByUserIdAndStatusForUpdate(Long userId, String status);
 }

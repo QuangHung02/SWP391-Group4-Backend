@@ -24,4 +24,5 @@ public interface ReminderRepository extends JpaRepository<Reminder, Long> {
     List<Reminder> findByUser_Id(Long userId);
     List<Reminder> findByPregnancy_PregnancyId(Long pregnancyId);
     List<Reminder> findByReminderDateAndStatus(LocalDate reminderDate, ReminderStatus status);
+    void deleteByUserId(Long userId);
 }
