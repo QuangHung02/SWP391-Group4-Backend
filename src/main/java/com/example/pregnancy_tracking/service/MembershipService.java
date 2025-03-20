@@ -131,15 +131,22 @@ public class MembershipService {
 
     public boolean canAccessFeature(Long userId, String packageName) {
         return subscriptionRepository.findActiveSubscriptionByUserId(userId)
-            .map(subscription -> packageName.equals(subscription.getMembershipPackage().getName()))
+            .map(subscription -> {
+                if (subscription.getEndDate().isBefore(LocalDate.now())) {
+                    subscription.setStatus("Expired");
+                    subscriptionRepository.save(subscription);
+                    return false;
+                }
+                return packageName.equals(subscription.getMembershipPackage().getName());
+            })
             .orElse(false);
     }
 
-    public boolean canAccessStandardFeatures(Long userId) {
-        return true;
+    public boolean canCreatePregnancyRecord(Long userId) {
+        return canAccessFeature(userId, "Basic Plan") || canAccessFeature(userId, "Premium Plan");
     }
 
-    public boolean canCreatePregnancyRecord(Long userId) {
+    public boolean canAccessStandardFeatures(Long userId) {
         return canAccessFeature(userId, "Basic Plan") || canAccessFeature(userId, "Premium Plan");
     }
 
