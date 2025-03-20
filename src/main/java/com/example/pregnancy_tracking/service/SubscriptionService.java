@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
+import org.springframework.transaction.annotation.Isolation;
 
 @Service
 @RequiredArgsConstructor
@@ -54,20 +55,19 @@ public class SubscriptionService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public SubscriptionDTO createSubscription(Long userId, Long packageId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại!"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         MembershipPackage newPackage = packageRepository.findById(packageId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy gói thành viên!"));
+                .orElseThrow(() -> new RuntimeException("Package not found"));
 
-        Optional<Subscription> activeSubscription = subscriptionRepository
-                .findFirstByUserIdAndStatusOrderByEndDateDesc(userId, "Active");
-
-        if (activeSubscription.isPresent()) {
-            Subscription currentSub = activeSubscription.get();
-
+        // Check for existing active subscription first
+        List<Subscription> existingActive = subscriptionRepository.findByUserIdAndStatus(userId, "Active");
+        if (!existingActive.isEmpty()) {
+            Subscription currentSub = existingActive.get(0);
+            
             if (currentSub.getMembershipPackage().getId().equals(packageId)) {
                 currentSub.setEndDate(currentSub.getEndDate().plusDays(newPackage.getDuration()));
                 return convertToDTO(subscriptionRepository.save(currentSub));
@@ -75,17 +75,18 @@ public class SubscriptionService {
 
             if (newPackage.getPrice().compareTo(currentSub.getMembershipPackage().getPrice()) > 0) {
                 currentSub.setStatus("Expired");
-                currentSub.setEndDate(LocalDate.now());
+                currentSub.setEndDate(LocalDate.now());  
                 subscriptionRepository.save(currentSub);
-
+                
                 Subscription newSubscription = new Subscription();
                 newSubscription.setUser(user);
                 newSubscription.setMembershipPackage(newPackage);
                 newSubscription.setStartDate(LocalDate.now());
                 newSubscription.setEndDate(LocalDate.now().plusDays(newPackage.getDuration()));
                 newSubscription.setStatus("Active");
-
                 return convertToDTO(subscriptionRepository.save(newSubscription));
+            } else {
+                throw new RuntimeException("Không thể đăng ký gói thấp hơn gói hiện tại");
             }
         }
 
@@ -95,7 +96,6 @@ public class SubscriptionService {
         subscription.setStartDate(LocalDate.now());
         subscription.setEndDate(LocalDate.now().plusDays(newPackage.getDuration()));
         subscription.setStatus("Active");
-
         return convertToDTO(subscriptionRepository.save(subscription));
     }
 

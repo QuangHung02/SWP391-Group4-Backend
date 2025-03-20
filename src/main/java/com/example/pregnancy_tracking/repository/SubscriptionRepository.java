@@ -12,6 +12,15 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
     
     Optional<Subscription> findFirstByUserIdAndStatusOrderByEndDateDesc(Long userId, String status);
     
+    @Query("SELECT s FROM Subscription s " +
+           "WHERE s.user.id = :userId " +
+           "AND s.status = 'Active' " +
+           "AND NOT EXISTS (SELECT 1 FROM Subscription s2 " +
+           "               WHERE s2.user.id = s.user.id " +
+           "               AND s2.id > s.id " +
+           "               AND s2.status = 'Active')")
+    Optional<Subscription> findLatestActiveSubscription(@Param("userId") Long userId);
+    
     @Query("SELECT COUNT(s) > 0 FROM Subscription s " +
            "WHERE s.user.id = :userId " +
            "AND s.membershipPackage.id = :packageId " +
@@ -27,4 +36,5 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
            "AND s.status = 'Active' " +
            "ORDER BY s.endDate DESC")
     Optional<Subscription> findActiveSubscriptionByUserId(@Param("userId") Long userId);
+    List<Subscription> findByUserIdAndStatus(Long userId, String status);
 }
