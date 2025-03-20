@@ -99,7 +99,6 @@ public class PregnancyService {
         return convertToListDTO(savedPregnancy);
     }
 
-
     public PregnancyListDTO getPregnancyById(Long pregnancyId) {
         Pregnancy pregnancy = pregnancyRepository.findById(pregnancyId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy thai kỳ"));
@@ -200,6 +199,7 @@ public class PregnancyService {
             throw new IllegalStateException("Chỉ có thể thay đổi trạng thái của thai kỳ đang theo dõi!");
         }
     }
+    
     public List<PregnancyListDTO> getPregnanciesByUserId(Long userId) {
         List<Pregnancy> pregnancies = pregnancyRepository.findByUserId(userId);
         return pregnancies.stream()
@@ -234,12 +234,14 @@ public class PregnancyService {
         
         return dto;
     }
+    
     public PregnancyListDTO getOngoingPregnancyByUserId(Long userId) {
         Pregnancy pregnancy = pregnancyRepository.findByUserIdAndStatus(userId, PregnancyStatus.ONGOING)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy thai kỳ đang theo dõi cho người dùng ID: " + userId));
 
         return convertToListDTO(pregnancy);
     }
+    
     public void updateFetusStatus(Long fetusId, FetusStatus status) {
         Fetus fetus = fetusRepository.findById(fetusId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thai nhi với id: " + fetusId));

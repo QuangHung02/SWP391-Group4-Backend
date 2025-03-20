@@ -93,29 +93,28 @@ public class StandardService {
 
         try {
             List<StandardMedicalTask> standardTasks = standardMedicalTaskRepository.findByWeek(currentWeek);
-            
+
             if (!standardTasks.isEmpty()) {
                 ReminderDTO reminderDTO = new ReminderDTO();
                 reminderDTO.setUserId(userId);
                 reminderDTO.setPregnancyId(pregnancyId);
                 reminderDTO.setType("MEDICAL_TASK");
                 reminderDTO.setReminderDate(LocalDate.now());
-                
+
                 List<ReminderMedicalTaskDTO> tasks = standardTasks.stream()
-                    .map(standardTask -> new ReminderMedicalTaskDTO(
-                        null,
-                        null,
-                        standardTask.getWeek(),
-                        standardTask.getTaskType(),
-                        standardTask.getTaskName(),
-                        standardTask.getNotes(),
-                        null
-                    ))
-                    .collect(Collectors.toList());
-                
+                        .map(standardTask -> new ReminderMedicalTaskDTO(
+                                null,
+                                null,
+                                standardTask.getWeek(),
+                                standardTask.getTaskType(),
+                                standardTask.getTaskName(),
+                                standardTask.getNotes(),
+                                null))
+                        .collect(Collectors.toList());
+
                 reminderDTO.setTasks(tasks);
                 reminderService.createReminderWithTasks(reminderDTO);
-                
+
                 String title = "Nhắc nhở mới";
                 String body = String.format("Bạn có nhắc nhở mới cần thực hiện ở tuần %d", currentWeek);
                 notificationService.sendMedicalTaskNotification(userId, title, body);
@@ -127,14 +126,12 @@ public class StandardService {
 
     public void checkAndCreateWeeklyTasks(Long userId, Long pregnancyId, Integer currentWeek) {
         List<ReminderDTO> existingReminders = reminderService.getRemindersByPregnancyId(pregnancyId);
-        
+
         boolean reminderExists = existingReminders.stream()
-            .anyMatch(reminder -> 
-                reminder.getType().equals("MEDICAL") &&
-                reminder.getTasks().stream()
-                    .anyMatch(task -> currentWeek.equals(task.getWeek()))
-            );
-        
+                .anyMatch(reminder -> reminder.getType().equals("MEDICAL") &&
+                        reminder.getTasks().stream()
+                                .anyMatch(task -> currentWeek.equals(task.getWeek())));
+
         if (!reminderExists) {
             createReminderFromStandardTasks(userId, pregnancyId, currentWeek);
         }
@@ -149,13 +146,13 @@ public class StandardService {
     public void checkFetusStatus(Long fetusId) {
         Fetus fetus = fetusRepository.findById(fetusId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy thai nhi"));
-        
+
         List<FetusRecord> records = fetusRecordRepository.findByFetusFetusIdOrderByWeekAsc(fetusId);
         if (records.isEmpty()) {
             return;
         }
         FetusRecord latestRecord = records.get(records.size() - 1);
-        
+
         Pregnancy pregnancy = fetus.getPregnancy();
         Integer currentWeek = latestRecord.getWeek();
         Integer totalFetuses = pregnancy.getTotalFetuses();
@@ -165,27 +162,27 @@ public class StandardService {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy tiêu chuẩn cho tuần " + currentWeek));
 
         boolean isIssue = false;
-        
+
         if (latestRecord.getFetalWeight() != null) {
             BigDecimal weight = latestRecord.getFetalWeight();
-            if (weight.compareTo(standard.getMinWeight()) < 0 || 
-                weight.compareTo(standard.getMaxWeight()) > 0) {
+            if (weight.compareTo(standard.getMinWeight()) < 0 ||
+                    weight.compareTo(standard.getMaxWeight()) > 0) {
                 isIssue = true;
             }
         }
 
         if (latestRecord.getFemurLength() != null) {
             BigDecimal length = latestRecord.getFemurLength();
-            if (length.compareTo(standard.getMinLength()) < 0 || 
-                length.compareTo(standard.getMaxLength()) > 0) {
+            if (length.compareTo(standard.getMinLength()) < 0 ||
+                    length.compareTo(standard.getMaxLength()) > 0) {
                 isIssue = true;
             }
         }
 
         if (latestRecord.getHeadCircumference() != null) {
             BigDecimal headCirc = latestRecord.getHeadCircumference();
-            if (headCirc.compareTo(standard.getMinHeadCircumference()) < 0 || 
-                headCirc.compareTo(standard.getMaxHeadCircumference()) > 0) {
+            if (headCirc.compareTo(standard.getMinHeadCircumference()) < 0 ||
+                    headCirc.compareTo(standard.getMaxHeadCircumference()) > 0) {
                 isIssue = true;
             }
         }
@@ -197,7 +194,8 @@ public class StandardService {
     }
 
     public List<PregnancyStandardDTO> getPregnancyStandardsByFetusNumber(Integer fetusNumber) {
-        List<PregnancyStandard> standards = pregnancyStandardRepository.findByIdFetusNumberOrderByIdWeekAsc(fetusNumber);
+        List<PregnancyStandard> standards = pregnancyStandardRepository
+                .findByIdFetusNumberOrderByIdWeekAsc(fetusNumber);
         return standards.stream()
                 .map(PregnancyStandardDTO::new)
                 .collect(Collectors.toList());
@@ -207,70 +205,69 @@ public class StandardService {
         if (!membershipService.canViewFetusRecord(userId)) {
             throw new MembershipFeatureException("Tính năng này yêu cầu gói Basic hoặc Premium");
         }
-    
-        List<PregnancyStandard> standards = pregnancyStandardRepository.findByIdFetusNumberOrderByIdWeekAsc(fetusNumber);
+
+        List<PregnancyStandard> standards = pregnancyStandardRepository
+                .findByIdFetusNumberOrderByIdWeekAsc(fetusNumber);
         List<PregnancyStandardDTO> currentStandards = standards.stream()
-            .filter(s -> s.getId().getWeek() <= currentWeek)
-            .map(PregnancyStandardDTO::new)
-            .collect(Collectors.toList());
-    
+                .filter(s -> s.getId().getWeek() <= currentWeek)
+                .map(PregnancyStandardDTO::new)
+                .collect(Collectors.toList());
+
         List<Map<String, Object>> predictions = standards.stream()
-            .filter(s -> s.getId().getWeek() > currentWeek)
-            .map(standard -> {
-                Map<String, Object> prediction = new HashMap<>();
-                prediction.put("week", standard.getId().getWeek());
-                prediction.put("avgWeight", standard.getAvgWeight());
-                prediction.put("avgLength", standard.getAvgLength());
-                prediction.put("avgHeadCircumference", standard.getAvgHeadCircumference());
-                return prediction;
-            })
-            .collect(Collectors.toList());
-    
+                .filter(s -> s.getId().getWeek() > currentWeek)
+                .map(standard -> {
+                    Map<String, Object> prediction = new HashMap<>();
+                    prediction.put("week", standard.getId().getWeek());
+                    prediction.put("avgWeight", standard.getAvgWeight());
+                    prediction.put("avgLength", standard.getAvgLength());
+                    prediction.put("avgHeadCircumference", standard.getAvgHeadCircumference());
+                    return prediction;
+                })
+                .collect(Collectors.toList());
+
         Map<String, Object> result = new HashMap<>();
         result.put("standards", currentStandards);
         result.put("predictions", predictions);
         return result;
     }
+
     @Transactional
-public void createInitialMedicalTasks(Long userId, Long pregnancyId, Integer currentWeek) {
-    if (userId == null || pregnancyId == null || currentWeek == null) {
-        throw new IllegalArgumentException("ID người dùng, ID thai kỳ và tuần thai hiện tại không được để trống");
-    }
-
-    try {
-        List<StandardMedicalTask> allStandardTasks = new ArrayList<>();
-        for (int week = 1; week <= currentWeek; week++) {
-            List<StandardMedicalTask> weekTasks = standardMedicalTaskRepository.findByWeek(week);
-            allStandardTasks.addAll(weekTasks);
+    public void createInitialMedicalTasks(Long userId, Long pregnancyId, Integer currentWeek) {
+        if (userId == null || pregnancyId == null || currentWeek == null) {
+            throw new IllegalArgumentException("ID người dùng, ID thai kỳ và tuần thai hiện tại không được để trống");
         }
-        
-        if (!allStandardTasks.isEmpty()) {
-            for (StandardMedicalTask standardTask : allStandardTasks) {
-                ReminderDTO reminderDTO = new ReminderDTO();
-                reminderDTO.setUserId(userId);
-                reminderDTO.setPregnancyId(pregnancyId);
-                reminderDTO.setType("MEDICAL_TASK");
-                reminderDTO.setReminderDate(LocalDate.now());
-                
-                List<ReminderMedicalTaskDTO> tasks = Collections.singletonList(
-                    new ReminderMedicalTaskDTO(
-                        null,
-                        null,
-                        standardTask.getWeek(),
-                        standardTask.getTaskType(),
-                        standardTask.getTaskName(),
-                        standardTask.getNotes(),
-                        null
-                    )
-                );
-                
-                reminderDTO.setTasks(tasks);
-                reminderService.createReminderWithTasks(reminderDTO);
+
+        try {
+            List<StandardMedicalTask> allStandardTasks = new ArrayList<>();
+            for (int week = 1; week <= currentWeek; week++) {
+                List<StandardMedicalTask> weekTasks = standardMedicalTaskRepository.findByWeek(week);
+                allStandardTasks.addAll(weekTasks);
             }
+
+            if (!allStandardTasks.isEmpty()) {
+                for (StandardMedicalTask standardTask : allStandardTasks) {
+                    ReminderDTO reminderDTO = new ReminderDTO();
+                    reminderDTO.setUserId(userId);
+                    reminderDTO.setPregnancyId(pregnancyId);
+                    reminderDTO.setType("MEDICAL_TASK");
+                    reminderDTO.setReminderDate(LocalDate.now());
+
+                    List<ReminderMedicalTaskDTO> tasks = Collections.singletonList(
+                            new ReminderMedicalTaskDTO(
+                                    null,
+                                    null,
+                                    standardTask.getWeek(),
+                                    standardTask.getTaskType(),
+                                    standardTask.getTaskName(),
+                                    standardTask.getNotes(),
+                                    null));
+
+                    reminderDTO.setTasks(tasks);
+                    reminderService.createReminderWithTasks(reminderDTO);
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Không thể tạo nhắc nhở từ nhiệm vụ tiêu chuẩn: " + e.getMessage());
         }
-    } catch (Exception e) {
-        throw new RuntimeException("Không thể tạo nhắc nhở từ nhiệm vụ tiêu chuẩn: " + e.getMessage());
     }
 }
-}
-
