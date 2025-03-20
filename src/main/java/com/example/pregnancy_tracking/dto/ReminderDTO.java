@@ -12,7 +12,6 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class ReminderDTO {
     private Long reminderId;
     private Long userId;
@@ -22,10 +21,12 @@ public class ReminderDTO {
     private String status;
     private LocalDateTime createdAt;
     private List<ReminderMedicalTaskDTO> tasks;
+    private List<ReminderHealthAlertDTO> healthAlerts;
 
-    public ReminderDTO(Long reminderId, Long userId, Long pregnancyId,
+    public ReminderDTO(Long reminderId, Long userId, Long pregnancyId, 
                       String type, LocalDate reminderDate, String status, 
-                      List<ReminderMedicalTaskDTO> tasks) {
+                      LocalDateTime createdAt, List<ReminderMedicalTaskDTO> tasks,
+                      List<ReminderHealthAlertDTO> healthAlerts) {
         this.reminderId = reminderId;
         this.userId = userId;
         this.pregnancyId = pregnancyId;
@@ -33,6 +34,11 @@ public class ReminderDTO {
         this.reminderDate = reminderDate;
         this.status = status;
         this.tasks = tasks;
-        this.createdAt = LocalDateTime.now();
+        this.createdAt = createdAt;
+        this.healthAlerts = healthAlerts;
+    }
+
+    public List<ReminderHealthAlertDTO> getHealthAlerts() {
+        return healthAlerts;
     }
 }

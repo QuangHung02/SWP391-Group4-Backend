@@ -120,6 +120,4 @@ public class PregnancyController {
             return ResponseEntity.internalServerError().build();
         }
     }
-
-
 }

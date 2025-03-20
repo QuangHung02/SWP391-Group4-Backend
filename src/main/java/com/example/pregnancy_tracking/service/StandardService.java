@@ -26,6 +26,9 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.example.pregnancy_tracking.exception.MembershipFeatureException;
+import java.util.ArrayList;
+import java.util.Collections;
+import jakarta.transaction.Transactional;
 
 @Service
 public class StandardService {
@@ -228,5 +231,46 @@ public class StandardService {
         result.put("predictions", predictions);
         return result;
     }
+    @Transactional
+public void createInitialMedicalTasks(Long userId, Long pregnancyId, Integer currentWeek) {
+    if (userId == null || pregnancyId == null || currentWeek == null) {
+        throw new IllegalArgumentException("ID người dùng, ID thai kỳ và tuần thai hiện tại không được để trống");
+    }
+
+    try {
+        List<StandardMedicalTask> allStandardTasks = new ArrayList<>();
+        for (int week = 1; week <= currentWeek; week++) {
+            List<StandardMedicalTask> weekTasks = standardMedicalTaskRepository.findByWeek(week);
+            allStandardTasks.addAll(weekTasks);
+        }
+        
+        if (!allStandardTasks.isEmpty()) {
+            for (StandardMedicalTask standardTask : allStandardTasks) {
+                ReminderDTO reminderDTO = new ReminderDTO();
+                reminderDTO.setUserId(userId);
+                reminderDTO.setPregnancyId(pregnancyId);
+                reminderDTO.setType("MEDICAL_TASK");
+                reminderDTO.setReminderDate(LocalDate.now());
+                
+                List<ReminderMedicalTaskDTO> tasks = Collections.singletonList(
+                    new ReminderMedicalTaskDTO(
+                        null,
+                        null,
+                        standardTask.getWeek(),
+                        standardTask.getTaskType(),
+                        standardTask.getTaskName(),
+                        standardTask.getNotes(),
+                        null
+                    )
+                );
+                
+                reminderDTO.setTasks(tasks);
+                reminderService.createReminderWithTasks(reminderDTO);
+            }
+        }
+    } catch (Exception e) {
+        throw new RuntimeException("Không thể tạo nhắc nhở từ nhiệm vụ tiêu chuẩn: " + e.getMessage());
+    }
+}
 }
 

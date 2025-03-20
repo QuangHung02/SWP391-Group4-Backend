@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 import java.time.LocalDate;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.example.pregnancy_tracking.exception.HealthAlertException;
 
 @Service
 public class FetusRecordService {
@@ -46,6 +47,9 @@ public class FetusRecordService {
     @Autowired
     private CommunityPostRepository postRepository;
 
+    @Autowired
+    private NotificationService notificationService;
+
     public Map<String, Object> prepareGrowthChartData(Long fetusId, Set<ChartType> chartTypes, Long userId) {
         if (!membershipService.canViewFetusRecord(userId)) {
             throw new MembershipFeatureException("Requires active subscription to view fetus records");
@@ -73,92 +77,6 @@ public class FetusRecordService {
         }
         
         return chartData;
-    }
-
-    @Transactional
-    public void checkFetusGrowth(FetusRecord record) {
-        Long userId = record.getFetus().getPregnancy().getUser().getId();
-        if (!membershipService.canAccessHealthAlerts(userId)) {
-            return;
-        }
-
-        Integer fetusNumber = record.getFetus().getFetusIndex();
-        PregnancyStandardId standardId = new PregnancyStandardId(record.getWeek(), fetusNumber);
-        Optional<PregnancyStandard> standardOpt = pregnancyStandardRepository.findById(standardId);
-
-        if (standardOpt.isEmpty()) return;
-
-        PregnancyStandard standard = standardOpt.get();
-        SeverityLevel severity = null;
-
-        if (record.getFetalWeight() != null) {
-            severity = checkThreshold(record.getFetalWeight(), standard.getMinWeight(), standard.getMaxWeight(), severity);
-        }
-
-        if (record.getHeadCircumference() != null) {
-            severity = checkThreshold(record.getHeadCircumference(), standard.getMinHeadCircumference(), standard.getMaxHeadCircumference(), severity);
-        }
-
-        if (record.getFemurLength() != null) {
-            severity = checkThreshold(record.getFemurLength(), standard.getMinLength(), standard.getMaxLength(), severity);
-        }
-
-        if (severity != null) {
-            Reminder reminder = new Reminder();
-            reminder.setUser(record.getFetus().getPregnancy().getUser());
-            reminder.setPregnancy(record.getFetus().getPregnancy());
-            reminder.setType(ReminderType.HEALTH_ALERT);
-            reminder.setReminderDate(LocalDate.now());
-            reminder.setStatus(ReminderStatus.NOT_YET);
-            
-            Reminder savedReminder = reminderRepository.save(reminder);
-            
-            ReminderHealthAlert alert = new ReminderHealthAlert();
-            alert.setReminder(savedReminder);
-            
-            if (record.getFetalWeight() != null) {
-                BigDecimal weight = record.getFetalWeight();
-                if (weight.compareTo(standard.getMinWeight()) < 0) {
-                    alert.setHealthType(HealthType.LOW_WEIGHT);
-                } else if (weight.compareTo(standard.getMaxWeight()) > 0) {
-                    alert.setHealthType(HealthType.HIGH_WEIGHT);
-                }
-            }
-            
-            if (record.getHeadCircumference() != null) {
-                BigDecimal circumference = record.getHeadCircumference();
-                if (circumference.compareTo(standard.getMinHeadCircumference()) < 0) {
-                    alert.setHealthType(HealthType.LOW_CIRCUMFERENCE);
-                } else if (circumference.compareTo(standard.getMaxHeadCircumference()) > 0) {
-                    alert.setHealthType(HealthType.HIGH_CIRCUMFERENCE);
-                }
-            }
-            
-            if (record.getFemurLength() != null) {
-                BigDecimal length = record.getFemurLength();
-                if (length.compareTo(standard.getMinLength()) < 0) {
-                    alert.setHealthType(HealthType.LOW_HEIGHT);
-                } else if (length.compareTo(standard.getMaxLength()) > 0) {
-                    alert.setHealthType(HealthType.HIGH_HEIGHT);
-                }
-            }
-            
-            alert.setSeverity(severity);
-            alert.setSource(AlertSource.PREGNANCY_RECORDS);
-            alert.setNotes("Chỉ số tăng trưởng thai nhi nằm ngoài phạm vi bình thường.");
-            reminderHealthAlertRepository.save(alert);
-        
-            Fetus fetus = record.getFetus();
-            fetus.setStatus(FetusStatus.ISSUE);
-            fetusRepository.save(fetus);
-        }
-        else {
-            Fetus fetus = record.getFetus();
-            if (fetus.getStatus() == FetusStatus.ISSUE) {
-                fetus.setStatus(FetusStatus.ACTIVE);
-                fetusRepository.save(fetus);
-            }
-        }
     }
 
     private SeverityLevel checkThreshold(BigDecimal value, BigDecimal min, BigDecimal max, SeverityLevel currentSeverity) {
@@ -435,7 +353,6 @@ public class FetusRecordService {
         
         return record;
     }
-
     @Transactional
     public List<FetusRecordDTO> getRecordsByFetusId(Long fetusId, Long userId) {
         if (!membershipService.canViewFetusRecord(userId)) {
@@ -475,7 +392,102 @@ public class FetusRecordService {
         }
         
         return growthData;
+    }@Transactional
+    public void checkFetusGrowth(FetusRecord record) {
+        Long userId = record.getFetus().getPregnancy().getUser().getId();
+        if (!membershipService.canAccessHealthAlerts(userId)) {
+            return;
+        }
+    
+        Integer fetusNumber = record.getFetus().getFetusIndex();
+        PregnancyStandardId standardId = new PregnancyStandardId(record.getWeek(), fetusNumber);
+        Optional<PregnancyStandard> standardOpt = pregnancyStandardRepository.findById(standardId);
+    
+        if (standardOpt.isEmpty()) return;
+    
+        PregnancyStandard standard = standardOpt.get();
+        SeverityLevel severity = null;
+    
+        if (record.getFetalWeight() != null) {
+            severity = checkThreshold(record.getFetalWeight(), standard.getMinWeight(), standard.getMaxWeight(), severity);
+        }
+    
+        if (record.getHeadCircumference() != null) {
+            severity = checkThreshold(record.getHeadCircumference(), standard.getMinHeadCircumference(), standard.getMaxHeadCircumference(), severity);
+        }
+    
+        if (record.getFemurLength() != null) {
+            severity = checkThreshold(record.getFemurLength(), standard.getMinLength(), standard.getMaxLength(), severity);
+        }
+    
+        if (severity != null) {
+            Reminder reminder = new Reminder();
+            reminder.setUser(record.getFetus().getPregnancy().getUser());
+            reminder.setPregnancy(record.getFetus().getPregnancy());
+            reminder.setType(ReminderType.HEALTH_ALERT);
+            reminder.setReminderDate(LocalDate.now());
+            reminder.setStatus(ReminderStatus.NOT_YET);
+            
+            Reminder savedReminder = reminderRepository.save(reminder);
+            
+            ReminderHealthAlert alert = new ReminderHealthAlert();
+            alert.setReminder(savedReminder);
+            
+            if (record.getFetalWeight() != null) {
+                BigDecimal weight = record.getFetalWeight();
+                if (weight.compareTo(standard.getMinWeight()) < 0) {
+                    alert.setHealthType(HealthType.LOW_WEIGHT);
+                } else if (weight.compareTo(standard.getMaxWeight()) > 0) {
+                    alert.setHealthType(HealthType.HIGH_WEIGHT);
+                }
+            }
+            
+            if (record.getHeadCircumference() != null) {
+                BigDecimal circumference = record.getHeadCircumference();
+                if (circumference.compareTo(standard.getMinHeadCircumference()) < 0) {
+                    alert.setHealthType(HealthType.LOW_CIRCUMFERENCE);
+                } else if (circumference.compareTo(standard.getMaxHeadCircumference()) > 0) {
+                    alert.setHealthType(HealthType.HIGH_CIRCUMFERENCE);
+                }
+            }
+            
+            if (record.getFemurLength() != null) {
+                BigDecimal length = record.getFemurLength();
+                if (length.compareTo(standard.getMinLength()) < 0) {
+                    alert.setHealthType(HealthType.LOW_HEIGHT);
+                } else if (length.compareTo(standard.getMaxLength()) > 0) {
+                    alert.setHealthType(HealthType.HIGH_HEIGHT);
+                }
+            }
+            
+            alert.setSeverity(severity);
+            alert.setSource(AlertSource.PREGNANCY_RECORDS);
+            alert.setNotes("Chỉ số tăng trưởng thai nhi nằm ngoài phạm vi bình thường.");
+            ReminderHealthAlert savedAlert = reminderHealthAlertRepository.save(alert);
+        
+            notificationService.sendHealthAlertNotification(
+                userId,
+                "Cảnh báo chỉ số thai nhi",
+                "Phát hiện chỉ số bất thường: " + savedAlert.getHealthType()
+            );
+        
+            Fetus fetus = record.getFetus();
+            fetus.setStatus(FetusStatus.ISSUE);
+            fetusRepository.save(fetus);
+        
+            throw new HealthAlertException(
+                "Phát hiện chỉ số bất thường",
+                savedAlert.getHealthType(),
+                savedAlert.getSeverity()
+            );
+        }
+        else {
+            Fetus fetus = record.getFetus();
+            if (fetus.getStatus() == FetusStatus.ISSUE) {
+                fetus.setStatus(FetusStatus.ACTIVE);
+                fetusRepository.save(fetus);
+            }
+        }
     }
-
 }
 

@@ -74,11 +74,13 @@ public class PregnancyService {
         Pregnancy savedPregnancy = pregnancyRepository.save(pregnancy);
 
         if (membershipService.canAccessStandardFeatures(user.getId())) {
-            standardService.checkAndCreateWeeklyTasks(
-                user.getId(),
-                savedPregnancy.getPregnancyId(),
-                pregnancyDTO.getGestationalWeeks()
-            );
+            for (int week = 1; week <= pregnancyDTO.getGestationalWeeks(); week++) {
+                standardService.checkAndCreateWeeklyTasks(
+                    user.getId(),
+                    savedPregnancy.getPregnancyId(),
+                    week
+                );
+            }
         }
 
         System.out.println("Creating fetuses for pregnancy: " + savedPregnancy.getPregnancyId());
@@ -150,6 +152,15 @@ public class PregnancyService {
         pregnancy.setLastUpdatedAt(LocalDateTime.now());
 
         Pregnancy savedPregnancy = pregnancyRepository.save(pregnancy);
+        
+        if (membershipService.canAccessStandardFeatures(pregnancy.getUser().getId())) {
+            standardService.checkAndCreateWeeklyTasks(
+                pregnancy.getUser().getId(),
+                savedPregnancy.getPregnancyId(),
+                pregnancyDTO.getGestationalWeeks()
+            );
+        }
+
         return convertToListDTO(savedPregnancy);
     }
 

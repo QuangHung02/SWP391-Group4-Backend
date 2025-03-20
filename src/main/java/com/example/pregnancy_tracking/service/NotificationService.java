@@ -51,4 +51,27 @@ public class NotificationService {
             log.error("Failed to send notification to user {}: {}", userId, e.getMessage());
         }
     }
+
+    public void sendHealthAlertNotification(Long userId, String title, String body) {
+        String userFcmToken = getUserFcmToken(userId);
+        
+        if (userFcmToken == null || userFcmToken.isEmpty()) {
+            log.warn("No FCM token found for user {}", userId);
+            return;
+        }
+
+        Message message = Message.builder()
+            .setNotification(Notification.builder()
+                .setTitle(title)
+                .setBody(body)
+                .build())
+            .setToken(userFcmToken)
+            .build();
+
+        try {
+            firebaseMessaging.send(message);
+        } catch (FirebaseMessagingException e) {
+            log.error("Failed to send notification to user {}: {}", userId, e.getMessage());
+        }
+    }
 }

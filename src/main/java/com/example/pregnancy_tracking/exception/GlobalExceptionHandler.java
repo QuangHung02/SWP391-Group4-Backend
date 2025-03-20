@@ -12,6 +12,17 @@ import java.util.Map;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(HealthAlertException.class)
+    public ResponseEntity<Map<String, Object>> handleHealthAlert(HealthAlertException ex) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("error", "Health Alert");
+        response.put("message", ex.getMessage());
+        response.put("healthType", ex.getHealthType());
+        response.put("severity", ex.getSeverity());
+        
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseEntity<Map<String, Object>> handleGlobalException(Exception ex) {

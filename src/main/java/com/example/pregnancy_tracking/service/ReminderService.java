@@ -2,6 +2,7 @@ package com.example.pregnancy_tracking.service;
 
 import com.example.pregnancy_tracking.dto.ReminderDTO;
 import com.example.pregnancy_tracking.dto.ReminderMedicalTaskDTO;
+import com.example.pregnancy_tracking.dto.ReminderHealthAlertDTO;
 import com.example.pregnancy_tracking.entity.*;
 import com.example.pregnancy_tracking.repository.PregnancyRepository;
 import com.example.pregnancy_tracking.repository.ReminderMedicalTaskRepository;
@@ -13,6 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 import com.example.pregnancy_tracking.exception.MembershipFeatureException;
+import com.example.pregnancy_tracking.repository.ReminderHealthAlertRepository;
+import java.util.ArrayList;
 
 @Service
 public class ReminderService {
@@ -30,6 +33,9 @@ public class ReminderService {
 
     @Autowired
     private NotificationService notificationService;
+
+    @Autowired
+    private ReminderHealthAlertRepository reminderHealthAlertRepository;
 
     public ReminderService(ReminderRepository reminderRepository, ReminderMedicalTaskRepository taskRepository) {
         this.reminderRepository = reminderRepository;
@@ -147,6 +153,13 @@ public class ReminderService {
     public ReminderDTO updateReminderStatus(Long id, ReminderStatus status) {
         Reminder reminder = reminderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy nhắc nhở"));
+        if (reminder.getStatus() != ReminderStatus.DONE) {
+            notificationService.sendMedicalTaskNotification(
+                reminder.getUser().getId(),
+                "Nhắc nhở mới",
+                reminder.getType().toString()
+            );
+        }
 
         reminder.setStatus(status);
         Reminder updatedReminder = reminderRepository.save(reminder);
@@ -177,6 +190,21 @@ public class ReminderService {
                 ))
                 .collect(Collectors.toList());
 
+        List<ReminderHealthAlertDTO> healthAlerts = new ArrayList<>();
+        if (ReminderType.HEALTH_ALERT.equals(reminder.getType())) {
+            healthAlerts = reminderHealthAlertRepository.findByReminderReminderId(reminder.getReminderId())
+                    .stream()
+                    .map(alert -> new ReminderHealthAlertDTO(
+                        alert.getId(),
+                        alert.getReminder().getReminderId(),
+                        alert.getHealthType().name(),
+                        alert.getSeverity().name(),
+                        alert.getSource().name(),
+                        alert.getNotes()
+                    ))
+                    .collect(Collectors.toList());
+        }
+
         return new ReminderDTO(
                 reminder.getReminderId(),
                 reminder.getUser().getId(),
@@ -185,7 +213,8 @@ public class ReminderService {
                 reminder.getReminderDate(),
                 reminder.getStatus().name(),
                 reminder.getCreatedAt(),
-                tasks
+                tasks,
+                healthAlerts
         );
     }
 
