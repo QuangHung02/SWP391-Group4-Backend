@@ -125,34 +125,42 @@ public class PregnancyService {
 
         LocalDate lastExamDate = pregnancy.getExamDate();
         int oldWeeks = pregnancy.getGestationalWeeks();
-
         LocalDate examDate = pregnancyDTO.getExamDate();
-        int totalDays = (pregnancyDTO.getGestationalWeeks() * 7) + pregnancyDTO.getGestationalDays();
-        LocalDate startDate = examDate.minusDays(totalDays);
-        LocalDate dueDate = startDate.plusDays(280);
 
-        long actualDays = ChronoUnit.DAYS.between(lastExamDate, examDate);
-        long actualWeeksPassed = (actualDays + 3) / 7;
-        int reportedWeeksPassed = pregnancyDTO.getGestationalWeeks() - oldWeeks;
+        // Tính toán lại tuần thai thực tế dựa trên khoảng cách giữa 2 lần khám
+        long daysBetweenExams = ChronoUnit.DAYS.between(lastExamDate, examDate);
+        int expectedWeeks = oldWeeks + (int)(daysBetweenExams / 7);
         
-        if (reportedWeeksPassed > actualWeeksPassed + 1) { 
-            throw new IllegalArgumentException(
-                "Tuần thai báo cáo (" + pregnancyDTO.getGestationalWeeks() + 
-                ") chênh lệch quá nhiều so với thời gian thực tế (khoảng " + 
-                (oldWeeks + actualWeeksPassed) + " tuần)"
-            );
+        // Nếu tuần thai báo cáo khác với dự đoán, cần điều chỉnh lại toàn bộ
+        if (pregnancyDTO.getGestationalWeeks() != expectedWeeks) {
+            // Tính toán lại ngày bắt đầu thai kỳ dựa trên tuần thai mới
+            int totalDays = (pregnancyDTO.getGestationalWeeks() * 7) + pregnancyDTO.getGestationalDays();
+            LocalDate startDate = examDate.minusDays(totalDays);
+            LocalDate dueDate = startDate.plusDays(280);
+            
+            pregnancy.setStartDate(startDate);
+            pregnancy.setDueDate(dueDate);
         }
-        
+
         pregnancy.setLastExamDate(lastExamDate);
         pregnancy.setExamDate(examDate);
-        pregnancy.setStartDate(startDate);
-        pregnancy.setDueDate(dueDate);
         pregnancy.setGestationalWeeks(pregnancyDTO.getGestationalWeeks());
         pregnancy.setGestationalDays(pregnancyDTO.getGestationalDays());
         pregnancy.setLastUpdatedAt(LocalDateTime.now());
 
         Pregnancy savedPregnancy = pregnancyRepository.save(pregnancy);
         
+        // Cập nhật các records cũ nếu có sự chênh lệch
+        if (pregnancyDTO.getGestationalWeeks() != expectedWeeks) {
+            fetusRecordService.updateRecordsForPregnancy(
+                pregnancyId, 
+                examDate,
+                lastExamDate,
+                pregnancyDTO.getGestationalWeeks(),
+                oldWeeks
+            );
+        }
+
         if (membershipService.canAccessStandardFeatures(pregnancy.getUser().getId())) {
             standardService.checkAndCreateWeeklyTasks(
                 pregnancy.getUser().getId(),

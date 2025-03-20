@@ -111,18 +111,10 @@ public class FetusRecordService {
     public void updateRecordsForPregnancy(Long pregnancyId, LocalDate newExamDate, 
                                         LocalDate lastExamDate, int newWeeks, int oldWeeks) {
         List<FetusRecord> records = fetusRecordRepository.findByFetusPregnancyPregnancyId(pregnancyId);
-        long actualDays = ChronoUnit.DAYS.between(lastExamDate, newExamDate);
-        long actualWeeksPassed = (actualDays + 3) / 7;
-        int reportedWeeksPassed = newWeeks - oldWeeks;
-        if (reportedWeeksPassed > actualWeeksPassed + 1) { 
-            throw new IllegalArgumentException(
-                "Tuần thai báo cáo (" + newWeeks + 
-                ") chênh lệch quá nhiều so với thời gian thực tế (khoảng " + 
-                (oldWeeks + actualWeeksPassed) + " tuần)"
-            );
-        }
+        int weekDifference = newWeeks - oldWeeks;
+        
         for (FetusRecord record : records) {
-            int adjustedWeek = record.getWeek() + (int)actualWeeksPassed;
+            int adjustedWeek = record.getWeek() + weekDifference;
             record.setWeek(adjustedWeek);
             fetusRecordRepository.save(record);
         }
