@@ -101,7 +101,6 @@ public class User implements UserDetails {
     @Column(name = "fcm_token", length = 255)
     private String fcmToken;
     
-    // Add getter and setter
     public String getFcmToken() {
         return fcmToken;
     }

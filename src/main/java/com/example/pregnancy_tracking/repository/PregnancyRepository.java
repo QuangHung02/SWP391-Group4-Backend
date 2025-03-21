@@ -5,6 +5,7 @@ import com.example.pregnancy_tracking.entity.PregnancyStatus;
 import com.example.pregnancy_tracking.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,4 +17,5 @@ public interface PregnancyRepository extends JpaRepository<Pregnancy, Long> {
     Optional<Pregnancy> findByUserIdAndStatus(Long userId, PregnancyStatus status);
     void deleteByUserId(Long userId);
 
+    List<Pregnancy> findByStatusAndDueDateLessThanEqual(PregnancyStatus status, LocalDate date);
 }

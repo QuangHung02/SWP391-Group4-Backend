@@ -270,4 +270,14 @@ public class StandardService {
             throw new RuntimeException("Không thể tạo nhắc nhở từ nhiệm vụ tiêu chuẩn: " + e.getMessage());
         }
     }
+
+
+public Integer getMaxWeekByFetusNumber(Integer fetusNumber) {
+    return pregnancyStandardRepository.findByIdFetusNumberOrderByIdWeekDesc(fetusNumber)
+        .stream()
+        .findFirst()
+        .map(standard -> standard.getId().getWeek())
+        .orElse(40);
 }
+}
+

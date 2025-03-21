@@ -2,6 +2,7 @@ package com.example.pregnancy_tracking.service;
 
 import com.example.pregnancy_tracking.entity.*;
 import com.example.pregnancy_tracking.exception.ResourceNotFoundException;
+import com.example.pregnancy_tracking.exception.MembershipFeatureException;
 import com.example.pregnancy_tracking.repository.FetusRepository;
 import com.example.pregnancy_tracking.repository.PregnancyRepository;
 import com.example.pregnancy_tracking.repository.UserRepository;
@@ -15,6 +16,10 @@ import jakarta.transaction.Transactional;
 import java.util.stream.Collectors;
 import com.example.pregnancy_tracking.dto.PregnancyListDTO;
 import java.time.temporal.ChronoUnit;
+import org.springframework.scheduling.annotation.Scheduled;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class PregnancyService {
     @Autowired
@@ -35,8 +40,45 @@ public class PregnancyService {
     @Autowired
     private StandardService standardService;
 
+    @Autowired
+    private NotificationService notificationService;
+
+    @Scheduled(cron = "0 0 0 * * *")
+    @Transactional
+    public void autoUpdatePregnancyStatus() {
+        LocalDate today = LocalDate.now();
+        List<Pregnancy> duePregnancies = pregnancyRepository.findByStatusAndDueDateLessThanEqual(
+            PregnancyStatus.ONGOING, 
+            today
+        );
+    
+        for (Pregnancy pregnancy : duePregnancies) {
+            try {
+                updatePregnancyStatus(pregnancy.getPregnancyId(), PregnancyStatus.COMPLETED);
+                
+                String title = "Thai kỳ đã hoàn thành";
+                String body = "Thai kỳ của bạn đã đến ngày dự sinh và được tự động đánh dấu hoàn thành";
+                notificationService.sendHealthAlertNotification(
+                    pregnancy.getUser().getId(),
+                    title,
+                    body
+                );
+                
+                log.info("Auto completed pregnancy ID: {} due to reaching due date: {}", 
+                    pregnancy.getPregnancyId(), pregnancy.getDueDate());
+            } catch (Exception e) {
+                log.error("Error processing pregnancy ID: {} - {}", 
+                    pregnancy.getPregnancyId(), e.getMessage());
+            }
+        }
+    }
     @Transactional
     public PregnancyListDTO createPregnancy(PregnancyDTO pregnancyDTO) {
+        // Check if user can create pregnancy based on membership
+        if (!membershipService.canCreatePregnancyRecord(pregnancyDTO.getUserId())) {
+            throw new MembershipFeatureException("Bạn cần đăng ký gói thành viên để tạo thai kỳ");
+        }
+
         if (pregnancyDTO.getGestationalWeeks() < 0 || pregnancyDTO.getGestationalDays() < 0) {
             throw new IllegalArgumentException("Tuần thai và ngày thai không được âm");
         }
@@ -107,12 +149,12 @@ public class PregnancyService {
 
     @Transactional
     public PregnancyListDTO updatePregnancy(Long pregnancyId, PregnancyDTO pregnancyDTO) {
-        if (pregnancyDTO.getGestationalWeeks() < 0 || pregnancyDTO.getGestationalDays() < 0) {
-            throw new IllegalArgumentException("Tuần thai và ngày thai không được âm");
-        }
-
         Pregnancy pregnancy = pregnancyRepository.findById(pregnancyId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy thai kỳ"));
+            
+        if (!membershipService.canCreatePregnancyRecord(pregnancy.getUser().getId())) {
+            throw new MembershipFeatureException("Bạn cần đăng ký gói thành viên để cập nhật thai kỳ");
+        }
 
         if (pregnancy.getStatus() != PregnancyStatus.ONGOING) {
             throw new IllegalStateException("Chỉ có thể cập nhật thai kỳ đang theo dõi");
@@ -126,13 +168,10 @@ public class PregnancyService {
         int oldWeeks = pregnancy.getGestationalWeeks();
         LocalDate examDate = pregnancyDTO.getExamDate();
 
-        // Tính toán lại tuần thai thực tế dựa trên khoảng cách giữa 2 lần khám
         long daysBetweenExams = ChronoUnit.DAYS.between(lastExamDate, examDate);
         int expectedWeeks = oldWeeks + (int)(daysBetweenExams / 7);
         
-        // Nếu tuần thai báo cáo khác với dự đoán, cần điều chỉnh lại toàn bộ
         if (pregnancyDTO.getGestationalWeeks() != expectedWeeks) {
-            // Tính toán lại ngày bắt đầu thai kỳ dựa trên tuần thai mới
             int totalDays = (pregnancyDTO.getGestationalWeeks() * 7) + pregnancyDTO.getGestationalDays();
             LocalDate startDate = examDate.minusDays(totalDays);
             LocalDate dueDate = startDate.plusDays(280);
@@ -149,7 +188,6 @@ public class PregnancyService {
 
         Pregnancy savedPregnancy = pregnancyRepository.save(pregnancy);
         
-        // Cập nhật các records cũ nếu có sự chênh lệch
         if (pregnancyDTO.getGestationalWeeks() != expectedWeeks) {
             fetusRecordService.updateRecordsForPregnancy(
                 pregnancyId, 
