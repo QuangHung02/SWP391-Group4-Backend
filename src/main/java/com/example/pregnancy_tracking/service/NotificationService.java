@@ -9,6 +9,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.example.pregnancy_tracking.repository.UserRepository;
 import com.example.pregnancy_tracking.entity.User;
+import java.util.HashMap;
+import java.util.Map;
+import com.example.pregnancy_tracking.entity.NotificationType;
 
 @Slf4j
 @Service
@@ -17,6 +20,7 @@ public class NotificationService {
     private UserRepository userRepository;
     
     private final FirebaseMessaging firebaseMessaging;
+    private final int MAX_RETRIES = 3;
 
     public NotificationService(FirebaseMessaging firebaseMessaging) {
         this.firebaseMessaging = firebaseMessaging;
@@ -36,19 +40,33 @@ public class NotificationService {
             return;
         }
         
+        Map<String, String> data = new HashMap<>();
+        data.put("type", NotificationType.MEDICAL_TASK.getValue());
+        data.put("userId", userId.toString());
+        
         Message message = Message.builder()
             .setNotification(Notification.builder()
                 .setTitle(title)
                 .setBody(body)
                 .build())
+            .putAllData(data)
             .setToken(userFcmToken)
             .build();
 
+        sendWithRetry(message, userId, MAX_RETRIES);
+    }
+
+    private void sendWithRetry(Message message, Long userId, int retriesLeft) {
         try {
             firebaseMessaging.send(message);
-            log.info("Notification sent successfully to user {}", userId);
+            log.debug("Notification sent successfully to user {}", userId);
         } catch (FirebaseMessagingException e) {
-            log.error("Failed to send notification to user {}: {}", userId, e.getMessage());
+            if (retriesLeft > 0) {
+                log.warn("Retrying notification for user {}. Attempts left: {}", userId, retriesLeft - 1);
+                sendWithRetry(message, userId, retriesLeft - 1);
+            } else {
+                log.error("Failed to send notification to user {} after all retries: {}", userId, e.getMessage());
+            }
         }
     }
 
@@ -59,19 +77,25 @@ public class NotificationService {
             log.warn("No FCM token found for user {}", userId);
             return;
         }
-
+    
+        Map<String, String> data = new HashMap<>();
+        data.put("type", NotificationType.HEALTH_ALERT.getValue());
+        data.put("userId", userId.toString());
+    
         Message message = Message.builder()
             .setNotification(Notification.builder()
                 .setTitle(title)
                 .setBody(body)
                 .build())
+            .putAllData(data)
             .setToken(userFcmToken)
             .build();
-
+    
         try {
             firebaseMessaging.send(message);
+            log.debug("Health alert notification sent to user {}", userId);
         } catch (FirebaseMessagingException e) {
-            log.error("Failed to send notification to user {}: {}", userId, e.getMessage());
+            log.error("Failed to send health alert to user {}: {}", userId, e.getMessage());
         }
     }
 }

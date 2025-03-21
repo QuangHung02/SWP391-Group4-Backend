@@ -313,22 +313,26 @@ public class FetusRecordService {
         private double calculateAverageGrowthRate(List<FetusRecord> records,
                                                  Function<FetusRecord, Integer> weekExtractor,
                                                  Function<FetusRecord, BigDecimal> valueExtractor) {
-            double totalGrowthRate = 0;
-            int count = 0;
+            double totalWeightedGrowthRate = 0;
+            double totalWeight = 0;
 
             for (int i = 1; i < records.size(); i++) {
                 BigDecimal currentValue = valueExtractor.apply(records.get(i));
                 BigDecimal previousValue = valueExtractor.apply(records.get(i-1));
                 int weekDiff = weekExtractor.apply(records.get(i)) - weekExtractor.apply(records.get(i-1));
 
-                if (currentValue != null && previousValue != null && previousValue.compareTo(BigDecimal.ZERO) > 0) {
+                if (currentValue != null && previousValue != null && 
+                    previousValue.compareTo(BigDecimal.ZERO) > 0 && 
+                    weekDiff > 0 && weekDiff <= 4) {
+                    
                     double growthRate = (currentValue.doubleValue() / previousValue.doubleValue() - 1) / weekDiff;
-                    totalGrowthRate += growthRate;
-                    count++;
+                    double weight = 1.0 / weekDiff;
+                    totalWeightedGrowthRate += (growthRate * weight);
+                    totalWeight += weight;
                 }
             }
 
-            return count > 0 ? totalGrowthRate / count : 0;
+            return totalWeight > 0 ? totalWeightedGrowthRate / totalWeight : 0;
         }
 
     public Map<ChartType, Boolean> getAvailableChartTypes(Long fetusId, Long userId) {

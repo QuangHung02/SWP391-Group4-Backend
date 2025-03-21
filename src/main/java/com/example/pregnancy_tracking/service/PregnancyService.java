@@ -74,7 +74,6 @@ public class PregnancyService {
     }
     @Transactional
     public PregnancyListDTO createPregnancy(PregnancyDTO pregnancyDTO) {
-        // Check if user can create pregnancy based on membership
         if (!membershipService.canCreatePregnancyRecord(pregnancyDTO.getUserId())) {
             throw new MembershipFeatureException("Bạn cần đăng ký gói thành viên để tạo thai kỳ");
         }
@@ -162,6 +161,12 @@ public class PregnancyService {
 
         if (pregnancyDTO.getGestationalWeeks() <= pregnancy.getGestationalWeeks()) {
             throw new IllegalArgumentException("Tuần thai mới phải lớn hơn tuần thai hiện tại");
+        }
+        if (pregnancyDTO.getGestationalWeeks() > 40) {
+            throw new IllegalArgumentException("Tuần thai không được vượt quá 40 tuần");
+        }
+        if (pregnancyDTO.getGestationalDays() < 0 || pregnancyDTO.getGestationalDays() > 6) {
+            throw new IllegalArgumentException("Ngày thai phải từ 0 đến 6 ngày");
         }
 
         LocalDate lastExamDate = pregnancy.getExamDate();
