@@ -18,6 +18,7 @@ import com.example.pregnancy_tracking.dto.PregnancyListDTO;
 import java.time.temporal.ChronoUnit;
 import org.springframework.scheduling.annotation.Scheduled;
 import lombok.extern.slf4j.Slf4j;
+import com.example.pregnancy_tracking.repository.ReminderRepository;
 
 @Slf4j
 @Service
@@ -42,6 +43,9 @@ public class PregnancyService {
 
     @Autowired
     private NotificationService notificationService;
+
+    @Autowired
+    private ReminderRepository reminderRepository;
 
     @Scheduled(cron = "0 0 0 * * *")
     @Transactional
@@ -218,15 +222,16 @@ public class PregnancyService {
     public void updatePregnancyStatus(Long pregnancyId, PregnancyStatus newStatus) {
         Pregnancy pregnancy = pregnancyRepository.findById(pregnancyId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy thai kỳ!"));
-
+    
         if (pregnancy.getStatus() == PregnancyStatus.COMPLETED || 
             pregnancy.getStatus() == PregnancyStatus.CANCEL) {
             throw new IllegalStateException("Không thể thay đổi trạng thái của thai kỳ đã hoàn thành hoặc đã hủy!");
         }
-
+    
         if (pregnancy.getStatus() == PregnancyStatus.ONGOING) {
             pregnancy.setStatus(newStatus);
             
+            // Update fetus status
             List<Fetus> fetuses = fetusRepository.findByPregnancyPregnancyId(pregnancyId);
             for (Fetus fetus : fetuses) {
                 if (newStatus == PregnancyStatus.COMPLETED) {
@@ -235,6 +240,16 @@ public class PregnancyService {
                     fetus.setStatus(FetusStatus.CANCEL);
                 }
                 fetusRepository.save(fetus);
+            }
+    
+            List<Reminder> reminders = reminderRepository.findByPregnancy_PregnancyId(pregnancyId);
+            for (Reminder reminder : reminders) {
+                if (reminder.getStatus() != ReminderStatus.DONE && 
+                    (reminder.getType() == ReminderType.HEALTH_ALERT || 
+                     reminder.getType() == ReminderType.MEDICAL_TASK)) {
+                    reminder.setStatus(ReminderStatus.SKIP);
+                    reminderRepository.save(reminder);
+                }
             }
             
             pregnancyRepository.save(pregnancy);
