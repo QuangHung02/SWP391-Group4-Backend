@@ -57,19 +57,11 @@ public class SubscriptionService {
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public SubscriptionDTO createSubscription(Long userId, Long packageId) {
         try {
-            // Kiểm tra xem người dùng đã đăng ký trong 1 phút gần đây chưa
-            LocalDateTime oneMinuteAgo = LocalDateTime.now().minusMinutes(1);
-            if (subscriptionRepository.existsByUserIdAndCreatedAtAfter(userId, oneMinuteAgo)) {
-                throw new RuntimeException("Vui lòng đợi 1 phút trước khi thực hiện đăng ký mới");
-            }
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
-            
             MembershipPackage newPackage = packageRepository.findById(packageId)
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy gói đăng ký"));
-
             List<Subscription> existingActive = subscriptionRepository.findByUserIdAndStatus(userId, "Active");
-            
             if (!existingActive.isEmpty()) {
                 Subscription currentSub = existingActive.get(0);
                 
