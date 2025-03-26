@@ -16,7 +16,9 @@ import java.time.LocalDate;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.example.pregnancy_tracking.exception.HealthAlertException;
+import lombok.extern.slf4j.Slf4j; 
 
+@Slf4j
 @Service
 public class FetusRecordService {
     @Autowired
@@ -215,6 +217,8 @@ public class FetusRecordService {
             try {
                 checkFetusGrowth(savedRecord);
             } catch (HealthAlertException e) {
+                log.info("Health alert created for user {} with type: {}", userId, e.getHealthType());
+                throw e;
             }
             
             return savedRecord;
