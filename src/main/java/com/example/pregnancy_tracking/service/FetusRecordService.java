@@ -379,7 +379,7 @@ public class FetusRecordService {
                 .map(FetusRecordDTO::new)
                 .collect(Collectors.toList());
     }
-
+    
     public Map<String, List<Object[]>> getAllGrowthData(Long fetusId, Long userId) {
         if (!membershipService.canViewFetusRecord(userId)) {
             throw new MembershipFeatureException("Gói thành viên của bạn không cho phép xem chỉ số thai nhi");
@@ -392,15 +392,13 @@ public class FetusRecordService {
             throw new RuntimeException("Không có quyền truy cập chỉ số thai nhi này");
         }
 
-        Map<String, List<Object[]>> growthData = getAllGrowthData(fetusId);
-        
         if (membershipService.canViewPredictionLine(userId)) {
-            Map<String, List<Object[]>> predictionData = calculatePredictionLine(fetusId);
-            growthData.putAll(predictionData);
+            return calculatePredictionLine(fetusId);
         }
         
-        return growthData;
-    }@Transactional
+        return new HashMap<>();
+    }
+    @Transactional
     public void checkFetusGrowth(FetusRecord record) {
         Long userId = record.getFetus().getPregnancy().getUser().getId();
         if (!membershipService.canAccessHealthAlerts(userId)) {
