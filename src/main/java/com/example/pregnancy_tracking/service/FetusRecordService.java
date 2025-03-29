@@ -484,12 +484,7 @@ public class FetusRecordService {
             Fetus fetus = record.getFetus();
             fetus.setStatus(FetusStatus.ISSUE);
             fetusRepository.save(fetus);
-        
-            throw new HealthAlertException(
-                "Phát hiện chỉ số bất thường",
-                savedAlert.getHealthType(),
-                savedAlert.getSeverity()
-            );
+            
         }
         else {
             Fetus fetus = record.getFetus();
