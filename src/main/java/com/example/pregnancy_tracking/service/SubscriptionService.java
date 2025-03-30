@@ -54,28 +54,42 @@ public class SubscriptionService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional(isolation = Isolation.SERIALIZABLE)
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public SubscriptionDTO createSubscription(Long userId, Long packageId) {
         try {
+            // Check for recent subscriptions (within 5 seconds)
+            LocalDateTime fiveSecondsAgo = LocalDateTime.now().minusSeconds(5);
+            List<Subscription> recentSubs = subscriptionRepository.findByUserIdAndCreatedAtAfter(userId, fiveSecondsAgo);
+            if (!recentSubs.isEmpty()) {
+                throw new RuntimeException("Đang xử lý giao dịch, vui lòng đợi trong giây lát");
+            }
+
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+
             MembershipPackage newPackage = packageRepository.findById(packageId)
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy gói đăng ký"));
+
+            // Get and expire all active subscriptions
             List<Subscription> existingActive = subscriptionRepository.findByUserIdAndStatus(userId, "Active");
+
             if (!existingActive.isEmpty()) {
                 Subscription currentSub = existingActive.get(0);
-                
+
                 if (currentSub.getMembershipPackage().getId().equals(packageId)) {
-                    currentSub.setEndDate(currentSub.getEndDate().plusDays(newPackage.getDuration()));
-                    currentSub.setCreatedAt(LocalDateTime.now());
+                    // Gia hạn gói hiện tại
+                    LocalDate newEndDate = currentSub.getEndDate().plusDays(newPackage.getDuration());
+                    currentSub.setEndDate(newEndDate);
                     return convertToDTO(subscriptionRepository.save(currentSub));
                 }
 
+                // Nâng cấp gói
                 if (newPackage.getPrice().compareTo(currentSub.getMembershipPackage().getPrice()) > 0) {
                     currentSub.setStatus("Expired");
-                    currentSub.setEndDate(LocalDate.now());  
+                    currentSub.setEndDate(LocalDate.now());
                     subscriptionRepository.save(currentSub);
-                    
+
+                    // Tạo gói mới
                     Subscription newSubscription = new Subscription();
                     newSubscription.setUser(user);
                     newSubscription.setMembershipPackage(newPackage);
@@ -89,6 +103,7 @@ public class SubscriptionService {
                 }
             }
 
+            // Tạo subscription mới cho user chưa có gói active
             Subscription subscription = new Subscription();
             subscription.setUser(user);
             subscription.setMembershipPackage(newPackage);
@@ -97,7 +112,7 @@ public class SubscriptionService {
             subscription.setStatus("Active");
             subscription.setCreatedAt(LocalDateTime.now());
             return convertToDTO(subscriptionRepository.save(subscription));
-            
+
         } catch (Exception e) {
             throw new RuntimeException("Lỗi khi tạo đăng ký: " + e.getMessage());
         }
@@ -106,7 +121,7 @@ public class SubscriptionService {
     public Map<String, Object> calculateRevenue() {
         List<Subscription> allSubscriptions = subscriptionRepository.findAll();
         Map<String, Object> statistics = new HashMap<>();
-        
+
         BigDecimal totalRevenue = BigDecimal.ZERO;
         Map<String, BigDecimal> revenueByPackage = new HashMap<>();
         Map<String, Integer> subscriptionsByPackage = new HashMap<>();
@@ -128,7 +143,6 @@ public class SubscriptionService {
 
     @Transactional
     public void handleUserDeletion(Long userId) {
-        // Delete active subscriptions
         subscriptionRepository.deleteByUserId(userId);
     }
 }

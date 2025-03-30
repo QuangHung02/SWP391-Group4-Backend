@@ -19,6 +19,7 @@ import java.time.temporal.ChronoUnit;
 import org.springframework.scheduling.annotation.Scheduled;
 import lombok.extern.slf4j.Slf4j;
 import com.example.pregnancy_tracking.repository.ReminderRepository;
+import java.util.ArrayList;
 
 @Slf4j
 @Service
@@ -231,7 +232,6 @@ public class PregnancyService {
         if (pregnancy.getStatus() == PregnancyStatus.ONGOING) {
             pregnancy.setStatus(newStatus);
             
-            // Update fetus status
             List<Fetus> fetuses = fetusRepository.findByPregnancyPregnancyId(pregnancyId);
             for (Fetus fetus : fetuses) {
                 if (newStatus == PregnancyStatus.COMPLETED) {
@@ -243,13 +243,20 @@ public class PregnancyService {
             }
     
             List<Reminder> reminders = reminderRepository.findByPregnancy_PregnancyId(pregnancyId);
-            for (Reminder reminder : reminders) {
-                if (reminder.getStatus() != ReminderStatus.DONE && 
-                    (reminder.getType() == ReminderType.HEALTH_ALERT || 
-                     reminder.getType() == ReminderType.MEDICAL_TASK)) {
-                    reminder.setStatus(ReminderStatus.SKIP);
-                    reminderRepository.save(reminder);
-                }
+            int totalReminders = reminders.size();
+            
+            reminderRepository.deleteByPregnancyPregnancyId(pregnancyId);
+            
+            if (totalReminders > 0) {
+                String title = "Nhắc nhở đã được xóa";
+                String body = String.format("Đã xóa %d nhắc nhở do thai kỳ đã %s", 
+                    totalReminders, 
+                    newStatus == PregnancyStatus.COMPLETED ? "hoàn thành" : "hủy");
+                notificationService.sendHealthAlertNotification(
+                    pregnancy.getUser().getId(),
+                    title,
+                    body
+                );
             }
             
             pregnancyRepository.save(pregnancy);
@@ -318,7 +325,6 @@ public class PregnancyService {
 
     @Transactional
     public void deleteUserPregnancies(Long userId) {
-        // Delete pregnancy
         pregnancyRepository.deleteByUserId(userId);
     }
 }

@@ -417,17 +417,36 @@ public class FetusRecordService {
     
         PregnancyStandard standard = standardOpt.get();
         SeverityLevel severity = null;
+        List<String> healthAlerts = new ArrayList<>();
     
         if (record.getFetalWeight() != null) {
-            severity = checkThreshold(record.getFetalWeight(), standard.getMinWeight(), standard.getMaxWeight(), severity);
+            BigDecimal weight = record.getFetalWeight();
+            severity = checkThreshold(weight, standard.getMinWeight(), standard.getMaxWeight(), severity);
+            if (weight.compareTo(standard.getMinWeight()) < 0) {
+                healthAlerts.add("Cân nặng thấp hơn mức bình thường");
+            } else if (weight.compareTo(standard.getMaxWeight()) > 0) {
+                healthAlerts.add("Cân nặng cao hơn mức bình thường");
+            }
         }
     
         if (record.getHeadCircumference() != null) {
-            severity = checkThreshold(record.getHeadCircumference(), standard.getMinHeadCircumference(), standard.getMaxHeadCircumference(), severity);
+            BigDecimal circumference = record.getHeadCircumference();
+            severity = checkThreshold(circumference, standard.getMinHeadCircumference(), standard.getMaxHeadCircumference(), severity);
+            if (circumference.compareTo(standard.getMinHeadCircumference()) < 0) {
+                healthAlerts.add("Chu vi đầu thấp hơn mức bình thường");
+            } else if (circumference.compareTo(standard.getMaxHeadCircumference()) > 0) {
+                healthAlerts.add("Chu vi đầu cao hơn mức bình thường");
+            }
         }
     
         if (record.getFemurLength() != null) {
-            severity = checkThreshold(record.getFemurLength(), standard.getMinLength(), standard.getMaxLength(), severity);
+            BigDecimal length = record.getFemurLength();
+            severity = checkThreshold(length, standard.getMinLength(), standard.getMaxLength(), severity);
+            if (length.compareTo(standard.getMinLength()) < 0) {
+                healthAlerts.add("Chiều dài xương đùi thấp hơn mức bình thường");
+            } else if (length.compareTo(standard.getMaxLength()) > 0) {
+                healthAlerts.add("Chiều dài xương đùi cao hơn mức bình thường");
+            }
         }
     
         if (severity != null) {
@@ -472,14 +491,12 @@ public class FetusRecordService {
             
             alert.setSeverity(severity);
             alert.setSource(AlertSource.PREGNANCY_RECORDS);
-            alert.setNotes("Chỉ số tăng trưởng thai nhi nằm ngoài phạm vi bình thường.");
+            alert.setNotes(String.join(", ", healthAlerts));
             ReminderHealthAlert savedAlert = reminderHealthAlertRepository.save(alert);
         
-            notificationService.sendHealthAlertNotification(
-                userId,
-                "Cảnh báo chỉ số thai nhi",
-                "Phát hiện chỉ số bất thường: " + savedAlert.getHealthType()
-            );
+            if (!healthAlerts.isEmpty()) {
+                notificationService.sendBatchHealthAlertNotifications(userId, healthAlerts);
+            }
         
             Fetus fetus = record.getFetus();
             fetus.setStatus(FetusStatus.ISSUE);

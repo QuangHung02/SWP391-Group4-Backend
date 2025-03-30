@@ -12,6 +12,7 @@ import com.example.pregnancy_tracking.entity.User;
 import java.util.HashMap;
 import java.util.Map;
 import com.example.pregnancy_tracking.entity.NotificationType;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -70,9 +71,64 @@ public class NotificationService {
         }
     }
 
+    public void sendBatchHealthAlertNotifications(Long userId, List<String> messages) {
+        String userFcmToken = getUserFcmToken(userId);
+        if (userFcmToken == null || userFcmToken.isEmpty()) {
+            log.warn("No FCM token found for user {}", userId);
+            return;
+        }
+
+        // Combine all messages
+        String title = "Cảnh báo sức khỏe";
+        String body = String.join("\n", messages);
+
+        Map<String, String> data = new HashMap<>();
+        data.put("type", NotificationType.HEALTH_ALERT.getValue());
+        data.put("userId", userId.toString());
+        data.put("count", String.valueOf(messages.size()));
+
+        Message message = Message.builder()
+            .setNotification(Notification.builder()
+                .setTitle(title)
+                .setBody(body)
+                .build())
+            .putAllData(data)
+            .setToken(userFcmToken)
+            .build();
+
+        sendWithRetry(message, userId, MAX_RETRIES);
+    }
+
+    public void sendBatchMedicalTaskNotifications(Long userId, List<String> messages) {
+        String userFcmToken = getUserFcmToken(userId);
+        if (userFcmToken == null) {
+            log.warn("No FCM token found for user {}", userId);
+            return;
+        }
+
+        // Combine all messages
+        String title = "Nhắc nhở y tế mới";
+        String body = String.join("\n", messages);
+
+        Map<String, String> data = new HashMap<>();
+        data.put("type", NotificationType.MEDICAL_TASK.getValue());
+        data.put("userId", userId.toString());
+        data.put("count", String.valueOf(messages.size()));
+
+        Message message = Message.builder()
+            .setNotification(Notification.builder()
+                .setTitle(title)
+                .setBody(body)
+                .build())
+            .putAllData(data)
+            .setToken(userFcmToken)
+            .build();
+
+        sendWithRetry(message, userId, MAX_RETRIES);
+    }
+
     public void sendHealthAlertNotification(Long userId, String title, String body) {
         String userFcmToken = getUserFcmToken(userId);
-        
         if (userFcmToken == null || userFcmToken.isEmpty()) {
             log.warn("No FCM token found for user {}", userId);
             return;
@@ -91,11 +147,6 @@ public class NotificationService {
             .setToken(userFcmToken)
             .build();
     
-        try {
-            firebaseMessaging.send(message);
-            log.debug("Health alert notification sent to user {}", userId);
-        } catch (FirebaseMessagingException e) {
-            log.error("Failed to send health alert to user {}: {}", userId, e.getMessage());
-        }
+        sendWithRetry(message, userId, MAX_RETRIES);
     }
 }
