@@ -54,23 +54,15 @@ public class SubscriptionService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional(isolation = Isolation.READ_COMMITTED)
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public SubscriptionDTO createSubscription(Long userId, Long packageId) {
         try {
-            // Check for recent subscriptions (within 5 seconds)
-            LocalDateTime fiveSecondsAgo = LocalDateTime.now().minusSeconds(5);
-            List<Subscription> recentSubs = subscriptionRepository.findByUserIdAndCreatedAtAfter(userId, fiveSecondsAgo);
-            if (!recentSubs.isEmpty()) {
-                throw new RuntimeException("Đang xử lý giao dịch, vui lòng đợi trong giây lát");
-            }
-
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
 
             MembershipPackage newPackage = packageRepository.findById(packageId)
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy gói đăng ký"));
 
-            // Get and expire all active subscriptions
             List<Subscription> existingActive = subscriptionRepository.findByUserIdAndStatus(userId, "Active");
 
             if (!existingActive.isEmpty()) {

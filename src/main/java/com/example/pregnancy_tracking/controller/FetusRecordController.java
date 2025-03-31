@@ -80,11 +80,11 @@ public class FetusRecordController {
             @AuthenticationPrincipal UserDetails userDetails) {
         User user = (User) userDetails;
         Long userId = user.getId();
-        Map<String, List<Object[]>> growthData = fetusRecordService.getAllGrowthData(fetusId, userId);
-        if (growthData.isEmpty()) {
+        Map<String, List<Object[]>> predictionData = fetusRecordService.getPredictionData(fetusId, userId);
+        if (predictionData.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(growthData);
+        return ResponseEntity.ok(predictionData);
     }
 }
 

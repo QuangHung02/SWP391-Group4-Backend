@@ -37,6 +37,22 @@ public class MembershipService {
                 .collect(Collectors.toList());
     }
 
+    public MembershipPackageDTO getPackageById(Long packageId) {
+        MembershipPackage membershipPackage = packageRepository.findById(packageId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy gói thành viên!"));
+
+        MembershipPackageDTO dto = new MembershipPackageDTO();
+        dto.setId(membershipPackage.getId());
+        dto.setName(membershipPackage.getName());
+        dto.setDescription(membershipPackage.getDescription());
+        dto.setPrice(membershipPackage.getPrice());
+        dto.setDuration(membershipPackage.getDuration());
+        dto.setCreatedAt(membershipPackage.getCreatedAt());
+        dto.setUpdatedAt(membershipPackage.getUpdatedAt());
+
+        return dto;
+    }
+
     public MembershipPackageDTO calculateUpgradePrice(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại!"));
@@ -125,21 +141,21 @@ public class MembershipService {
         dto.setDuration(updatedPackage.getDuration());
         dto.setCreatedAt(updatedPackage.getCreatedAt());
         dto.setUpdatedAt(updatedPackage.getUpdatedAt());
-        
+
         return dto;
     }
 
     public boolean canAccessFeature(Long userId, String packageName) {
         return subscriptionRepository.findActiveSubscriptionByUserId(userId)
-            .map(subscription -> {
-                if (subscription.getEndDate().isBefore(LocalDate.now())) {
-                    subscription.setStatus("Expired");
-                    subscriptionRepository.save(subscription);
-                    return false;
-                }
-                return packageName.equals(subscription.getMembershipPackage().getName());
-            })
-            .orElse(false);
+                .map(subscription -> {
+                    if (subscription.getEndDate().isBefore(LocalDate.now())) {
+                        subscription.setStatus("Expired");
+                        subscriptionRepository.save(subscription);
+                        return false;
+                    }
+                    return packageName.equals(subscription.getMembershipPackage().getName());
+                })
+                .orElse(false);
     }
 
     public boolean canCreatePregnancyRecord(Long userId) {

@@ -29,21 +29,21 @@ public class PaymentService {
         MembershipPackage membershipPackage = packageRepository.findById(packageId)
                 .orElseThrow(() -> new RuntimeException("Gói thành viên không tồn tại!"));
         BigDecimal price = membershipPackage.getPrice();
-
+        
         if ("Premium Plan".equals(membershipPackage.getName())) {
             MembershipPackageDTO packageDTO = membershipService.calculateUpgradePrice(userId);
             price = packageDTO.getPrice();
         }
 
         long amount = price.multiply(new BigDecimal("100")).longValue();
-
+        
         String vnp_TxnRef = VNPayConfig.getRandomNumber(8);
         String vnp_IpAddr = "127.0.0.1";
-
+        
         Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
         String vnp_CreateDate = formatter.format(cld.getTime());
-
+        
         Map<String, String> vnp_Params = new LinkedHashMap<>();
         vnp_Params.put("vnp_Version", VNPayConfig.vnp_Version);
         vnp_Params.put("vnp_Command", VNPayConfig.vnp_Command);
@@ -75,34 +75,42 @@ public class PaymentService {
         String hashData = queryUrl.toString();
         String vnp_SecureHash = VNPayConfig.hmacSHA512(VNPayConfig.vnp_HashSecret, hashData);
         queryUrl.append("&vnp_SecureHash=").append(vnp_SecureHash);
-
+        
         return VNPayConfig.vnp_PayUrl + "?" + queryUrl.toString();
     }
 
-
-    public void processPaymentReturn(Map<String, String> vnpParams) {
+    
+    public Map<String, String> processPaymentReturn(Map<String, String> vnpParams) {
         String vnp_ResponseCode = vnpParams.get("vnp_ResponseCode");
         String vnp_TxnRef = vnpParams.get("vnp_TxnRef");
-
-        // Kiểm tra giao dịch đã xử lý chưa
+        Map<String, String> response = new HashMap<>();
+             
         if (processedTransactions.containsKey(vnp_TxnRef)) {
-            return;
+            response.put("status", "success");
+            response.put("message", "Giao dịch đã được xử lý trước đó");
+            return response;
         }
-
-        if ("00".equals(vnp_ResponseCode)) {
-            String orderInfo = vnpParams.get("vnp_OrderInfo");
-            String[] parts = orderInfo.split("_");
-            Long userId = Long.parseLong(parts[parts.length - 1]);
-            Long packageId = Long.parseLong(parts[parts.length - 2]);
-
-            synchronized (this) {
-                if (!processedTransactions.containsKey(vnp_TxnRef)) {
-                    subscriptionService.createSubscription(userId, packageId);
-                    processedTransactions.put(vnp_TxnRef, true);
-                }
+        
+        try {
+            if ("00".equals(vnp_ResponseCode)) {
+                String orderInfo = vnpParams.get("vnp_OrderInfo");
+                String[] parts = orderInfo.split("_");
+                Long userId = Long.parseLong(parts[parts.length - 1]);
+                Long packageId = Long.parseLong(parts[parts.length - 2]);
+                subscriptionService.createSubscription(userId, packageId);
+                processedTransactions.put(vnp_TxnRef, true);
+                
+                response.put("status", "success");
+                response.put("message", "Thanh toán thành công");
+            } else {
+                response.put("status", "error");
+                response.put("message", "Thanh toán thất bại với mã: " + vnp_ResponseCode);
             }
-        } else {
-            throw new RuntimeException("Payment failed with code: " + vnp_ResponseCode);
+        } catch (Exception e) {
+            processedTransactions.remove(vnp_TxnRef);
+            response.put("status", "error"); 
+            response.put("message", e.getMessage());
         }
+        return response;
     }
 }

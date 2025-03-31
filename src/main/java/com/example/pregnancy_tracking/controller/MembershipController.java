@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 @RestController
 @RequestMapping("/api/membership")
@@ -93,5 +95,22 @@ public class MembershipController {
             @PathVariable Long packageId,
             @Valid @RequestBody MembershipPackageDTO packageDTO) {
         return ResponseEntity.ok(membershipService.updatePackage(packageId, packageDTO));
+    }
+
+
+    @Operation(summary = "Lấy thông tin gói thành viên", description = "Lấy thông tin chi tiết của một gói thành viên theo ID.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lấy thông tin gói thành công"),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy gói thành viên"),
+            @ApiResponse(responseCode = "500", description = "Lỗi máy chủ")
+    })
+    @GetMapping("/packages/{packageId}")
+    public ResponseEntity<MembershipPackageDTO> getPackageById(@PathVariable Long packageId) {
+        try {
+            MembershipPackageDTO packageDTO = membershipService.getPackageById(packageId);
+            return ResponseEntity.ok(packageDTO);
+        } catch (RuntimeException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
     }
 }
