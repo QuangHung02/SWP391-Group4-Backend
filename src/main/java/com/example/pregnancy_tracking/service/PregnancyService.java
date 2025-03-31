@@ -178,18 +178,13 @@ public class PregnancyService {
         int oldWeeks = pregnancy.getGestationalWeeks();
         LocalDate examDate = pregnancyDTO.getExamDate();
 
-        long daysBetweenExams = ChronoUnit.DAYS.between(lastExamDate, examDate);
-        int expectedWeeks = oldWeeks + (int)(daysBetweenExams / 7);
+        // Luôn cập nhật lại ngày tháng khi có thay đổi tuần thai
+        int totalDays = (pregnancyDTO.getGestationalWeeks() * 7) + pregnancyDTO.getGestationalDays();
+        LocalDate startDate = examDate.minusDays(totalDays);
+        LocalDate dueDate = startDate.plusDays(280);
         
-        if (pregnancyDTO.getGestationalWeeks() != expectedWeeks) {
-            int totalDays = (pregnancyDTO.getGestationalWeeks() * 7) + pregnancyDTO.getGestationalDays();
-            LocalDate startDate = examDate.minusDays(totalDays);
-            LocalDate dueDate = startDate.plusDays(280);
-            
-            pregnancy.setStartDate(startDate);
-            pregnancy.setDueDate(dueDate);
-        }
-
+        pregnancy.setStartDate(startDate);
+        pregnancy.setDueDate(dueDate);
         pregnancy.setLastExamDate(lastExamDate);
         pregnancy.setExamDate(examDate);
         pregnancy.setGestationalWeeks(pregnancyDTO.getGestationalWeeks());
@@ -198,7 +193,8 @@ public class PregnancyService {
 
         Pregnancy savedPregnancy = pregnancyRepository.save(pregnancy);
         
-        if (pregnancyDTO.getGestationalWeeks() != expectedWeeks) {
+        // Cập nhật các records nếu tuần thai thay đổi
+        if (pregnancyDTO.getGestationalWeeks() != oldWeeks) {
             fetusRecordService.updateRecordsForPregnancy(
                 pregnancyId, 
                 examDate,

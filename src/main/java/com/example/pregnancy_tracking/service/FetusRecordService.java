@@ -53,6 +53,9 @@ public class FetusRecordService {
     @Autowired
     private NotificationService notificationService;
 
+    @Autowired
+    private PregnancyRepository pregnancyRepository;
+
     public Map<String, Object> prepareGrowthChartData(Long fetusId, Set<ChartType> chartTypes, Long userId) {
         if (!membershipService.canViewFetusRecord(userId)) {
             throw new MembershipFeatureException("Requires active subscription to view fetus records");
@@ -127,13 +130,50 @@ public class FetusRecordService {
     @Transactional
     public void updateRecordsForPregnancy(Long pregnancyId, LocalDate newExamDate,
                                           LocalDate lastExamDate, int newWeeks, int oldWeeks) {
-        List<FetusRecord> records = fetusRecordRepository.findByFetusPregnancyPregnancyId(pregnancyId);
+        Pregnancy pregnancy = pregnancyRepository.findById(pregnancyId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thai kỳ"));
+    
         int weekDifference = newWeeks - oldWeeks;
-
-        for (FetusRecord record : records) {
-            int adjustedWeek = record.getWeek() + weekDifference;
-            record.setWeek(adjustedWeek);
-            fetusRecordRepository.save(record);
+        
+        if (weekDifference < 0) {
+            throw new IllegalStateException(
+                "Không thể cập nhật: Tuần thai mới (" + newWeeks + 
+                ") nhỏ hơn tuần thai hiện tại (" + oldWeeks + ")");
+        }
+    
+        // Cập nhật ngày tháng của thai kỳ
+        LocalDate newStartDate = newExamDate.minusWeeks(newWeeks);
+        LocalDate newDueDate = newStartDate.plusWeeks(40);
+        pregnancy.setStartDate(newStartDate);
+        pregnancy.setDueDate(newDueDate);
+        pregnancy.setExamDate(newExamDate);
+        pregnancy.setLastExamDate(lastExamDate);
+        pregnancy.setGestationalWeeks(newWeeks);
+        pregnancy.setLastUpdatedAt(LocalDateTime.now());
+        pregnancyRepository.save(pregnancy);
+    
+        // Lấy và cập nhật records
+        List<FetusRecord> records = fetusRecordRepository
+            .findByFetusPregnancyPregnancyId(pregnancyId);
+    
+        if (!records.isEmpty()) {
+            // Sắp xếp records theo tuần giảm dần
+            records.sort((r1, r2) -> r2.getWeek().compareTo(r1.getWeek()));
+            
+            // Tính toán khoảng cách an toàn để tránh trùng với tuần mới
+            int safeDistance = 1; // Luôn giữ khoảng cách ít nhất 1 tuần
+            int currentWeek = records.get(0).getWeek(); // Tuần cao nhất hiện tại
+            
+            // Chỉ cập nhật nếu có sự thay đổi và đảm bảo không trùng với tuần mới
+            if (weekDifference > 0) {
+                for (FetusRecord record : records) {
+                    int proposedWeek = record.getWeek() + weekDifference;
+                    // Đảm bảo tuần mới không vượt quá tuần hiện tại và cách tuần mới ít nhất 1 tuần
+                    int adjustedWeek = Math.min(proposedWeek, newWeeks - safeDistance);
+                    record.setWeek(adjustedWeek);
+                    fetusRecordRepository.save(record);
+                }
+            }
         }
     }
 
