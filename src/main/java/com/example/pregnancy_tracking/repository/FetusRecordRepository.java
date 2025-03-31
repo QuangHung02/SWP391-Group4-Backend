@@ -12,5 +12,5 @@ public interface FetusRecordRepository extends JpaRepository<FetusRecord, Long> 
     List<FetusRecord> findByFetusPregnancyPregnancyId(Long pregnancyId);
     boolean existsByFetusFetusIdAndWeek(Long fetusId, int week);
     Optional<FetusRecord> findFirstByFetusFetusIdOrderByWeekDesc(Long fetusId);
-    FetusRecord findByFetusFetusIdAndWeek(Long fetusId, Integer week);
+    Optional<FetusRecord> findByFetusFetusIdAndWeek(Long fetusId, Integer week);
 }

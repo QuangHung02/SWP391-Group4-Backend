@@ -171,7 +171,7 @@ public class MembershipService {
     }
 
     public boolean canShareGrowthChart(Long userId) {
-        return canAccessFeature(userId, "Basic Plan") || canAccessFeature(userId, "Premium Plan");
+        return canAccessFeature(userId, "Premium Plan") || canAccessFeature(userId, "Premium Plan");
     }
 
     public boolean canAccessHealthAlerts(Long userId) {
