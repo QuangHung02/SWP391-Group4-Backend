@@ -29,9 +29,7 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
     Optional<Subscription> findActiveSubscriptionByUserId(@Param("userId") Long userId);
 
     List<Subscription> findByUserIdAndStatus(Long userId, String status);
-    @Query("SELECT COUNT(s) > 0 FROM Subscription s " +
-            "WHERE s.user.id = :userId " +
-            "AND s.membershipPackage.id = :packageId " +
-            "AND s.createdAt > :dateTime")
-    void deleteByUserId(Long userId);
+    
+    @Query("DELETE FROM Subscription s WHERE s.user.id = :userId")
+    void deleteByUserId(@Param("userId") Long userId);
 }

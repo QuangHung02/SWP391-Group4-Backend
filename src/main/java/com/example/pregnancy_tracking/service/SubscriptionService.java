@@ -135,6 +135,11 @@ public class SubscriptionService {
 
     @Transactional
     public void handleUserDeletion(Long userId) {
-        subscriptionRepository.deleteByUserId(userId);
+        // Find all subscriptions for the user first
+        List<Subscription> userSubscriptions = subscriptionRepository.findByUserIdOrderByStartDateDesc(userId);
+        // Delete each subscription
+        for (Subscription subscription : userSubscriptions) {
+            subscriptionRepository.delete(subscription);
+        }
     }
 }
